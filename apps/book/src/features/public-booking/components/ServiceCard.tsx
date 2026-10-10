@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge, Button, Card, Stack, Typography } from '@foundly/ui';
+import { GLASS_CARD_SX, PRIMARY_BUTTON_SX } from '../../../app/components/landingCanon';
 import { formatPrice } from '../format';
 import type { PublicService } from '../types';
 
@@ -13,6 +14,7 @@ export interface ServiceCardProps {
 export function ServiceCard({ service, onReserve }: ServiceCardProps) {
   return (
     <Card
+      sx={GLASS_CARD_SX}
       header={
         <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
           <Typography variant="h6" component="h2">
@@ -34,7 +36,7 @@ export function ServiceCard({ service, onReserve }: ServiceCardProps) {
           <Typography variant="body1" sx={{ fontWeight: 600 }}>
             {formatPrice(service.priceCents, service.currency)}
           </Typography>
-          <Button variant="primary" onClick={() => onReserve(service)}>
+          <Button variant="primary" sx={PRIMARY_BUTTON_SX} onClick={() => onReserve(service)}>
             Reservar
           </Button>
         </Stack>

@@ -3,32 +3,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { alpha } from '@mui/material/styles';
-import type { SxProps, Theme } from '@mui/material/styles';
 import { Badge, Button, Card, Container, Stack, Typography } from '@foundly/ui';
 import type { ProductFeature } from '../book-product';
-
-/**
- * Landing-canonic visual tokens (apps/landing is the design canon):
- * pill buttons and glass cards replicate Button.astro / AppCard.astro.
- */
-const PRIMARY_BUTTON_SX: SxProps<Theme> = {
-  boxShadow: (theme) => theme.palette.shadow.card,
-  '&:hover': { backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.9) },
-};
-
-const SECONDARY_BUTTON_SX: SxProps<Theme> = {
-  backgroundColor: 'var(--book-glass-card)',
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
-  '&:hover': { backgroundColor: 'surface.badgePill' },
-};
-
-/** Glassmorphism card surface — espejo de `bg-card-light/60` de la landing. */
-const GLASS_CARD_SX: SxProps<Theme> = {
-  backgroundColor: 'var(--book-glass-card)',
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
-};
+import { GLASS_CARD_SX, PILL_SX, PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from './landingCanon';
 
 export interface ProductLandingProps {
   hero: { title: string; subtitle: string; badge: string };
@@ -142,15 +119,7 @@ function HeroBand({
 
       <Container maxWidth="lg" sx={{ py: { xs: 6, md: 12 }, position: 'relative', zIndex: 1 }}>
         <Stack spacing={3} sx={{ maxWidth: 780 }}>
-          <Stack
-            sx={{
-              alignSelf: 'flex-start',
-              borderRadius: '9999px',
-              px: 1.5,
-              py: 0.5,
-              backgroundColor: 'surface.badgePill',
-            }}
-          >
+          <Stack sx={[PILL_SX, { alignSelf: 'flex-start' }]}>
             <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
               {hero.badge}
             </Typography>
@@ -311,16 +280,7 @@ function IndustriesSection({ industries }: { industries: readonly string[] }) {
             <Stack
               key={industry}
               component="span"
-              sx={{
-                display: 'inline-flex',
-                px: 1.5,
-                py: 0.5,
-                borderRadius: '9999px',
-                backgroundColor: 'surface.badgePill',
-                color: 'primary.main',
-                fontSize: 14,
-                fontWeight: 600,
-              }}
+              sx={[PILL_SX, { fontSize: 14, fontWeight: 600 }]}
             >
               {industry}
             </Stack>

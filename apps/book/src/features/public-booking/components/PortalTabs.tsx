@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { Button, Stack } from '@foundly/ui';
+import { PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from '../../../app/components/landingCanon';
 
 export interface PortalTabDef {
   id: string;
@@ -27,6 +28,7 @@ export function PortalTabs({ tabs }: { tabs: PortalTabDef[] }) {
           <Button
             key={tab.id}
             variant={active?.id === tab.id ? 'primary' : 'secondary'}
+            sx={active?.id === tab.id ? PRIMARY_BUTTON_SX : SECONDARY_BUTTON_SX}
             role="tab"
             id={`tab-${tab.id}`}
             aria-selected={active?.id === tab.id}

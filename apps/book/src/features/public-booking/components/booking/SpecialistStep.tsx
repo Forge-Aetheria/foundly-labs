@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Stack, Typography } from '@foundly/ui';
+import { PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from '../../../../app/components/landingCanon';
 import type { PublicSpecialist } from '../../types';
 
 /** Step 1 — specialist selection (FR-010); shown only when > 1 active specialist. */
@@ -23,6 +24,7 @@ export function SpecialistStep({
         <Button
           key={specialist.id}
           variant={selected === specialist.id ? 'primary' : 'secondary'}
+          sx={selected === specialist.id ? PRIMARY_BUTTON_SX : SECONDARY_BUTTON_SX}
           onClick={() => setSelected(specialist.id)}
         >
           {specialist.name}
@@ -31,6 +33,7 @@ export function SpecialistStep({
       <Stack direction="row" justifyContent="flex-end">
         <Button
           variant="primary"
+          sx={PRIMARY_BUTTON_SX}
           disabled={!selected}
           onClick={() => {
             if (selected) onContinue(selected);

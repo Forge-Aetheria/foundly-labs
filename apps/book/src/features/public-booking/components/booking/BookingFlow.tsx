@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal, Stack, Typography } from '@foundly/ui';
+import { Card, Modal, Stack, Typography } from '@foundly/ui';
+import { GLASS_CARD_SX } from '../../../../app/components/landingCanon';
 import { bookPublicAppointment } from '../../actions';
 import { formatPrice } from '../../format';
 import type { ClientDetails } from '../../schemas';
@@ -58,16 +59,14 @@ export function BookingFlow({ service, tenantSlug, specialists, onClose }: Booki
   }
 
   return (
-    <Modal
-      open
-      onClose={onClose}
-      title={`Reserva · Paso ${step + 1} de 4 · ${STEP_LABELS[step]}`}
-    >
+    <Modal glass open onClose={onClose} title={`Reserva · Paso ${step + 1} de 4 · ${STEP_LABELS[step]}`}>
       <Stack spacing={2}>
-        <Typography variant="body2" color="text.secondary">
-          {service.name} · {service.durationMinutes} min ·{' '}
-          {formatPrice(service.priceCents, service.currency)}
-        </Typography>
+        <Card sx={GLASS_CARD_SX}>
+          <Typography variant="body2" color="text.secondary">
+            {service.name} · {service.durationMinutes} min ·{' '}
+            {formatPrice(service.priceCents, service.currency)}
+          </Typography>
+        </Card>
 
         {step === 0 ? (
           <SpecialistStep

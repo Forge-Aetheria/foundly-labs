@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Stack, TextField } from '@foundly/ui';
+import { PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from '../../../../app/components/landingCanon';
 import { clientDetailsSchema, type ClientDetails } from '../../schemas';
 
 type Field = keyof Omit<ClientDetails, 'notes'> | 'notes';
@@ -69,10 +70,10 @@ export function ClientStep({
         onChange={(fieldValue) => setField('notes', fieldValue)}
       />
       <Stack direction="row" justifyContent="flex-end" spacing={1}>
-        <Button variant="secondary" onClick={onBack}>
+        <Button variant="secondary" sx={SECONDARY_BUTTON_SX} onClick={onBack}>
           Atrás
         </Button>
-        <Button variant="primary" onClick={submit}>
+        <Button variant="primary" sx={PRIMARY_BUTTON_SX} onClick={submit}>
           Continuar
         </Button>
       </Stack>

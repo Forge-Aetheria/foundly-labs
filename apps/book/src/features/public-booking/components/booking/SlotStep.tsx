@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Stack, Typography } from '@foundly/ui';
+import { PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from '../../../../app/components/landingCanon';
 import { fetchOfferedSlots, type SlotDay } from '../../actions';
-import { formatTimeLabel } from '../../format';
+import { formatDayKey, formatTimeLabel } from '../../format';
 
 function dateKey(date: Date): string {
   const year = date.getFullYear();
@@ -12,7 +13,7 @@ function dateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-/** Step 2 — interactive date selector + time-slot grid (FR-011). */
+/** Step 2 — minimalist day selector + time-slot grid (FR-011), landing pill style. */
 export function SlotStep({
   tenantSlug,
   serviceId,
@@ -71,24 +72,28 @@ export function SlotStep({
       <Typography variant="body2" color="text.secondary">
         Elige el día y la hora
       </Typography>
-      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+      <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }} aria-label="Días disponibles">
         {days.map((day) => (
           <Button
             key={day}
             variant={day === date ? 'primary' : 'secondary'}
+            sx={day === date ? PRIMARY_BUTTON_SX : SECONDARY_BUTTON_SX}
             onClick={() => setDate(day)}
           >
-            {day}
+            {formatDayKey(day)}
           </Button>
         ))}
       </Stack>
 
       {slots.length > 0 ? (
-        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }} aria-label="Franjas horarias">
           {slots.map((slot) => (
             <Button
               key={slot.startAt}
               variant={value?.startAt === slot.startAt ? 'primary' : 'secondary'}
+              sx={
+                value?.startAt === slot.startAt ? PRIMARY_BUTTON_SX : SECONDARY_BUTTON_SX
+              }
               onClick={() => onSelect(slot)}
             >
               {formatTimeLabel(slot.startAt)}
@@ -102,10 +107,10 @@ export function SlotStep({
       )}
 
       <Stack direction="row" justifyContent="flex-end" spacing={1}>
-        <Button variant="secondary" onClick={onBack}>
+        <Button variant="secondary" sx={SECONDARY_BUTTON_SX} onClick={onBack}>
           Atrás
         </Button>
-        <Button variant="primary" disabled={!value} onClick={onContinue}>
+        <Button variant="primary" sx={PRIMARY_BUTTON_SX} disabled={!value} onClick={onContinue}>
           Continuar
         </Button>
       </Stack>
