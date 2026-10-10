@@ -14,6 +14,7 @@ import {
 } from '../../../features/onboarding/draft';
 import type { BookingDraft } from '../../../domain/tenancy/types';
 import { AccountStep } from './AccountStep';
+import { BrandPanel } from './BrandPanel';
 import { BusinessStep } from './BusinessStep';
 import { SetupStep } from './SetupStep';
 
@@ -63,37 +64,45 @@ export function WizardShell() {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ py: 6 }}>
-      <Card
-        header={
-          <Stack spacing={0.5}>
-            <Typography variant="h5" component="h1">
-              Crea tu negocio
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Paso {step} de 3 — {STEP_LABELS[step - 1]}
-            </Typography>
-          </Stack>
-        }
-      >
-        {step === 1 ? (
-          <AccountStep initial={draft.account} onComplete={(account) => advance({ account }, 2)} />
-        ) : null}
-        {step === 2 ? (
-          <BusinessStep
-            initial={draft.business}
-            onComplete={(business) => advance({ business }, 3)}
-          />
-        ) : null}
-        {step === 3 ? (
-          <SetupStep
-            initial={draft.setup}
-            error={error}
-            submitting={submitting}
-            onSubmit={submitSetup}
-          />
-        ) : null}
-      </Card>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={{ xs: 2, md: 4 }}>
+        <Stack sx={{ flex: { md: '0 0 360px' } }}>
+          <BrandPanel draft={draft} />
+        </Stack>
+
+        <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Card
+            header={
+              <Stack spacing={0.5}>
+                <Typography variant="h5" component="h1">
+                  Crea tu negocio
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Paso {step} de 3 — {STEP_LABELS[step - 1]}
+                </Typography>
+              </Stack>
+            }
+          >
+            {step === 1 ? (
+              <AccountStep initial={draft.account} onComplete={(account) => advance({ account }, 2)} />
+            ) : null}
+            {step === 2 ? (
+              <BusinessStep
+                initial={draft.business}
+                onComplete={(business) => advance({ business }, 3)}
+              />
+            ) : null}
+            {step === 3 ? (
+              <SetupStep
+                initial={draft.setup}
+                error={error}
+                submitting={submitting}
+                onSubmit={submitSetup}
+              />
+            ) : null}
+          </Card>
+        </Stack>
+      </Stack>
     </Container>
   );
 }

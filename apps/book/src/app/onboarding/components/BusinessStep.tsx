@@ -87,6 +87,9 @@ export function BusinessStep({ initial, onComplete }: BusinessStepProps) {
           Sugerencia: {suggestion}
         </Typography>
       ) : null}
+      <Typography variant="caption" color="text.secondary">
+        Tu URL será: foundlylabs.lat/book/{values.slug.trim() || 'tu-negocio'}
+      </Typography>
       <TextField
         label="Categoría"
         name="category"
