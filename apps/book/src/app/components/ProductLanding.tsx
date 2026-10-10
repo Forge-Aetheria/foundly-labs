@@ -2,8 +2,33 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Badge, Button, Card, Chip, Container, Stack, Typography } from '@foundly/ui';
+import { alpha } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
+import { Badge, Button, Card, Container, Stack, Typography } from '@foundly/ui';
 import type { ProductFeature } from '../book-product';
+
+/**
+ * Landing-canonic visual tokens (apps/landing is the design canon):
+ * pill buttons and glass cards replicate Button.astro / AppCard.astro.
+ */
+const PRIMARY_BUTTON_SX: SxProps<Theme> = {
+  boxShadow: (theme) => theme.palette.shadow.card,
+  '&:hover': { backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.9) },
+};
+
+const SECONDARY_BUTTON_SX: SxProps<Theme> = {
+  backgroundColor: 'var(--book-glass-card)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  '&:hover': { backgroundColor: 'surface.badgePill' },
+};
+
+/** Glassmorphism card surface — espejo de `bg-card-light/60` de la landing. */
+const GLASS_CARD_SX: SxProps<Theme> = {
+  backgroundColor: 'var(--book-glass-card)',
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+};
 
 export interface ProductLandingProps {
   hero: { title: string; subtitle: string; badge: string };
@@ -49,11 +74,11 @@ function BrandBar({
       sx={{
         px: 3,
         py: 1.5,
-        backgroundColor: 'surface.glass',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        backgroundColor: 'var(--book-glass)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         borderBottom: 1,
-        borderColor: 'divider',
+        borderColor: (theme) => alpha(theme.palette.border.subtle, 0.6),
         position: 'sticky',
         top: 0,
         zIndex: (theme) => theme.zIndex.appBar,
@@ -73,7 +98,9 @@ function BrandBar({
           </Link>
         </Typography>
         <Link href={cta.href}>
-          <Button variant="primary">{cta.label}</Button>
+          <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
+            {cta.label}
+          </Button>
         </Link>
       </Stack>
     </Stack>
@@ -119,12 +146,12 @@ function HeroBand({
             sx={{
               alignSelf: 'flex-start',
               borderRadius: '9999px',
-              px: 2,
+              px: 1.5,
               py: 0.5,
-              backgroundColor: 'primary.light',
+              backgroundColor: 'surface.badgePill',
             }}
           >
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.dark' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
               {hero.badge}
             </Typography>
           </Stack>
@@ -139,10 +166,14 @@ function HeroBand({
           </Typography>
           <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
             <Link href={cta.href}>
-              <Button variant="primary">{cta.label}</Button>
+              <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
+                {cta.label}
+              </Button>
             </Link>
             <Link href={demo.href}>
-              <Button variant="secondary">{demo.label}</Button>
+              <Button variant="secondary" sx={SECONDARY_BUTTON_SX}>
+                {demo.label}
+              </Button>
             </Link>
           </Stack>
         </Stack>
@@ -174,6 +205,7 @@ function ShowcaseSection() {
         }}
       >
         <Card
+          sx={GLASS_CARD_SX}
           header={
             <Typography variant="h6" component="h2">
               Tu agenda, siempre al día
@@ -201,6 +233,7 @@ function ShowcaseSection() {
         </Card>
 
         <Card
+          sx={GLASS_CARD_SX}
           header={
             <Typography variant="h6" component="h2">
               Portal público para tus clientes
@@ -248,6 +281,7 @@ function BenefitsSection({ benefits }: { benefits: ProductFeature[] }) {
           {benefits.map((benefit) => (
             <Card
               key={benefit.title}
+              sx={GLASS_CARD_SX}
               header={
                 <Typography variant="h6" component="h3">
                   {benefit.title}
@@ -272,9 +306,24 @@ function IndustriesSection({ industries }: { industries: readonly string[] }) {
         <Typography variant="h4" component="h2">
           Ideal para tu sector
         </Typography>
-        <Stack direction="row" sx={{ flexWrap: 'wrap' }} spacing={1}>
+        <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
           {industries.map((industry) => (
-            <Chip key={industry} label={industry} />
+            <Stack
+              key={industry}
+              component="span"
+              sx={{
+                display: 'inline-flex',
+                px: 1.5,
+                py: 0.5,
+                borderRadius: '9999px',
+                backgroundColor: 'surface.badgePill',
+                color: 'primary.main',
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              {industry}
+            </Stack>
           ))}
         </Stack>
       </Stack>
@@ -310,7 +359,9 @@ function FinalCtaBand({
             {finalCta.subtitle}
           </Typography>
           <Link href={finalCta.cta.href}>
-            <Button variant="primary">{finalCta.cta.label}</Button>
+            <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
+              {finalCta.cta.label}
+            </Button>
           </Link>
         </Stack>
       </Stack>

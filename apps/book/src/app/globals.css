@@ -1,34 +1,31 @@
 /*
  * apps/book — Clean Light UI theme bridge (extensiones locales)
  * =====================================================================
- * El degradado de marca y el canvas son una extensión local de `apps/book`,
- * derivados de la paleta canónica de `@foundly/ui` (`specs/system-design.md`
- * v3.0.0 y constitution.md §6.I). No se declaran en los tokens globales;
- * viven en la app que los usa (misma regla que el degradado de `apps/landing`).
+ * CANÓNICO DE DISEÑO: apps/landing (foundlylabs.lat). Los tokens locales de
+ * apps/book replican exactamente los de la landing (misma regla del
+ * costitución §6.I: las extensiones por app NO se declaran en los tokens
+ * globales de `@foundly/ui`).
  *
- * Objetivo: fondo lavanda/violeta suave y continuo en el 100% del viewport,
- * sin cortes blancos ni bordes duros entre hero y contenido, alineado con la
- * identidad visual de foundlylabs.lat.
+ * - Gradiente superior: idéntico al de apps/landing
+ *   (`linear-gradient(180deg, #C8B6FF 0%, #FFFFFF 60%)`).
+ * - Glassmorphism: replicas de `bg-card-light/70` (header) y
+ *   `bg-card-light/60` (tarjetas) de la landing.
  */
 
 :root {
-  /* Signature top gradient — extensión local de apps/book alineada con la landing. */
-  --book-gradient-from: #e3dafc;
-  --book-gradient-mid: #efeafe;
-  --book-gradient-to: #f7f5ff;
+  /* Signature top gradient — sincronizado con apps/landing src/styles/tokens.css */
+  --book-gradient-from: #c8b6ff;
+  --book-gradient-to: #d8b4fe;
+  /* Glassmorphism — espejo de bg-card-light/70 y bg-card-light/60 de la landing */
+  --book-glass: rgba(255, 255, 255, 0.7);
+  --book-glass-card: rgba(255, 255, 255, 0.6);
 }
 
 .book-app-canvas {
   min-height: 100vh;
   width: 100%;
   background-color: var(--bg-app-body);
-  background-image: linear-gradient(
-    180deg,
-    var(--book-gradient-from) 0%,
-    var(--book-gradient-mid) 46%,
-    var(--book-gradient-to) 78%,
-    var(--bg-app-body) 100%
-  );
+  background-image: linear-gradient(180deg, var(--book-gradient-from) 0%, var(--bg-card-light) 60%);
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
