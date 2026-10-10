@@ -1,5 +1,6 @@
 import '@foundly/ui/tokens.css';
 import '@fontsource-variable/inter';
+import './globals.css';
 
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { FoundlyThemeProvider } from '@foundly/ui';
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es">
-      <body>
+      <body className="book-app-canvas">
         <AppRouterCacheProvider options={{ key: 'foundly' }}>
           <FoundlyThemeProvider>{children}</FoundlyThemeProvider>
         </AppRouterCacheProvider>

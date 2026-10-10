@@ -22,7 +22,7 @@ export interface ProductLandingProps {
 /** Product page (public `/book`) — Setmore-inspired structure in Clean Light UI. */
 export function ProductLanding({ hero, cta, demo, benefits, industries, finalCta }: ProductLandingProps) {
   return (
-    <Stack sx={{ minHeight: '100vh', backgroundColor: 'background.default' }}>
+    <Stack sx={{ minHeight: '100vh' }}>
       <BrandBar cta={cta} demo={demo} />
       <HeroBand hero={hero} cta={cta} demo={demo} />
       <ShowcaseSection />
@@ -49,7 +49,9 @@ function BrandBar({
       sx={{
         px: 3,
         py: 1.5,
-        backgroundColor: 'background.paper',
+        backgroundColor: 'surface.glass',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         borderBottom: 1,
         borderColor: 'divider',
         position: 'sticky',
@@ -92,10 +94,6 @@ function HeroBand({
       sx={{
         position: 'relative',
         overflow: 'hidden',
-        background: (theme) =>
-          `linear-gradient(180deg, ${theme.palette.primary.light} 0%, ${theme.palette.background.paper} 78%)`,
-        borderBottom: 1,
-        borderColor: 'divider',
       }}
     >
       {/* Foundly "F" isotipo watermark (low opacity, mirrors the landing hero) */}

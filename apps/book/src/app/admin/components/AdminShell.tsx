@@ -37,7 +37,7 @@ export function AdminShell({ children, tenantName }: AdminShellProps) {
   const handleClose = () => setMobileOpen(false);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <SkipLink />
 
       <Drawer

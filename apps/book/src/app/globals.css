@@ -1,0 +1,34 @@
+/*
+ * apps/book — Clean Light UI theme bridge (extensiones locales)
+ * =====================================================================
+ * El degradado de marca y el canvas son una extensión local de `apps/book`,
+ * derivados de la paleta canónica de `@foundly/ui` (`specs/system-design.md`
+ * v3.0.0 y constitution.md §6.I). No se declaran en los tokens globales;
+ * viven en la app que los usa (misma regla que el degradado de `apps/landing`).
+ *
+ * Objetivo: fondo lavanda/violeta suave y continuo en el 100% del viewport,
+ * sin cortes blancos ni bordes duros entre hero y contenido, alineado con la
+ * identidad visual de foundlylabs.lat.
+ */
+
+:root {
+  /* Signature top gradient — extensión local de apps/book alineada con la landing. */
+  --book-gradient-from: #e3dafc;
+  --book-gradient-mid: #efeafe;
+  --book-gradient-to: #f7f5ff;
+}
+
+.book-app-canvas {
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--bg-app-body);
+  background-image: linear-gradient(
+    180deg,
+    var(--book-gradient-from) 0%,
+    var(--book-gradient-mid) 46%,
+    var(--book-gradient-to) 78%,
+    var(--bg-app-body) 100%
+  );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
