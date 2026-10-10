@@ -108,7 +108,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 **Guided booking flow**
 
-- **FR-009**: Activating "Reservar" on a service MUST open a guided booking flow with that service preselected.
+- **FR-009**: Activating "Reservar" on a service MUST open a guided booking flow with that service preselected, inside an `@foundly/ui` glass Modal over the shared canvas.
 - **FR-010**: The flow MUST offer a specialist selection step when the business has more than one active specialist; otherwise it MUST be skipped.
 - **FR-011**: The flow MUST offer an interactive date and time-slot selector that only shows slots respecting the business hours, blocks, lead time, horizon and existing appointments.
 - **FR-012**: The flow MUST collect the client's name, email, phone and optional notes, with inline validation.
@@ -120,7 +120,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 - **FR-016**: The public page MUST expose no data for unknown, draft or suspended tenants (unavailable state only).
 - **FR-017**: The presented service price MUST be the tenant's current applicable rate.
-- **FR-018**: Every surface MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted. Every surface MUST render over the module's continuous brand canvas (`004-book-brand-canvas`) with no opaque full-screen background layer.
+- **FR-018**: Every surface MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted. Every surface MUST render over the module's continuous brand canvas (`004-book-brand-canvas`) with no opaque full-screen background layer; cards and pills MUST replicate the landing's glassmorphism and pill style (`landingCanon.ts`).
 - **FR-019**: The page MUST be fully keyboard-operable and pass automated accessibility checks with zero critical violations.
 - **FR-020**: The page MUST adapt to small viewports without horizontal overflow.
 
@@ -153,4 +153,4 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 - **Payments**: online payment is out of scope; the portal confirms the booking without charging.
 - **Social links**: Instagram and WhatsApp are plain public links (https) shown as contact anchors.
 - **Localization**: all copy is delivered in Spanish, consistent with the ecosystem.
-- **Design token**: the portal uses exclusively the Clean Light UI tokens (`#6C5CE7` primary, `#FAF8FF` canvas, zinc text/borders) exposed by `@foundly/ui`; it renders over the module's continuous brand canvas (`004-book-brand-canvas`) shared by the product page, onboarding, admin shell and portal.
+- **Design token**: the portal uses exclusively the Clean Light UI tokens (`#6C5CE7` primary, `#FAF8FF` canvas, zinc text/borders) exposed by `@foundly/ui`; it renders over the module's continuous brand canvas (`004-book-brand-canvas`) shared by the product page, onboarding, admin shell and portal. The booking checkout (modal + steps) reuses the landing-canonic glass/pill overrides (`landingCanon.ts`) of the product page.

@@ -72,6 +72,10 @@ add the glass tokens the replica needs.
 - [x] T004 [P] [US4] Admin shell `apps/book/src/app/admin/components/AdminShell.tsx`: remove the opaque
       `backgroundColor: 'background.default'` full-screen layer so the canvas shows behind the routed
       screens, keeping the white sidebar as an intentional panel (FR-005).
+- [x] T011 [P] [US3] Centralise the canon overrides in `apps/book/src/app/components/landingCanon.ts`
+      (`PRIMARY_BUTTON_SX`, `SECONDARY_BUTTON_SX`, `GLASS_CARD_SX`, `PILL_SX`) and reuse them from the
+      product page (`/`) and the guided booking checkout (`/[tenantSlug]` modal + steps), using the
+      `@foundly/ui` `Modal` `glass` surface (FR-006/FR-008).
 
 ---
 
@@ -80,7 +84,7 @@ add the glass tokens the replica needs.
 **Purpose**: Prove the canvas change is green and does not regress the module or the shared package.
 
 - [x] T005 Run the module validation per `quickstart.md`: `npm run test -w @foundly/book` (92/92),
-      `npm run test -w @foundly/ui` (26/26), `npm run build -w @foundly/book`,
+      `npm run test -w @foundly/ui` (28/28), `npm run build -w @foundly/book`,
       `npm run typecheck` + `npm run lint` for both workspaces.
 - [x] T006 Keep shared values untouched: confirm `@foundly/ui` token values and `specs/system-design.md`
       have no value diff (only the additive `sx` prop on `Card`/`Button`).

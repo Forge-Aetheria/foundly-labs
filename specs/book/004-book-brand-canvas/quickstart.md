@@ -41,9 +41,10 @@ npm run typecheck -w @foundly/ui && npm run typecheck -w @foundly/book
 npm run lint -w @foundly/ui && npm run lint -w @foundly/book
 ```
 
-Expected: book tests green (92/92), ui tests green (26/26), the build compiles every route with zero
+Expected: book tests green (92/92), ui tests green (28/28), the build compiles every route with zero
 errors, typecheck and lint are clean in both workspaces. Shared token **values** must have no diff
-(`@foundly/ui`, `specs/system-design.md`); only the additive `sx` prop on `Card`/`Button` is new.
+(`@foundly/ui`, `specs/system-design.md`); only the additive `sx`/`glass` props on
+`Card`/`Button`/`Modal` are new.
 
 ### 2. Token/color discipline (FR-007, SC-004)
 
@@ -67,9 +68,12 @@ Expected: ESLint reports zero literal brand hex values in components; colors com
 4. Open `/admin/*` — the content area shows the same canvas behind the white sidebar and the (solid) cards;
    nothing paints an opaque full-screen background (US4, FR-005).
 5. Open `/<slug>` of an active business — the portal renders over the same canvas.
-6. Scroll a tall page — no seam or band where the gradient ends; the canvas covers the whole viewport
+6. Activate "Reservar" from a service card — the guided checkout opens in a **glass modal**; the day
+   pills (e.g. "lun 12"), time-slot grid, contact form and confirmation summary all use the landing's
+   pill/glass style (`#6C5CE7`, translucent surfaces).
+7. Scroll a tall page — no seam or band where the gradient ends; the canvas covers the whole viewport
    while the `--bg-app-body` fallback keeps the identity below.
-7. With a small viewport — no horizontal overflow and the canvas still covers the viewport.
+8. With a small viewport — no horizontal overflow and the canvas still covers the viewport.
 
 ## End-to-end acceptance
 

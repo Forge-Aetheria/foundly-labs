@@ -24,8 +24,15 @@ Fixes the visual structure and accessibility contract of the public mini-site. I
 
 ## Cards and tokens
 
-- `ServiceCard` uses `@foundly/ui` `Card` (16px radius, `border.subtle`, `shadow.card`), bold headings, `text.secondary` body and a pill primary/secondary `Button`.
-- Colors come only from theme tokens (`primary.main` #6C5CE7, `background.default` #FAF8FF, zinc text/borders).
+- `ServiceCard` uses `@foundly/ui` `Card` with the **landing-canonic glass surface** (`GLASS_CARD_SX`:
+  translucent `--book-glass-card` + backdrop blur over `border.subtle`/`shadow.card`, 16px radius), bold
+  headings, `text.secondary` body and a pill primary button (`PRIMARY_BUTTON_SX`).
+- Tab pills follow the landing `Badge`/`Button` style: active tab = `primary.main`, inactive = translucent
+  glass (`SECONDARY_BUTTON_SX`), all `rounded-full`.
+- The canon helpers live in `apps/book/src/app/components/landingCanon.ts` and are shared with the product
+  page (`/`) and the booking checkout (`004-book-brand-canvas`).
+- Colors come only from theme tokens (`primary.main` #6C5CE7, `background.default` #FAF8FF, zinc
+  text/borders) or the book-local glass variables (`--book-glass-card`).
 
 ## Guarantees (FR-019/FR-020, SC-005/SC-007)
 

@@ -59,6 +59,8 @@ Additive, non-breaking API additions that enable the landing replication without
 
 - **`Card`**: accepts an optional `sx?: SxProps<Theme>` merged after the base surface.
 - **`Button`**: accepts an optional `sx?: SxProps<Theme>` forwarded to the MUI button.
+- **`Modal`**: accepts an optional `glass?: boolean` that renders the dialog paper as the translucent
+  `surface.glass` (`rgba(255,255,255,0.85)`) with backdrop blur — used by the public booking checkout.
 
 ## Token/color discipline
 
