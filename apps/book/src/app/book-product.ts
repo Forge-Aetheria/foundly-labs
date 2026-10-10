@@ -1,6 +1,40 @@
+export type BenefitIcon = 'reminders' | 'payments' | 'no-shows' | 'integrations';
+
 export interface ProductFeature {
   title: string;
   description: string;
+  icon: BenefitIcon;
+}
+
+export interface ProductStep {
+  step: string;
+  title: string;
+  description: string;
+}
+
+export interface ProductSpotlight {
+  eyebrow: string;
+  title: string;
+  description: string;
+  cta: { href: string; label: string };
+  preview: {
+    name: string;
+    rating: string;
+    tagline: string;
+    services: readonly { name: string; meta: string }[];
+    slots: readonly string[];
+  };
+}
+
+export interface ProductPricingPlan {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: readonly string[];
+  cta: { href: string; label: string };
+  highlighted?: boolean;
 }
 
 export const BOOK_HERO = {
@@ -8,6 +42,11 @@ export const BOOK_HERO = {
   subtitle:
     'Gestiona citas, servicios y profesionales desde un solo panel, y deja que tus clientes reserven online a cualquier hora, incluso cuando estás cerrado.',
   badge: 'Reservas online 24/7',
+} as const;
+
+export const BOOK_HERO_CAPTURE = {
+  placeholder: 'Tu email',
+  button: 'Empezar gratis',
 } as const;
 
 export const BOOK_CTA = {
@@ -20,22 +59,95 @@ export const BOOK_DEMO = {
   label: 'Ver Demo',
 } as const;
 
+/** Spotlight / showcase: featured booking-page preview (Setmore-inspired). */
+export const BOOK_SPOTLIGHT: ProductSpotlight = {
+  eyebrow: 'Booking Page',
+  title: 'Tu Booking Page personalizada',
+  description:
+    'Comparte tu enlace y deja que tus clientes elijan servicio, profesional y hora en una página a tu marca. Sin instalaciones ni código.',
+  cta: { href: '/estudio-ana', label: 'Ver página demo' },
+  preview: {
+    name: 'Estudio Ana',
+    rating: '4.8',
+    tagline: 'Peluquería y estética · Reservas abiertas',
+    services: [
+      { name: 'Corte de cabello', meta: '30 min · 20,00 €' },
+      { name: 'Manicura', meta: '45 min · 25,00 €' },
+      { name: 'Asesoría de imagen', meta: '60 min · 30,00 €' },
+    ],
+    slots: ['09:00', '10:30', '12:00', '16:00'],
+  },
+};
+
+/** 3 steps to success. */
+export const BOOK_STEPS: ProductStep[] = [
+  {
+    step: '1',
+    title: 'Crea tu página',
+    description: 'Activa tu Booking Page pública en minutos, sin instalar nada.',
+  },
+  {
+    step: '2',
+    title: 'Personaliza tu marca',
+    description: 'Sube tu logo, define tu agenda y elige tus servicios y tarifas.',
+  },
+  {
+    step: '3',
+    title: 'Comparte y agenda',
+    description: 'Comparte tu enlace y recibe reservas online 24/7.',
+  },
+];
+
+/** Benefits grid with icons. */
 export const BOOK_BENEFITS: ProductFeature[] = [
   {
-    title: 'Agendamiento 24/7',
-    description: 'Tus clientes reservan cuando quieran, sin llamadas ni mensajes fuera de horario.',
-  },
-  {
     title: 'Recordatorios',
-    description: 'Reduce las ausencias manteniendo a cada cliente al día antes de su cita.',
+    description: 'Reduce ausencias con avisos automáticos antes de cada cita.',
+    icon: 'reminders',
   },
   {
-    title: 'Control de disponibilidad',
-    description: 'Define horarios de trabajo, descansos y bloques por cada profesional.',
+    title: 'Pagos por adelantado',
+    description: 'Cobra el pago inicial al reservar y protege tu agenda.',
+    icon: 'payments',
   },
   {
-    title: 'Perfil personalizado',
-    description: 'Tu marca, tus servicios y tu URL pública en un portal a tu medida.',
+    title: 'Sin no-shows',
+    description: 'Políticas de cancelación claras que minimizan las citas perdidas.',
+    icon: 'no-shows',
+  },
+  {
+    title: 'Integraciones',
+    description: 'Sincroniza tu calendario, pagos y mensajería con tus herramientas.',
+    icon: 'integrations',
+  },
+];
+
+/** Pricing (ilustrativo — pendiente de ratificar en specs/business-model.md). */
+export const BOOK_PRICING: ProductPricingPlan[] = [
+  {
+    id: 'free',
+    name: 'Plan Gratis',
+    price: '$0',
+    period: '/mes',
+    description: 'Para empezar a recibir reservas hoy mismo.',
+    features: ['Booking Page pública', 'Hasta 1 servicio', 'Recordatorios por email'],
+    cta: { href: '/onboarding', label: 'Empezar gratis' },
+  },
+  {
+    id: 'pro',
+    name: 'Plan Pro',
+    price: '$5',
+    period: '/mes',
+    description: 'Para negocios que quieren crecer sin fricción.',
+    features: [
+      'Número de servicios ilimitado',
+      'Recordatorios por SMS',
+      'Pagos por adelantado',
+      'Protección frente a no-shows',
+      'Integraciones',
+    ],
+    cta: { href: '/onboarding', label: 'Probar Pro gratis' },
+    highlighted: true,
   },
 ];
 
