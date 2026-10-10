@@ -1,40 +1,44 @@
-# Contract: Portal UI (hero, tabs and cards)
+# Contract: Portal UI (provider landing — nav, two columns and sections)
 
-**Feature**: `specs/book/003-public-portal-minisite/` | **Date**: 2026-10-09
+**Feature**: `specs/book/003-public-portal-minisite/` | **Date**: 2026-10-09 | **Amended**: 2026-10-10
 
-Fixes the visual structure and accessibility contract of the public mini-site. It is a UI contract for `apps/book`; all primitives come from `@foundly/ui` (C1, FR-018).
+Fixes the visual structure and accessibility contract of the public provider landing. It is a UI
+contract for `apps/book`; all primitives come from `@foundly/ui` (C1, FR-018) plus the landing-canonic
+overrides in `apps/book/src/app/components/landingCanon.ts`.
 
-## Brand hero (FR-001…FR-004)
+## Internal navigation (FR-005)
 
-- Decorative cover banner using `primary.light` (lavender) as a full-width band.
-- Identity row: avatar/logo (fallback: initials circle built from `Stack`+`Typography`), commercial name, category badge and status badges.
-- "Sobre nosotros" biography, only when `bio` is present.
-- Contact row: address, phone and social links (Instagram/WhatsApp as https anchors), rendered only for configured values.
+- Sticky glass bar (`--book-glass` + blur + subtle bottom border) with anchor pills:
+  `Servicios`, `Equipo`, `Acerca de`, `Galería`, `Reseñas`, `Dirección`.
+- Pills are `MuiLink`/`Typography`-based anchors styled like the landing `SECONDARY_BUTTON_SX`;
+  scrolling is smooth (`html { scroll-behavior: smooth }`) with `scroll-margin-top` per section.
+- Scrollable horizontally on small viewports (no overflow).
 
-## Tabs (FR-005…FR-008)
+## Two-column layout (FR-021/FR-022)
 
-- Tab controller: pill `Button` elements with WAI-ARIA tab semantics (`role="tablist"`, `aria-selected`, `aria-controls`, arrow-key navigation — research R3).
-- `Servicios` is the default tab.
+- Desktop: `<Stack direction="row">`; main column (flex-grow) + right column fixed at `340px` with a
+  **sticky** sidebar (`position: sticky; top`).
+- Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints).
 
-| Tab                 | Content                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| Servicios (default) | `ServiceCard` list: name, description (if any), duration ("N min"), price (current rate), pill "Reservar" |
-| Equipo / Especialistas | Specialists (active resources) with initials avatar + name + role; empty state when none              |
-| Información & Políticas | Weekly `businessHours` per weekday + `PortalPolicy` list (fallback copy when empty)                   |
+| Column | Sections / content                                                                                     |
+| ------ | ------------------------------------------------------------------------------------------------------ |
+| Main   | Gallery banner (cover + photo strip), Políticas card, Servicios (grouped by category), Equipo, Acerca de, Galería (grid), Reseñas (summary + cards), Dirección y horarios. |
+| Sidebar (sticky) | Avatar/logo + name + category, rating stars + numeric, pill **Reservar** (`#6C5CE7`), hours `<details>` disclosure ("Abierto · Cierra a las HH:mm"), address + phone + social links. |
 
 ## Cards and tokens
 
-- `ServiceCard` uses `@foundly/ui` `Card` with the **landing-canonic glass surface** (`GLASS_CARD_SX`:
-  translucent `--book-glass-card` + backdrop blur over `border.subtle`/`shadow.card`, 16px radius), bold
-  headings, `text.secondary` body and a pill primary button (`PRIMARY_BUTTON_SX`).
-- Tab pills follow the landing `Badge`/`Button` style: active tab = `primary.main`, inactive = translucent
-  glass (`SECONDARY_BUTTON_SX`), all `rounded-full`.
-- The canon helpers live in `apps/book/src/app/components/landingCanon.ts` and are shared with the product
-  page (`/`) and the booking checkout (`004-book-brand-canvas`).
+- All cards use the landing-canonic **glass surface** (`GLASS_CARD_SX`: `--book-glass-card` at 60% white +
+  backdrop blur over `border.subtle`/`shadow.card`, 16px radius).
+- The sidebar Reservar and every service Reservar are accent pills (`PRIMARY_BUTTON_SX`, `#6C5CE7`).
+- `RatingStars` renders a five-star row with the `primary.main` accent and `border.lavender` empty stars.
+- The guided booking checkout keeps its own contract (`booking-flow.contract.md`) inside the
+  `@foundly/ui` `Modal` (`glass` surface).
 - Colors come only from theme tokens (`primary.main` #6C5CE7, `background.default` #FAF8FF, zinc
   text/borders) or the book-local glass variables (`--book-glass-card`).
 
 ## Guarantees (FR-019/FR-020, SC-005/SC-007)
 
-- Keyboard-operable tabs and buttons with visible focus; automated a11y checks report zero critical violations.
-- Mobile: single column layout, `flexWrap` rows, no horizontal overflow.
+- Keyboard-operable nav links and buttons with visible focus; automated a11y checks report zero critical
+  violations (heading order included).
+- Mobile: single column, the sidebar becomes a compact header card, `flexWrap` rows, no horizontal
+  overflow.

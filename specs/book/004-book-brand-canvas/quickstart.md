@@ -67,10 +67,12 @@ Expected: ESLint reports zero literal brand hex values in components; colors com
 3. Open `/onboarding` — the split layout sits on the same canvas as the product page.
 4. Open `/admin/*` — the content area shows the same canvas behind the white sidebar and the (solid) cards;
    nothing paints an opaque full-screen background (US4, FR-005).
-5. Open `/<slug>` of an active business — the portal renders over the same canvas.
-6. Activate "Reservar" from a service card — the guided checkout opens in a **glass modal**; the day
-   pills (e.g. "lun 12"), time-slot grid, contact form and confirmation summary all use the landing's
-   pill/glass style (`#6C5CE7`, translucent surfaces).
+5. Open `/<slug>` of an active business (e.g. `/rona-piercing`) — the provider landing renders over the
+   same canvas as a two-column layout: internal nav, glass sections (servicios, equipo, acerca, galería,
+   reseñas, dirección) and the sticky sidebar with brand, rating and the pill Reservar CTA.
+6. Activate "Reservar" from a service card or the sidebar — the guided checkout opens in a **glass modal**;
+   the day pills (e.g. "lun 12"), time-slot grid, contact form and confirmation summary all use the
+   landing's pill/glass style (`#6C5CE7`, translucent surfaces).
 7. Scroll a tall page — no seam or band where the gradient ends; the canvas covers the whole viewport
    while the `--bg-app-body` fallback keeps the identity below.
 8. With a small viewport — no horizontal overflow and the canvas still covers the viewport.

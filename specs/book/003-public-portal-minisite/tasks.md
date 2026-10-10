@@ -200,6 +200,36 @@ Task: "T015 Build ServiceCard  (components/ServiceCard.tsx)"
 
 ---
 
+## Phase 8: Provider landing (two-column) — EXECUTED addendum (2026-10-10)
+
+**Purpose**: Replace the tab storefront with the full two-column provider landing and seed a rich test
+business. Supersedes the tab-based shell (BrandHero/PortalTabs/SpecialistsTab/PoliciesTab were removed).
+
+- [x] T040 [P] Extend tenancy types: `Tenant.gallery?: string[]` and the `Review` entity
+      (`apps/book/src/domain/tenancy/types.ts`).
+- [x] T041 [P] Seed the `rona-piercing` business in `apps/book/src/server/store.ts`: identity + gallery
+      (Unsplash URLs), 6 services in 3 categories with rates, 3 specialists with avatar/bio, business
+      hours, 3 policies and 5 reviews; the store gains a `reviews` collection (resetStore included).
+- [x] T042 [P] Extend the public profile: `PublicService.category`, `PublicReview` and
+      `gallery`/`rating`/`reviewCount`/`reviews` on `PublicBusinessProfile`
+      (`apps/book/src/features/public-booking/types.ts`) and compute them in `queries.ts`
+      (rating = averaged/round-1; reviews newest first).
+- [x] T043 [P] Build the provider components under
+      `apps/book/src/features/public-booking/components/provider/`: `RatingStars`, `ProviderNav`
+      (anchor pills), `ProviderSidebar` (sticky: brand, rating, Reservar `#6C5CE7`, hours `<details>`,
+      contact) and `ProviderSections` (banner, policies, catalog by category, team, about, gallery,
+      reviews, direction).
+- [x] T044 [P] Rewrite `PublicPortal` as the two-column orchestration (nav + main + sticky sidebar +
+      BookingFlow modal) with responsive order (sidebar compact header on mobile).
+- [x] T045 [P] Remove the superseded tab components and their tests (BrandHero, PortalTabs,
+      SpecialistsTab, PoliciesTab) and rewrite `PublicPortal.test.tsx` for the new landing
+      (nav, sections, sidebar Reservar opening the checkout, a11y).
+- [x] T046 Run validation: `npm run test -w @foundly/book` (86/86), `npm run build -w @foundly/book`,
+      `npm run typecheck` + `npm run lint -w @foundly/book` all green; update this addendum and the
+      contracts (`portal-profile`, `portal-ui`).
+
+---
+
 ## Implementation Strategy
 
 ### MVP First (User Story 1 Only)
