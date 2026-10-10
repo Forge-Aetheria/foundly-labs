@@ -16,3 +16,25 @@ export function formatDayKey(key: string): string {
   const weekday = WEEKDAYS_ES[new Date(year ?? 0, (month ?? 1) - 1, day ?? 1).getDay()] ?? '';
   return `${weekday} ${String(day ?? 0).padStart(2, '0')}`;
 }
+
+export const WEEKDAY_LABELS = [
+  'Domingo',
+  'Lunes',
+  'Martes',
+  'Miércoles',
+  'Jueves',
+  'Viernes',
+  'Sábado',
+] as const;
+
+/** One-decimal rating label (e.g. "4.6") or an em-dash when there is no rating. */
+export function formatRating(rating: number | null): string {
+  return rating === null ? '—' : rating.toFixed(1);
+}
+
+/** Spanish short date label for a review (e.g. "28 sept 2026"). */
+export function formatReviewDate(iso: string): string {
+  return new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }).format(
+    new Date(iso),
+  );
+}

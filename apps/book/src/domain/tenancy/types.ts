@@ -47,6 +47,8 @@ export interface Tenant {
   address: string | null;
   phone: string | null;
   social: { instagram?: string; whatsapp?: string } | null;
+  /** Photo gallery (Unsplash URLs) shown on the provider landing. */
+  gallery?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +59,18 @@ export interface PortalPolicy {
   tenantId: string;
   title: string;
   body: string;
+}
+
+/** A client review of the business shown on the provider landing (mock content). */
+export interface Review {
+  id: string;
+  tenantId: string;
+  author: string;
+  /** 1–5 star rating. */
+  rating: number;
+  comment: string;
+  /** ISO-8601 date of the review. */
+  date: string;
 }
 
 /** An account able to sign in and administer a business. */

@@ -11,6 +11,7 @@ import type {
   BusinessHours,
   OnboardingProvision,
   PortalPolicy,
+  Review,
   Tenant,
   User,
 } from '../domain/tenancy/types';
@@ -34,6 +35,7 @@ export interface BookStore {
   onboardingProvisions: OnboardingProvision[];
   sessions: Session[];
   portalPolicies: PortalPolicy[];
+  reviews: Review[];
 }
 
 const TIMEZONE = 'Europe/Madrid';
@@ -155,19 +157,256 @@ function seed(): BookStore {
     },
   ];
 
+  /* ------------------------------------------------------------------ *
+   * Seeded provider landing for `rona-piercing` (003 — rona-piercing). *
+   *                                                                     *
+   * Test business used to visualise the full two-column provider        *
+   * landing: gallery, categories/services, team, policies and reviews.  *
+   * ------------------------------------------------------------------ */
+
+  const unsplash = (id: string, w: number) =>
+    `https://images.unsplash.com/${id}?w=${w}&q=80`;
+
+  const ronaHours: BusinessHours[] = [
+    0, 1, 2, 3, 4, 5, 6,
+  ].map((weekday) => {
+    const isOpen = weekday >= 1 && weekday <= 6; // Mon–Sat
+    return { weekday, isOpen, startTime: isOpen ? '10:00' : '', endTime: isOpen ? '19:30' : '' };
+  });
+
+  const ronaTenant: Tenant = {
+    id: 'ten-rona',
+    name: 'Rona Piercing',
+    slug: 'rona-piercing',
+    category: 'Piercing & Body Art',
+    status: 'active',
+    ownerUserId: 'u-owner-rona',
+    defaultAppointmentDurationMinutes: 20,
+    businessHours: ronaHours,
+    currency: 'EUR',
+    timezone: TIMEZONE,
+    onlineBookingEnabled: true,
+    license: null,
+    avatar: unsplash('photo-1596462502278-27bfdc403348', 240),
+    cover: unsplash('photo-1519671482749-fd09be7ccebf', 1200),
+    bio: 'Estudio de piercing y body art en el corazón de Madrid: joyería de titanio, higiene estricta y un trato cercano que convierte cada perforación en una experiencia cuidada.',
+    address: 'Calle de la Estrella 12, 28004 Madrid',
+    phone: '+34 655 210 987',
+    social: {
+      instagram: 'https://instagram.com/ronapiercing',
+      whatsapp: 'https://wa.me/34655210987',
+    },
+    gallery: [
+      unsplash('photo-1507525428034-b723cf961d3e', 900),
+      unsplash('photo-1449824913935-59a10b8d2000', 900),
+      unsplash('photo-1507003211169-0a1dd7228f2d', 900),
+      unsplash('photo-1461988320302-91bde64fc8e4', 900),
+      unsplash('photo-1517841905240-472988babdf9', 900),
+      unsplash('photo-1506794778202-cad84cf45f1d', 900),
+    ],
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+
+  const ronaResources: Resource[] = [
+    {
+      id: 'res-rona',
+      name: 'Rona',
+      type: 'professional',
+      active: true,
+      timezone: TIMEZONE,
+      tenantId: ronaTenant.id,
+      role: 'Piercer principal',
+      avatar: unsplash('photo-1595950653106-6c9ebd614d3a', 240),
+      bio: 'Piercer certificada con 8 años de experiencia en perforaciones de oreja, nariz y cuerpo.',
+    },
+    {
+      id: 'res-leo',
+      name: 'Leo',
+      type: 'professional',
+      active: true,
+      timezone: TIMEZONE,
+      tenantId: ronaTenant.id,
+      role: 'Piercer',
+      avatar: unsplash('photo-1507003211169-0a1dd7228f2d', 240),
+      bio: 'Especialista en hélix, tragus y joyería anatómica para un ajuste perfecto.',
+    },
+    {
+      id: 'res-mara',
+      name: 'Mara',
+      type: 'professional',
+      active: true,
+      timezone: TIMEZONE,
+      tenantId: ronaTenant.id,
+      role: 'Body art & tatuajes',
+      avatar: unsplash('photo-1529626455594-4ff0802cfb7e', 240),
+      bio: 'Body piercing avanzado y acompañamiento en el cuidado post-perforación.',
+    },
+  ];
+
+  const ronaServices: Service[] = [
+    {
+      id: 'svc-lobulo',
+      name: 'Perforación de lóbulo',
+      description: 'Perforación única en el lóbulo con joyería de titanio incluida.',
+      durationMinutes: 15,
+      bufferMinutes: 5,
+      category: 'Piercing',
+      active: true,
+      tenantId: ronaTenant.id,
+    },
+    {
+      id: 'svc-helix',
+      name: 'Hélix',
+      description: 'Perforación en el cartílago superior de la oreja.',
+      durationMinutes: 20,
+      bufferMinutes: 5,
+      category: 'Piercing',
+      active: true,
+      tenantId: ronaTenant.id,
+    },
+    {
+      id: 'svc-tragus',
+      name: 'Tragus',
+      description: 'Perforación del pequeño cartílago que protege el canal auditivo.',
+      durationMinutes: 20,
+      bufferMinutes: 5,
+      category: 'Piercing',
+      active: true,
+      tenantId: ronaTenant.id,
+    },
+    {
+      id: 'svc-septum',
+      name: 'Septum',
+      description: 'Perforación del tabique nasal con joyería a tu elección.',
+      durationMinutes: 25,
+      bufferMinutes: 5,
+      category: 'Piercing',
+      active: true,
+      tenantId: ronaTenant.id,
+    },
+    {
+      id: 'svc-jewelry',
+      name: 'Cambio de joyería',
+      description: 'Sustitución de tu joyería actual por una pieza nueva y esterilizada.',
+      durationMinutes: 15,
+      bufferMinutes: 5,
+      category: 'Joyería',
+      active: true,
+      tenantId: ronaTenant.id,
+    },
+    {
+      id: 'svc-clean',
+      name: 'Limpieza y revisión',
+      description: 'Revisión de la perforación y limpieza profesional con suero y antiséptico.',
+      durationMinutes: 10,
+      bufferMinutes: 5,
+      category: 'Cuidado',
+      active: true,
+      tenantId: ronaTenant.id,
+    },
+  ];
+
+  const ronaRates: Rate[] = ronaServices.map((ronaService, index) => ({
+    id: `rate-rona-${index}`,
+    serviceId: ronaService.id,
+    amountCents: [2500, 3000, 3500, 4000, 1500, 1000][index] ?? 2000,
+    currency: 'EUR',
+    effectiveFrom: '2020-01-01T00:00:00.000Z',
+    effectiveTo: null,
+  }));
+
+  const ronaAvailabilityRules: AvailabilityRule[] = ronaResources.flatMap((ronaResource) =>
+    [1, 2, 3, 4, 5, 6].map((weekday) => ({
+      id: `rona-rule-${ronaResource.id}-${weekday}`,
+      resourceId: ronaResource.id,
+      weekday,
+      startTime: '10:00',
+      endTime: '19:30',
+      slotGranularityMinutes: 30,
+      minLeadTimeMinutes: 0,
+      bookingHorizonDays: 60,
+    })),
+  );
+
+  const ronaPolicies: PortalPolicy[] = [
+    {
+      id: 'pol-rona-booking',
+      tenantId: ronaTenant.id,
+      title: 'Cómo reservar',
+      body: 'Elige tu servicio y especialista, selecciona día y hora y confirma tus datos. Recibirás la confirmación por correo.',
+    },
+    {
+      id: 'pol-rona-cancellation',
+      tenantId: ronaTenant.id,
+      title: 'Política de cancelación',
+      body: 'Puedes cancelar o reprogramar sin coste hasta 24 horas antes. Pasado ese plazo la joyería asignada puede perder la reserva.',
+    },
+    {
+      id: 'pol-rona-aftercare',
+      tenantId: ronaTenant.id,
+      title: 'Cuidados post-perforación',
+      body: 'Incluimos instrucciones de limpieza y te ofrecemos una revisión gratuita a los 30 días.',
+    },
+  ];
+
+  const ronaReviews: Review[] = [
+    {
+      id: 'rev-rona-1',
+      tenantId: ronaTenant.id,
+      author: 'Ana García',
+      rating: 5,
+      comment: 'Rona fue súper profesional y cuidadosa. La joyería es preciosa y el estudio impecable. Repetiré sin duda.',
+      date: '2026-09-28T00:00:00.000Z',
+    },
+    {
+      id: 'rev-rona-2',
+      tenantId: ronaTenant.id,
+      author: 'Marc Vila',
+      rating: 5,
+      comment: 'Me explicaron cada paso antes de perforar. Hélix perfecto, sin dolor y con muy buena higiene.',
+      date: '2026-09-15T00:00:00.000Z',
+    },
+    {
+      id: 'rev-rona-3',
+      tenantId: ronaTenant.id,
+      author: 'Lucía Ferre',
+      rating: 4,
+      comment: 'Gran trato y asesoramiento. El septum quedó genial; solo me habría gustado más elección de pendientes.',
+      date: '2026-08-30T00:00:00.000Z',
+    },
+    {
+      id: 'rev-rona-4',
+      tenantId: ronaTenant.id,
+      author: 'David Soriano',
+      rating: 5,
+      comment: 'Perforación del trago sin apenas molestia. Muy profesional, rápido y con una higiene impecable.',
+      date: '2026-08-12T00:00:00.000Z',
+    },
+    {
+      id: 'rev-rona-5',
+      tenantId: ronaTenant.id,
+      author: 'Nuria Pons',
+      rating: 4,
+      comment: 'Muy buen estudio para cambiarse la joyería. Resolvieron dudas y el seguimiento post perforación fue un plus.',
+      date: '2026-07-20T00:00:00.000Z',
+    },
+  ];
+
   return {
-    resources: [resource, secondResource],
-    services: [service],
-    rates: [rate],
-    availabilityRules,
+    resources: [resource, secondResource, ...ronaResources],
+    services: [service, ...ronaServices],
+    rates: [rate, ...ronaRates],
+    availabilityRules: [...availabilityRules, ...ronaAvailabilityRules],
     timeBlocks: [],
     appointments: [],
     audit: [],
-    tenants: [tenant],
+    tenants: [tenant, ronaTenant],
     users: [owner],
     onboardingProvisions: [],
     sessions: [ownerSession],
-    portalPolicies,
+    portalPolicies: [...portalPolicies, ...ronaPolicies],
+    reviews: ronaReviews,
   };
 }
 
@@ -195,6 +434,7 @@ export function resetStore(options: { seed?: boolean } = {}): void {
           onboardingProvisions: [],
           sessions: [],
           portalPolicies: [],
+          reviews: [],
         }
       : seed();
 }

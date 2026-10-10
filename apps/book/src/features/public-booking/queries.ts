@@ -41,6 +41,7 @@ export function getPublicBusiness(slug: string, now: Date = new Date()): Resolve
         durationMinutes: service.durationMinutes,
         priceCents: rate?.amountCents ?? 0,
         currency: rate?.currency ?? tenant.currency,
+        category: service.category ?? undefined,
       };
     });
 
@@ -57,6 +58,14 @@ export function getPublicBusiness(slug: string, now: Date = new Date()): Resolve
   const policies = store.portalPolicies
     .filter((policy) => policy.tenantId === tenant.id)
     .map((policy) => ({ title: policy.title, body: policy.body }));
+
+  const tenantReviews = store.reviews
+    .filter((review) => review.tenantId === tenant.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const rating =
+    tenantReviews.length === 0
+      ? null
+      : Math.round((tenantReviews.reduce((sum, review) => sum + review.rating, 0) / tenantReviews.length) * 10) / 10;
 
   return {
     status: 'available',
@@ -75,6 +84,16 @@ export function getPublicBusiness(slug: string, now: Date = new Date()): Resolve
       specialists,
       weeklyHours: tenant.businessHours,
       policies,
+      gallery: tenant.gallery ?? [],
+      rating,
+      reviewCount: tenantReviews.length,
+      reviews: tenantReviews.map((review) => ({
+        id: review.id,
+        author: review.author,
+        rating: review.rating,
+        comment: review.comment,
+        date: review.date,
+      })),
     },
   };
 }

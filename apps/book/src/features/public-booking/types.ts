@@ -8,6 +8,8 @@ export interface PublicService {
   durationMinutes: number;
   priceCents: number;
   currency: string;
+  /** Catalog category used to group services on the provider landing. */
+  category?: string;
 }
 
 /** A specialist shown on the portal (an active resource of the tenant). */
@@ -29,7 +31,16 @@ export interface PublicPolicyView {
   body: string;
 }
 
-/** Complete read surface of the public mini-site (contracts/portal-profile.contract.md). */
+/** A client review rendered on the reviews section (mock content). */
+export interface PublicReview {
+  id: string;
+  author: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
+/** Complete read surface of the public provider landing (contracts/portal-profile.contract.md). */
 export interface PublicBusinessProfile {
   slug: string;
   name: string;
@@ -45,4 +56,9 @@ export interface PublicBusinessProfile {
   specialists: PublicSpecialist[];
   weeklyHours: BusinessHours[];
   policies: PublicPolicyView[];
+  /** Provider-landing extras (003/river landing): rating, gallery and reviews. */
+  gallery?: string[];
+  rating?: number | null;
+  reviewCount?: number;
+  reviews?: PublicReview[];
 }
