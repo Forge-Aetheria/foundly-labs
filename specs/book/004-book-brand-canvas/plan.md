@@ -10,11 +10,17 @@
 
 Give `apps/book` one continuous lavender/violet brand canvas, aligned with the global landing, applied at
 the **root layout** so all four surfaces (product page `/`, onboarding `/onboarding`, admin `/admin/*` and
-public portal `/[tenantSlug]`) share it. The canvas is a book-local extension of the Clean Light UI tokens
-(`constitution.md` §6.I): a `--book-gradient-*` set plus a `.book-app-canvas` class composed from the
-shared `--bg-app-body` surface. The product page loses its opaque white header and its hard hero→cards cut;
-the admin shell stops painting an opaque full-screen background so the onboarding identity finally reaches
-`/admin`. Cards keep the shared white surface + soft lavender shadows.
+public portal `/[tenantSlug]`) share it. **`apps/landing` (Astro) is the design canon**: the book canvas
+replicates its exact gradient (`#C8B6FF → #D8B4FE` → white), header glass at 70%, card glassmorphism at
+60% and the landing's exact pill/button style. The canvas is a book-local extension of the Clean Light UI
+tokens (`constitution.md` §6.I): `--book-gradient-*` plus `--book-glass`/`--book-glass-card` and a
+`.book-app-canvas` class composed from the shared `--bg-app-body` surface.
+
+To replicate glass surfaces without changing workspace defaults, `@foundly/ui` `Card` and `Button` gain an
+additive, non-breaking `sx` prop; the product page uses it to mirror the landing. The product page loses
+its opaque white header and its hard hero→cards cut; the admin shell stops painting an opaque full-screen
+background so the onboarding identity finally reaches `/admin`. Cards on the product page are translucent
+(glass), while the workspace keeps its solid white surfaces for data/forms.
 
 ## Technical Context
 
@@ -35,10 +41,10 @@ the admin shell stops painting an opaque full-screen background so the onboardin
 **Constraints**:
 
 - No brand hex literals in components (ESLint guard); all colors come from `@foundly/ui` tokens or the book-local CSS extension.
-- The gradient is a book-local extension; `@foundly/ui` tokens and `specs/system-design.md` are NOT modified.
+- The gradient and glass tokens are a book-local extension; the **values** of `@foundly/ui` tokens and `specs/system-design.md` are NOT modified (only the additive `sx` prop on `Card`/`Button`).
 - No route, data, or behaviour change; 100% of existing tests must keep passing.
 
-**Scale/Scope**: One shared canvas across 4 surfaces; 2 components modified, 1 new CSS file, 1 layout edit.
+**Scale/Scope**: One shared canvas across 4 surfaces; 2 shared primitives extended additively (`Card`, `Button`); 2 components modified, 1 new CSS file, 1 layout edit.
 
 ## Constitution Check
 
@@ -84,18 +90,26 @@ specs/book/004-book-brand-canvas/
 ### Source Code (repository root)
 
 ```text
+packages/ui/
+└── src/components/
+    ├── Card/Card.tsx                           # additive sx prop (glassmorphism override)
+    ├── Button/Button.tsx                       # additive sx prop (landing pill/glass buttons)
+    ├── Card/Card.test.tsx                      # sx forwarding test
+    └── Button/Button.test.tsx                  # sx forwarding test
+
 apps/book/
 ├── src/
 │   ├── app/
-│   │   ├── globals.css                           # NEW: --book-gradient-* + .book-app-canvas
-│   │   ├── layout.tsx                            # imports ./globals.css; <body className="book-app-canvas">
-│   │   ├── components/ProductLanding.tsx         # wrapper bg removed; glass header; hero no cut
-│   │   └── admin/components/AdminShell.tsx       # full-screen opaque background removed
+│   │   ├── globals.css                         # NEW: --book-gradient-* + --book-glass(-card) + .book-app-canvas
+│   │   ├── layout.tsx                          # imports ./globals.css; <body className="book-app-canvas">
+│   │   ├── components/ProductLanding.tsx       # landing replica: glass header/pills/buttons/cards, no hard cut
+│   │   └── admin/components/AdminShell.tsx     # full-screen opaque background removed
 ```
 
 **Structure Decision**: The canvas belongs at the root layout (single source of truth, SRP). Individual
 wrappers stop painting opaque backgrounds; the only opaque surfaces that remain are intentional panels
-(the white sidebar, white cards) so they pop over the lavender canvas (SC-002/SC-004).
+(the white sidebar, workspace cards) so they pop over the lavender canvas (SC-002/SC-004). The Astro
+landing is the design canon and its values/compositions are mirrored 1:1 in the book-local tokens.
 
 ## Complexity Tracking
 

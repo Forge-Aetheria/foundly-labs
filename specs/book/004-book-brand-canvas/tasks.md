@@ -10,8 +10,8 @@ description: 'Task list for the Foundly Book brand canvas & visual coherence fea
 
 **Tests**: INCLUDED — `quickstart.md` defines the module validation suite (tests, build, typecheck, lint, manual visual checks).
 
-**Organization**: Tasks are grouped by concern (canvas foundation → surfaces → validation). All tasks below are
-**complete (executed)** and record the change as it landed.
+**Organization**: Tasks are grouped by concern (canvas foundation → shared primitives → surface replica →
+validation). All tasks below are **complete (executed)** and record the change as it landed.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -21,48 +21,71 @@ description: 'Task list for the Foundly Book brand canvas & visual coherence fea
 
 ## Path Conventions
 
-Single location: `apps/book/`. The canvas lives in `src/app/globals.css` and is applied by
-`src/app/layout.tsx`; view-level edits remove opaque backgrounds.
+The canvas lives in `apps/book/src/app/globals.css` and is applied by `apps/book/src/app/layout.tsx`;
+shared primitives that enable the replica live in `packages/ui/src/components/{Card,Button}`.
 
 ---
 
 ## Phase 1: Canvas foundation
 
-**Purpose**: Establish the single source of truth for the module's background identity.
+**Purpose**: Establish the single source of truth for the module's background identity, **mirroring the
+Astro landing exactly** (design canon).
 
 - [x] T001 [P] [US1] Create `apps/book/src/app/globals.css` with the book-local gradient extension
-      (`--book-gradient-from`, `--book-gradient-mid`, `--book-gradient-to`) and the `.book-app-canvas`
-      class (min-height 100vh, full width, `--bg-app-body` fallback, continuous lavender gradient,
-      `no-repeat`, `background-attachment: fixed`) per `contracts/brand-canvas.contract.md`.
+      (`--book-gradient-from`/`--book-gradient-to`) and the `.book-app-canvas` class (min-height 100vh,
+      full width, `--bg-app-body` fallback, continuous lavender gradient, `no-repeat`,
+      `background-attachment: fixed`) per `contracts/brand-canvas.contract.md`.
 - [x] T002 [US1] Wire the canvas in `apps/book/src/app/layout.tsx`: import `./globals.css` and set
       `className="book-app-canvas"` on `<body>` so `/`, `/onboarding`, `/admin/*` and `/[tenantSlug]`
       inherit it (FR-001).
 
 ---
 
-## Phase 2: Surface coherence
+## Phase 2: Canonical sync (Option 1 — book replicates the landing)
 
-**Purpose**: Remove the opaque layers and hard cuts so the root canvas shows continuously.
+**Purpose**: Replace the softer draft gradient with the landing's exact `#C8B6FF → #D8B4FE` identity and
+add the glass tokens the replica needs.
+
+- [x] T008 [P] [US1] Sync `apps/book/src/app/globals.css` tokens to the landing: `--book-gradient-from:
+      #c8b6ff`, `--book-gradient-to: #d8b4fe`, canvas composed like `apps/landing/src/styles/global.css`
+      (`linear-gradient(180deg, from 0%, card-light 60%)`); add `--book-glass` (70% white) and
+      `--book-glass-card` (60% white) mirroring `bg-card-light/70` and `/60` (FR-002).
+- [x] T009 [P] [US2/US3] Extend shared primitives additively so the replica can override surfaces without
+      changing defaults: `Card` and `Button` accept an optional `sx?: SxProps<Theme>`
+      (`packages/ui/src/components/Card/Card.tsx`, `Button.tsx`) with forwarding tests
+      (`Card.test.tsx`, `Button.test.tsx`).
+
+---
+
+## Phase 3: Landing replica & surface coherence
+
+**Purpose**: Make the product page look like the Astro landing and let the canvas show through the wrappers.
 
 - [x] T003 [P] [US2] Product page `apps/book/src/app/components/ProductLanding.tsx`: remove the opaque
-      wrapper `backgroundColor`, turn the sticky header into the glass surface (`surface.glass` +
-      backdrop blur, mirroring the landing Navbar), and drop the hero's own background + `borderBottom`
+      wrapper `backgroundColor`, turn the sticky header into glass at 70% (`--book-glass` + blur(12px) +
+      subtle border, mirroring the landing navbar), and drop the hero's own background + `borderBottom`
       divider (FR-003/FR-004/FR-005).
+- [x] T010 [P] [US3] Product page replica detail: hero pill + category pills use `surface.badgePill` +
+      `primary.main`; primary buttons use `primary.main` + `shadow.card` + 90% hover; secondary buttons
+      use `--book-glass-card` + blur + subtle border + `badgePill` hover (FR-008); showcase/benefits
+      cards use `--book-glass-card` + blur glassmorphism via the new `Card` `sx` prop (FR-006).
 - [x] T004 [P] [US4] Admin shell `apps/book/src/app/admin/components/AdminShell.tsx`: remove the opaque
       `backgroundColor: 'background.default'` full-screen layer so the canvas shows behind the routed
       screens, keeping the white sidebar as an intentional panel (FR-005).
 
 ---
 
-## Phase 3: Validation
+## Phase 4: Validation
 
-**Purpose**: Prove the canvas change is green and does not regress the module.
+**Purpose**: Prove the canvas change is green and does not regress the module or the shared package.
 
 - [x] T005 Run the module validation per `quickstart.md`: `npm run test -w @foundly/book` (92/92),
-      `npm run build -w @foundly/book`, `npm run typecheck -w @foundly/book`, `npm run lint -w @foundly/book`.
-- [x] T006 [P] Keep the shared layer untouched: confirm `@foundly/ui` and `specs/system-design.md` have no diff.
-- [x] T007 Update the cross-referencing book specs (`001-book-admin-panel`, `002-onboarding-and-tenant-flow`,
-      `003-public-portal-minisite`) to reference the module's brand canvas instead of duplicating the rule
+      `npm run test -w @foundly/ui` (26/26), `npm run build -w @foundly/book`,
+      `npm run typecheck` + `npm run lint` for both workspaces.
+- [x] T006 Keep shared values untouched: confirm `@foundly/ui` token values and `specs/system-design.md`
+      have no value diff (only the additive `sx` prop on `Card`/`Button`).
+- [x] T007 Keep the cross-referencing book specs (`001-book-admin-panel`, `002-onboarding-and-tenant-flow`,
+      `003-public-portal-minisite`) referencing the module's brand canvas instead of duplicating the rule
       (`constitution.md` §2.III).
 
 ---
@@ -70,17 +93,20 @@ Single location: `apps/book/`. The canvas lives in `src/app/globals.css` and is 
 ## Dependencies & Execution Order
 
 - **Phase 1 (canvas foundation)**: No dependencies — the canvas exists without surface changes.
-- **Phase 2 (surface coherence)**: Depends on Phase 1; the new root canvas is what the surface edits expose.
-- **Phase 3 (validation + docs)**: Depends on Phases 1–2.
+- **Phase 2 (canonical sync)**: Depends on Phase 1; re-aligns token values and adds glass tokens.
+- **Phase 3 (replica + coherence)**: Depends on Phases 1–2 and T009 (the `sx` props enable the replica).
+- **Phase 4 (validation + docs)**: Depends on Phases 1–3.
 
 ### Parallel Opportunities
 
-- T001 and T003/T004 touch different files but T002 (layout) is the seam between them; T003/T004 run in
-  parallel after T002.
+- T001 and T002 run in parallel; T008 (token sync) and T009 (shared `sx`) are independent of each other
+  after T002.
+- T003/T010/T004 (surface replica) run in parallel once T009 is in (they consume `sx`/glass tokens).
 - T006 and T007 are independent and can run in parallel with the validation command.
 
 ## Notes
 
-- Presentation-layer only: no store, action, route or shared token was modified.
-- `background-attachment: fixed` guarantees the canvas covers the full viewport; rural/mobile fallbacks
-  keep the `--bg-app-body` identity (documented in `contracts/brand-canvas.contract.md`).
+- Presentation-layer only: no store, action, route or shared token **value** was modified; `@foundly/ui`
+  `Card`/`Button` only gained an additive `sx` prop.
+- `background-attachment: fixed` guarantees the canvas covers the full viewport; fallbacks keep the
+  `--bg-app-body` identity (documented in `contracts/brand-canvas.contract.md`).

@@ -35,34 +35,41 @@ Expected: every surface renders over the same continuous lavender canvas (the ro
 
 ```bash
 npm run test -w @foundly/book
+npm run test -w @foundly/ui
 npm run build -w @foundly/book
-npm run typecheck -w @foundly/book
-npm run lint -w @foundly/book
+npm run typecheck -w @foundly/ui && npm run typecheck -w @foundly/book
+npm run lint -w @foundly/ui && npm run lint -w @foundly/book
 ```
 
-Expected: all tests green (92/92), the build compiles every route with zero errors, typecheck and lint
-are clean. The shared layer must have no diff (`@foundly/ui`, `specs/system-design.md`).
+Expected: book tests green (92/92), ui tests green (26/26), the build compiles every route with zero
+errors, typecheck and lint are clean in both workspaces. Shared token **values** must have no diff
+(`@foundly/ui`, `specs/system-design.md`); only the additive `sx` prop on `Card`/`Button` is new.
 
 ### 2. Token/color discipline (FR-007, SC-004)
 
 ```bash
-npm run lint
+npm run lint -w @foundly/ui && npm run lint -w @foundly/book
 ```
 
 Expected: ESLint reports zero literal brand hex values in components; colors come only from
-`@foundly/ui` tokens or the book-local CSS variables in `apps/book/src/app/globals.css`.
+`@foundly/ui` tokens or the book-local CSS variables in `apps/book/src/app/globals.css`
+(`--book-gradient-from: #c8b6ff`, `--book-gradient-to: #d8b4fe`, `--book-glass`, `--book-glass-card`).
 
 ## Manual acceptance scenarios
 
-1. Open `/` — the header is translucent (glass) over a continuous lavender gradient; the hero flows into
-   the showcase cards with **no white band and no hard horizontal divider** (FR-003, SC-002).
-2. Open `/onboarding` — the split layout sits on the same canvas as the product page.
-3. Open `/admin/*` — the content area shows the same canvas behind the white sidebar and cards; nothing
-   paints an opaque full-screen background (US4, FR-005).
-4. Open `/<slug>` of an active business — the portal renders over the same canvas.
-5. Scroll a tall page — no seam or band where the gradient ends; the canvas covers the whole viewport
+1. Open `/` — the header is glass at 70% (`--book-glass` + blur) over a continuous lavender gradient that
+   starts `#C8B6FF`; the hero flows into the showcase cards with **no white band and no hard horizontal
+   divider** (FR-003, SC-002).
+2. Compare `/` against the Astro landing (foundlylabs.lat) — same lavender start, same fade to white, same
+   pill/badge style (`badgePill` background + accent text), same primary/secondary pill buttons
+   (transparent secondary, blurred), same translucent glass cards (60% + blur) (SC-002).
+3. Open `/onboarding` — the split layout sits on the same canvas as the product page.
+4. Open `/admin/*` — the content area shows the same canvas behind the white sidebar and the (solid) cards;
+   nothing paints an opaque full-screen background (US4, FR-005).
+5. Open `/<slug>` of an active business — the portal renders over the same canvas.
+6. Scroll a tall page — no seam or band where the gradient ends; the canvas covers the whole viewport
    while the `--bg-app-body` fallback keeps the identity below.
-6. With a small viewport — no horizontal overflow and the canvas still covers the viewport.
+7. With a small viewport — no horizontal overflow and the canvas still covers the viewport.
 
 ## End-to-end acceptance
 

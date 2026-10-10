@@ -33,8 +33,12 @@
 
 - The feature is a presentation-layer contract; it introduces no data entities, so the "Key Entities"
   section declares "None" rather than omitting the mandatory section.
-- The book-local gradient extension (`--book-gradient-*`) exists per `constitution.md` §6.I: app-specific
-  gradients live in the app's local tokens, NOT in `packages/ui` nor `specs/system-design.md`.
+- **Design canon**: `apps/landing` (Astro) is the canonical design source; the book-local extension
+  (`--book-gradient-from/to`, `--book-glass`, `--book-glass-card`) replicates its token values exactly,
+  per `constitution.md` §6.I — app-specific gradients live in the app's local tokens, NOT in
+  `packages/ui` nor `specs/system-design.md`.
+- `packages/ui` `Card` and `Button` gained only an additive, non-breaking `sx` prop so the landing-view
+  replica can apply glassmorphism without changing workspace defaults.
 - The referenced surfaces (`/`, `/onboarding`, `/admin/*`, `/[tenantSlug]`) and shells were already
   specified in `002-onboarding-and-tenant-flow` and refined by `001-book-admin-panel` /
   `003-public-portal-minisite`; this spec only fixes their shared visual canvas and cross-references
