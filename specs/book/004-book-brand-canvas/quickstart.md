@@ -59,8 +59,10 @@ Expected: ESLint reports zero literal brand hex values in components; colors com
 ## Manual acceptance scenarios
 
 1. Open `/` — the header is glass at 70% (`--book-glass` + blur) over a continuous lavender gradient that
-   starts `#C8B6FF`; the hero flows into the showcase cards with **no white band and no hard horizontal
-   divider** (FR-003, SC-002).
+   starts `#C8B6FF`; the hero flows into the content with **no white band and no hard horizontal divider**
+   (FR-003, SC-002). The hero email capture ("Tu email" + "Empezar gratis"), the booking-page spotlight,
+   the "3 pasos", the icon benefits grid and the two pricing plans all use the canonical glass cards and
+   `#6C5CE7` pill buttons.
 2. Compare `/` against the Astro landing (foundlylabs.lat) — same lavender start, same fade to white, same
    pill/badge style (`badgePill` background + accent text), same primary/secondary pill buttons
    (transparent secondary, blurred), same translucent glass cards (60% + blur) (SC-002).

@@ -112,7 +112,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 **Two-column layout & sticky sidebar**
 
-- **FR-021**: The provider landing MUST use a two-column layout on desktop: a main column (gallery, policies, catalog, team, about, gallery, reviews, direction) and a right column with a **sticky** sidebar (brand, rating, Reservar CTA, hours disclosure, address/contact).
+- **FR-021**: The provider landing MUST use a two-column layout on desktop: a main column (gallery, policies, catalog, team, about, gallery, reviews, direction) and a right column with a **sticky** sidebar (`position: sticky; top: 1.5rem`, `align-items: flex-start` on the row) that accompanies the full vertical scroll of the main column (brand, rating, Reservar CTA, hours disclosure, address/contact).
 - **FR-022**: On small viewports the sticky sidebar MUST collapse into a compact header card rendered above the content (responsive, no horizontal overflow).
 - **FR-025**: The sidebar Reservar CTA MUST be the accent pill (`#6C5CE7`) and MUST open the guided booking checkout preselected with the first bookable service.
 

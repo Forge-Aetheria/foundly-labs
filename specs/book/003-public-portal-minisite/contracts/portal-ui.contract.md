@@ -8,16 +8,20 @@ overrides in `apps/book/src/app/components/landingCanon.ts`.
 
 ## Internal navigation (FR-005)
 
-- Sticky glass bar (`--book-glass` + blur + subtle bottom border) with anchor pills:
+- Glass bar (`--book-glass` + blur + subtle bottom border) that scrolls with the page, with anchor pills:
   `Servicios`, `Equipo`, `Acerca de`, `Galería`, `Reseñas`, `Dirección`.
 - Pills are `MuiLink`/`Typography`-based anchors styled like the landing `SECONDARY_BUTTON_SX`;
   scrolling is smooth (`html { scroll-behavior: smooth }`) with `scroll-margin-top` per section.
-- Scrollable horizontally on small viewports (no overflow).
+- Scrollable horizontally on small viewports (no overflow). It is NOT pinned so it never collides with
+  the sticky sidebar.
 
 ## Two-column layout (FR-021/FR-022)
 
-- Desktop: `<Stack direction="row">`; main column (flex-grow) + right column fixed at `340px` with a
-  **sticky** sidebar (`position: sticky; top`).
+- Desktop: `<Stack direction="row">` with **`alignItems: flex-start`** so the sticky card tracks the full
+  height of the main column; main column (flex-grow) + right column fixed at `340px`.
+- The right column wrapper MUST use `position: sticky; top: 1.5rem` (Tailwind `sticky top-6`) on desktop
+  so the provider card follows the whole vertical scroll of the left column (services, policies, team,
+  reviews).
 - Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints).
 
 | Column | Sections / content                                                                                     |

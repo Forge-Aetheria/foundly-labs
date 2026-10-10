@@ -76,6 +76,8 @@ As a prospective customer, I want an informative page that explains what Foundly
 2. **Given** the product page, **When** it renders, **Then** it flows from the continuous lavender hero canvas into the content with no white band or hard horizontal cut between hero and cards (`004-book-brand-canvas`).
 3. **Given** the call to action, **When** the visitor activates it, **Then** they are taken to the registration wizard.
 4. **Given** pricing or licensing information, **When** it is shown, **Then** it matches the ratified Foundly Pass model and no unapproved price is displayed.
+5. **Given** the product page hero, **When** the visitor types their email ("Tu email") and activates "Empezar gratis", **Then** they are taken to the registration wizard.
+6. **Given** the product page, **When** it renders, **Then** it shows the conversion sections inspired by Setmore: the booking-page spotlight with a live preview, the "3 pasos" cards, the icon benefits grid (Recordatorios, Pagos por adelantado, Sin no-shows, Integraciones) and the two pricing plans (Gratis `$0` / Pro `$5`).
 
 ---
 
@@ -112,6 +114,8 @@ All four surfaces MUST render over the module's continuous brand canvas (`004-bo
 **Routing & surfaces**
 
 - **FR-001**: The module MUST provide a public product page that describes Foundly Book's capabilities and presents a call to action to register a business. The page MUST render over the module's continuous brand canvas (`004-book-brand-canvas`), without a white band or a hard horizontal cut between its hero and the content below.
+- **FR-021**: The product page hero MUST offer a fast email capture ("Tu email") with a primary "Empezar gratis" action that leads to the registration wizard.
+- **FR-022**: The product page MUST present the conversion sections: a booking-page sales block (spotlight with preview), the "3 pasos" (Crea tu página · Personaliza tu marca · Comparte y agenda), a benefits grid with icons (Recordatorios, Pagos por adelantado, Sin no-shows, Integraciones) and a two-plan pricing table (Gratis `$0` / Pro `$5`), all composed from `@foundly/ui` tokens and the landing canon.
 - **FR-002**: The product page's call to action MUST lead to the onboarding wizard.
 - **FR-003**: The module MUST provide an onboarding wizard that creates a business and its owner account in three ordered steps.
 - **FR-004**: The module MUST provide a private dashboard reachable only through the `/book/admin/*` surface, rendered inside the existing application shell (brand, navigation and user profile).
@@ -186,3 +190,4 @@ All four surfaces MUST render over the module's continuous brand canvas (`004-bo
 - **Category**: The category is chosen from a predefined list with the possibility of a free-form value in this version.
 - **Reserved slugs**: A fixed reserved list (e.g. `admin`, `onboarding`, `api`, `www`, `app`) is maintained to prevent collisions with system surfaces.
 - **Visual cohesion**: All four surfaces share the module's continuous brand canvas (spec `004-book-brand-canvas`); the onboarding already delivers the split-layout identity and the shared canvas now reaches the product page, the admin shell and the public portal.
+- **Pricing copy**: The product page pricing table (Gratis `$0` / Pro `$5`) is **illustrative mock copy** for the landing design; real prices remain subject to `specs/business-model.md` ratification (FR-019) and no unapproved price is treated as binding.
