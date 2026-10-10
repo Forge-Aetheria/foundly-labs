@@ -248,31 +248,38 @@ function AboutSection({ bio }: { bio: string | null }) {
 }
 
 function GallerySection({ gallery }: { gallery: string[] }) {
-  if (gallery.length === 0) return null;
   return (
     <Stack component="section" id="galeria" spacing={2} sx={SECTION_OFFSET}>
       <Typography variant="h4" component="h2">
         Galería
       </Typography>
-      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1.5 }}>
-        {gallery.map((src, index) => (
-          <Box
-            key={src}
-            component="img"
-            src={src}
-            alt={`Foto ${index + 1}`}
-            sx={{
-              flex: '1 1 calc(33.333% - 12px)',
-              minWidth: { xs: '45%', md: '30%' },
-              aspectRatio: '4 / 3',
-              objectFit: 'cover',
-              borderRadius: 2,
-              border: 1,
-              borderColor: 'divider',
-            }}
-          />
-        ))}
-      </Stack>
+      {gallery.length > 0 ? (
+        <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1.5 }}>
+          {gallery.map((src, index) => (
+            <Box
+              key={src}
+              component="img"
+              src={src}
+              alt={`Foto ${index + 1}`}
+              sx={{
+                flex: '1 1 calc(33.333% - 12px)',
+                minWidth: { xs: '45%', md: '30%' },
+                aspectRatio: '4 / 3',
+                objectFit: 'cover',
+                borderRadius: 2,
+                border: 1,
+                borderColor: 'divider',
+              }}
+            />
+          ))}
+        </Stack>
+      ) : (
+        <Card sx={GLASS_CARD_SX}>
+          <Typography variant="body2" color="text.secondary">
+            Este negocio todavía no ha publicado fotos en su galería.
+          </Typography>
+        </Card>
+      )}
     </Stack>
   );
 }
@@ -288,7 +295,7 @@ function ReviewsSection({
   reviewCount: number;
   reviews: PublicReview[];
 }) {
-  if (rating == null && reviews.length === 0) return null;
+  const hasContent = rating != null || reviews.length > 0;
   return (
     <Stack component="section" id="resenas" spacing={2} sx={SECTION_OFFSET}>
       <Typography variant="h4" component="h2">
@@ -325,6 +332,13 @@ function ReviewsSection({
           </Stack>
         </Card>
       ))}
+      {!hasContent ? (
+        <Card sx={GLASS_CARD_SX}>
+          <Typography variant="body2" color="text.secondary">
+            Este negocio todavía no tiene reseñas publicadas.
+          </Typography>
+        </Card>
+      ) : null}
     </Stack>
   );
 }

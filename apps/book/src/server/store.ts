@@ -51,6 +51,8 @@ function seedBusinessHours(): BusinessHours[] {
 }
 
 function seed(): BookStore {
+  const unsplash = (id: string, w: number) => `https://images.unsplash.com/${id}?w=${w}&q=80`;
+
   const resource: Resource = {
     id: 'res-ana',
     name: 'Ana Profesional',
@@ -115,8 +117,16 @@ function seed(): BookStore {
     timezone: TIMEZONE,
     onlineBookingEnabled: true,
     license: null,
-    avatar: null,
-    cover: null,
+    avatar: unsplash('photo-1580618672591-eb180b1a973f', 240),
+    cover: unsplash('photo-1560066984-138dadb4c035', 1200),
+    gallery: [
+      unsplash('photo-1560066984-138dadb4c035', 900),
+      unsplash('photo-1522337360788-8b13dee7a37e', 900),
+      unsplash('photo-1562322140-8baeececf3df', 900),
+      unsplash('photo-1521590832167-7bcbfaa6381f', 900),
+      unsplash('photo-1633681926022-84c23e8cb2d6', 900),
+      unsplash('photo-1580618672591-eb180b1a973f', 900),
+    ],
     bio: 'Estudio de peluquería y estética que combina técnica, tiempo y trato cercano en pleno centro de Madrid.',
     address: 'Calle Mayor 7, 28013 Madrid',
     phone: '+34 612 345 678',
@@ -163,9 +173,6 @@ function seed(): BookStore {
    * Test business used to visualise the full two-column provider        *
    * landing: gallery, categories/services, team, policies and reviews.  *
    * ------------------------------------------------------------------ */
-
-  const unsplash = (id: string, w: number) =>
-    `https://images.unsplash.com/${id}?w=${w}&q=80`;
 
   const ronaHours: BusinessHours[] = [
     0, 1, 2, 3, 4, 5, 6,
@@ -350,6 +357,41 @@ function seed(): BookStore {
     },
   ];
 
+  const anaReviews: Review[] = [
+    {
+      id: 'rev-ana-1',
+      tenantId: tenant.id,
+      author: 'Marta Ruiz',
+      rating: 5,
+      comment: 'Corte impecable y trato cercano. Ana entiende a la perfección lo que buscas.',
+      date: '2026-09-30T00:00:00.000Z',
+    },
+    {
+      id: 'rev-ana-2',
+      tenantId: tenant.id,
+      author: 'Javier Melgar',
+      rating: 5,
+      comment: 'Ambiente tranquilo y resultado de diez. Repetiré sin dudarlo.',
+      date: '2026-09-22T00:00:00.000Z',
+    },
+    {
+      id: 'rev-ana-3',
+      tenantId: tenant.id,
+      author: 'Lucía Torres',
+      rating: 4,
+      comment: 'Muy buen color y acabado. Cita puntual y precio justo.',
+      date: '2026-09-05T00:00:00.000Z',
+    },
+    {
+      id: 'rev-ana-4',
+      tenantId: tenant.id,
+      author: 'Andrés Vega',
+      rating: 5,
+      comment: 'El mejor estudio de la zona. Profesionales y muy detallistas.',
+      date: '2026-08-18T00:00:00.000Z',
+    },
+  ];
+
   const ronaReviews: Review[] = [
     {
       id: 'rev-rona-1',
@@ -406,7 +448,7 @@ function seed(): BookStore {
     onboardingProvisions: [],
     sessions: [ownerSession],
     portalPolicies: [...portalPolicies, ...ronaPolicies],
-    reviews: ronaReviews,
+    reviews: [...anaReviews, ...ronaReviews],
   };
 }
 

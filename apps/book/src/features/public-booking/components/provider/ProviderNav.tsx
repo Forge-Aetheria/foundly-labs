@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { alpha } from '@mui/material/styles';
 import MuiLink from '@mui/material/Link';
 import { Stack, Typography } from '@foundly/ui';
@@ -25,17 +26,21 @@ const NAV_LINK_SX = {
   textDecoration: 'none',
 } as const;
 
-/** Sticky in-page navigation with smooth-scroll anchor pills (provider landing). */
+/**
+ * Sticky provider header: official Foundly Book branding on the left, aligned
+ * with the smooth-scroll anchor pills that navigate the business sections.
+ */
 export function ProviderNav() {
   return (
     <Stack
-      component="nav"
-      aria-label="Secciones del negocio"
+      component="header"
       direction="row"
-      spacing={1}
+      alignItems="center"
+      spacing={{ xs: 1.5, md: 3 }}
       sx={{
-        flexWrap: 'nowrap',
-        overflowX: 'auto',
+        position: 'sticky',
+        top: 0,
+        zIndex: (theme) => theme.zIndex.appBar,
         px: { xs: 1.5, md: 3 },
         py: 1,
         backgroundColor: 'var(--book-glass)',
@@ -45,13 +50,36 @@ export function ProviderNav() {
         borderColor: (theme) => alpha(theme.palette.border.subtle, 0.6),
       }}
     >
-      {NAV_SECTIONS.map((section) => (
-        <MuiLink key={section.href} href={section.href} underline="none" sx={NAV_LINK_SX}>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            {section.label}
-          </Typography>
-        </MuiLink>
-      ))}
+      <MuiLink
+        href="/"
+        aria-label="Foundly Book — inicio"
+        underline="none"
+        sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}
+      >
+        <Image
+          src="/branding-logo.png"
+          alt="Foundly Book"
+          width={120}
+          height={60}
+          priority
+          style={{ height: 44, width: 'auto' }}
+        />
+      </MuiLink>
+      <Stack
+        component="nav"
+        aria-label="Secciones del negocio"
+        direction="row"
+        spacing={1}
+        sx={{ alignItems: 'center', flexGrow: 1, minWidth: 0, overflowX: 'auto', py: 0.5 }}
+      >
+        {NAV_SECTIONS.map((section) => (
+          <MuiLink key={section.href} href={section.href} underline="none" sx={NAV_LINK_SX}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              {section.label}
+            </Typography>
+          </MuiLink>
+        ))}
+      </Stack>
     </Stack>
   );
 }

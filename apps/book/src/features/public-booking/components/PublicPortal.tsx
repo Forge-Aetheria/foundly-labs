@@ -29,7 +29,7 @@ export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
           spacing={{ xs: 2, md: 4 }}
           alignItems="flex-start"
         >
-          <Stack sx={{ flexGrow: 1, minWidth: 0, order: { xs: 2, md: 1 } }}>
+          <Stack sx={{ flexGrow: 1, minWidth: 0, width: '100%', order: { xs: 2, md: 1 } }}>
             <ProviderSections profile={profile} onReserve={setBookService} />
           </Stack>
           <Stack
@@ -37,17 +37,12 @@ export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
               order: { xs: 1, md: 2 },
               width: { xs: '100%', md: 340 },
               flexShrink: 0,
+              position: { md: 'sticky' },
+              top: { md: 80 },
+              zIndex: 10,
             }}
           >
-            <Stack
-              sx={{
-                width: '100%',
-                position: { md: 'sticky' },
-                top: { md: '1.5rem' },
-              }}
-            >
-              <ProviderSidebar profile={profile} onReserve={reserveFirstService} />
-            </Stack>
+            <ProviderSidebar profile={profile} onReserve={reserveFirstService} />
           </Stack>
         </Stack>
       </Container>
