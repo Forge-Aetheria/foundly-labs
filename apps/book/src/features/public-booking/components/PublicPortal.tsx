@@ -39,7 +39,13 @@ export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
               flexShrink: 0,
             }}
           >
-            <Stack sx={{ position: { md: 'sticky' }, top: { md: 88 }, width: '100%' }}>
+            <Stack
+              sx={{
+                width: '100%',
+                position: { md: 'sticky' },
+                top: { md: '1.5rem' },
+              }}
+            >
               <ProviderSidebar profile={profile} onReserve={reserveFirstService} />
             </Stack>
           </Stack>

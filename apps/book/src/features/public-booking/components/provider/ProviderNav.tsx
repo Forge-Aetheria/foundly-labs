@@ -34,9 +34,6 @@ export function ProviderNav() {
       direction="row"
       spacing={1}
       sx={{
-        position: 'sticky',
-        top: 0,
-        zIndex: (theme) => theme.zIndex.appBar,
         flexWrap: 'nowrap',
         overflowX: 'auto',
         px: { xs: 1.5, md: 3 },
