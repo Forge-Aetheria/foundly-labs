@@ -79,6 +79,7 @@ As an operator, I want every admin screen to share the ecosystem's visual identi
 5. **Given** a small viewport, **When** the operator opens the navigation, **Then** the shell collapses into a temporary drawer that can be dismissed by keyboard and by selecting a section.
 6. **Given** the services catalog view, **When** it renders, **Then** the operator can search services by name from a quick-search bar, see the tariff and state as styled badges, and access per-service row actions (edit/delete entry points) with clear feedback when the underlying mutation is still pending.
 7. **Given** the agenda view, **When** it renders, **Then** the operator can filter by day (with a "today" shortcut) and by status, inspect an appointment's details (client, date/time, service, professional, state) and open a "new appointment" flow from the header.
+8. **Given** any admin screen, **When** it renders, **Then** the shell's content area shares the module's continuous brand canvas (`004-book-brand-canvas`): no opaque full-screen background hides the lavender gradient, and the white sidebar (panel) plus the routed cards pop over it with the shared soft shadows.
 
 ---
 
@@ -113,7 +114,7 @@ As an operator, I want every admin screen to share the ecosystem's visual identi
 - **FR-014**: Deactivating a service or resource MUST NOT alter or delete existing appointments.
 - **FR-015**: The panel MUST restrict administrative capabilities to licensed, authorized users (roles), consistent with the ecosystem's centralized identity.
 - **FR-016**: Every admin screen MUST be fully operable by keyboard and expose accessible labels, roles and inline validation messages.
-- **FR-017**: Every admin screen MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted.
+- **FR-017**: Every admin screen MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted. Every admin screen MUST render over the module's continuous brand canvas (`004-book-brand-canvas`) without any opaque full-screen background layer.
 - **FR-018**: Administrative changes MUST follow the ecosystem's local-first principle: work must not be blocked by connectivity and pending changes must be recoverable.
 - **FR-021**: The services catalog view MUST offer a quick search by service name, a create entry point and per-service row actions (edit/delete), presenting explicit feedback when a mutation is not yet available; the catalogue MUST keep the Servicio/Duración/Tarifa/Estado columns and render the tariff as a clean badge.
 - **FR-022**: The agenda view MUST offer date filtering (including a "today" shortcut) and a status filter, show each appointment's service, professional and contact information, render semantic status badges, and provide detail and "new appointment" entry points (UI-level, backed by mock data until mutations land).
@@ -156,3 +157,4 @@ As an operator, I want every admin screen to share the ecosystem's visual identi
 - Payments/checkout are out of scope; the panel may reference prices but does not process payments.
 - Notifications/reminders are out of scope for this version (they belong to the appointment lifecycle roadmap).
 - The panel uses the Foundly Book branding assets (full logo and isotipo) and the ecosystem's shared iconography for its navigation shell.
+- The panel shares the module's continuous brand canvas (`004-book-brand-canvas`): its content area sits over the same lavender gradient as `/onboarding`, while the white sidebar and cards remain intentional panels over it.

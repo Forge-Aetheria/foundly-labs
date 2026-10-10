@@ -120,7 +120,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 - **FR-016**: The public page MUST expose no data for unknown, draft or suspended tenants (unavailable state only).
 - **FR-017**: The presented service price MUST be the tenant's current applicable rate.
-- **FR-018**: Every surface MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted.
+- **FR-018**: Every surface MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted. Every surface MUST render over the module's continuous brand canvas (`004-book-brand-canvas`) with no opaque full-screen background layer.
 - **FR-019**: The page MUST be fully keyboard-operable and pass automated accessibility checks with zero critical violations.
 - **FR-020**: The page MUST adapt to small viewports without horizontal overflow.
 
@@ -153,4 +153,4 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 - **Payments**: online payment is out of scope; the portal confirms the booking without charging.
 - **Social links**: Instagram and WhatsApp are plain public links (https) shown as contact anchors.
 - **Localization**: all copy is delivered in Spanish, consistent with the ecosystem.
-- **Design token**: the portal uses exclusively the Clean Light UI tokens (`#6C5CE7` primary, `#FAF8FF` canvas, zinc text/borders) exposed by `@foundly/ui`.
+- **Design token**: the portal uses exclusively the Clean Light UI tokens (`#6C5CE7` primary, `#FAF8FF` canvas, zinc text/borders) exposed by `@foundly/ui`; it renders over the module's continuous brand canvas (`004-book-brand-canvas`) shared by the product page, onboarding, admin shell and portal.

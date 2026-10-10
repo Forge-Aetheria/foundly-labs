@@ -19,6 +19,7 @@ Fixes the module's four surfaces and the access boundary between public and priv
 - `/admin/*` is the only authenticated surface. Its layout (`apps/book/src/app/admin/layout.tsx`) MUST run the `requireTenant` guard and render the `AdminShell`; unauthenticated access redirects to `/onboarding` (FR-016).
 - The public portal resolves the tenant from `[tenantSlug]`; unknown, `draft` or `suspended` tenants render a "not available" state and MUST NOT expose data (FR-017).
 - Booking on the portal creates an appointment with `origin: 'online'` (FR-018) and respects the availability engine.
+- All four surfaces MUST render over the module's continuous brand canvas (`004-book-brand-canvas`): the root layout (`apps/book/src/app/layout.tsx`) applies `.book-app-canvas` to `<body>`, and no surface wrapper paints an opaque full-screen background that hides it.
 
 ## Guards
 

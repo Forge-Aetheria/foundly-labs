@@ -73,8 +73,9 @@ As a prospective customer, I want an informative page that explains what Foundly
 **Acceptance Scenarios**:
 
 1. **Given** a visitor, **When** they open the product page, **Then** they see the module's key capabilities (agenda, services, availability, online booking) and a prominent call to action.
-2. **Given** the call to action, **When** the visitor activates it, **Then** they are taken to the registration wizard.
-3. **Given** pricing or licensing information, **When** it is shown, **Then** it matches the ratified Foundly Pass model and no unapproved price is displayed.
+2. **Given** the product page, **When** it renders, **Then** it flows from the continuous lavender hero canvas into the content with no white band or hard horizontal cut between hero and cards (`004-book-brand-canvas`).
+3. **Given** the call to action, **When** the visitor activates it, **Then** they are taken to the registration wizard.
+4. **Given** pricing or licensing information, **When** it is shown, **Then** it matches the ratified Foundly Pass model and no unapproved price is displayed.
 
 ---
 
@@ -104,11 +105,13 @@ The module MUST expose four distinct surfaces, mapped onto the ecosystem's singl
 | Private dashboard      | `/book/admin/*`                   | Authenticated workspace (agenda, services, availability) inside the Drawer shell |
 | Public booking portal  | `/book/[tenantSlug]`              | Client-facing page where final clients book appointments                |
 
+All four surfaces MUST render over the module's continuous brand canvas (`004-book-brand-canvas`): the root layout applies the shared lavender-to-white gradient, and no surface wrapper (product page, wizard, admin shell, portal) MAY paint an opaque full-screen background that hides it.
+
 ### Functional Requirements
 
 **Routing & surfaces**
 
-- **FR-001**: The module MUST provide a public product page that describes Foundly Book's capabilities and presents a call to action to register a business.
+- **FR-001**: The module MUST provide a public product page that describes Foundly Book's capabilities and presents a call to action to register a business. The page MUST render over the module's continuous brand canvas (`004-book-brand-canvas`), without a white band or a hard horizontal cut between its hero and the content below.
 - **FR-002**: The product page's call to action MUST lead to the onboarding wizard.
 - **FR-003**: The module MUST provide an onboarding wizard that creates a business and its owner account in three ordered steps.
 - **FR-004**: The module MUST provide a private dashboard reachable only through the `/book/admin/*` surface, rendered inside the existing application shell (brand, navigation and user profile).
@@ -182,3 +185,4 @@ The module MUST expose four distinct surfaces, mapped onto the ecosystem's singl
 - **Localization**: All surfaces are delivered in Spanish, matching the rest of the ecosystem.
 - **Category**: The category is chosen from a predefined list with the possibility of a free-form value in this version.
 - **Reserved slugs**: A fixed reserved list (e.g. `admin`, `onboarding`, `api`, `www`, `app`) is maintained to prevent collisions with system surfaces.
+- **Visual cohesion**: All four surfaces share the module's continuous brand canvas (spec `004-book-brand-canvas`); the onboarding already delivers the split-layout identity and the shared canvas now reaches the product page, the admin shell and the public portal.
