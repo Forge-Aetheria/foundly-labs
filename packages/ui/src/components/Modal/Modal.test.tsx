@@ -58,4 +58,30 @@ describe('Modal', () => {
     await user.keyboard('{Escape}');
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it('applies a glassmorphism surface when glass is set', () => {
+    render(
+      <FoundlyThemeProvider>
+        <Modal open onClose={() => {}} title="Reserva" glass>
+          Glass
+        </Modal>
+      </FoundlyThemeProvider>,
+    );
+    const paper = document.querySelector('.MuiDialog-paper');
+    expect(paper).not.toBeNull();
+    expect(paper).toHaveStyle({ backgroundColor: 'rgba(255, 255, 255, 0.85)' });
+  });
+
+  it('keeps the solid surface by default', () => {
+    render(
+      <FoundlyThemeProvider>
+        <Modal open onClose={() => {}} title="Reserva">
+          Sólido
+        </Modal>
+      </FoundlyThemeProvider>,
+    );
+    const paper = document.querySelector('.MuiDialog-paper');
+    expect(paper).not.toBeNull();
+    expect(paper).not.toHaveStyle({ backgroundColor: 'rgba(255, 255, 255, 0.85)' });
+  });
 });

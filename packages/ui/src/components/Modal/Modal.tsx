@@ -13,6 +13,8 @@ export interface ModalProps {
   actions?: ReactNode;
   disableBackdropClose?: boolean;
   disableEscapeClose?: boolean;
+  /** Glassmorphism surface (translucent `surface.glass` + blur) over the app canvas. */
+  glass?: boolean;
 }
 
 export function Modal({
@@ -23,6 +25,7 @@ export function Modal({
   actions,
   disableBackdropClose = false,
   disableEscapeClose = false,
+  glass = false,
 }: ModalProps) {
   return (
     <Dialog
@@ -32,7 +35,18 @@ export function Modal({
         onClose();
       }}
       disableEscapeKeyDown={disableEscapeClose}
-      slotProps={{ paper: { sx: { borderRadius: `${RADIUS.overlay}px` } } }}
+      slotProps={{
+        paper: {
+          sx: glass
+            ? (theme) => ({
+                borderRadius: `${RADIUS.overlay}px`,
+                backgroundColor: theme.palette.surface.glass,
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+              })
+            : { borderRadius: `${RADIUS.overlay}px` },
+        },
+      }}
     >
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>{children}</DialogContent>
