@@ -26,4 +26,15 @@ describe('TextField', () => {
     expect(screen.getByText('Email inválido')).toBeInTheDocument();
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
   });
+
+  it('forwards sx overrides (e.g. layout sizing)', () => {
+    render(
+      <FoundlyThemeProvider>
+        <TextField label="Tu email" value="" sx={{ maxWidth: 320 }} />
+      </FoundlyThemeProvider>,
+    );
+    const root = screen.getByLabelText('Tu email').closest('.MuiTextField-root');
+    expect(root).not.toBeNull();
+    expect(root).toHaveStyle({ maxWidth: '320px' });
+  });
 });

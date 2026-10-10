@@ -1,4 +1,5 @@
 import MuiTextField from '@mui/material/TextField';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { ChangeEvent } from 'react';
 
 export interface TextFieldProps {
@@ -13,6 +14,8 @@ export interface TextFieldProps {
   name?: string;
   required?: boolean;
   fullWidth?: boolean;
+  /** Extra styles merged over the material TextField root (e.g. layout sizing). */
+  sx?: SxProps<Theme>;
 }
 
 export function TextField({
@@ -27,6 +30,7 @@ export function TextField({
   name,
   required = false,
   fullWidth = false,
+  sx,
 }: TextFieldProps) {
   return (
     <MuiTextField
@@ -46,6 +50,7 @@ export function TextField({
       required={required}
       fullWidth={fullWidth}
       variant="outlined"
+      sx={sx}
     />
   );
 }
