@@ -38,4 +38,17 @@ describe('Button', () => {
     expect(screen.getByRole('button', { name: 'Disabled' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Loading' })).toHaveAttribute('aria-busy', 'true');
   });
+
+  it('forwards sx overrides (e.g. glass surface)', () => {
+    render(
+      <FoundlyThemeProvider>
+        <Button variant="secondary" sx={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}>
+          Glass
+        </Button>
+      </FoundlyThemeProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Glass' })).toHaveStyle({
+      backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    });
+  });
 });

@@ -31,4 +31,15 @@ describe('Card', () => {
     );
     expect(screen.getByText('Elevada')).toBeInTheDocument();
   });
+
+  it('forwards sx overrides (e.g. glass surface)', () => {
+    render(
+      <FoundlyThemeProvider>
+        <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.6)' }}>Glass</Card>
+      </FoundlyThemeProvider>,
+    );
+    expect(screen.getByText('Glass').closest('.MuiPaper-root')).toHaveStyle({
+      backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    });
+  });
 });

@@ -1,5 +1,6 @@
 import MuiButton from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive';
@@ -20,6 +21,8 @@ export interface ButtonProps {
   role?: string;
   'aria-selected'?: boolean;
   'aria-controls'?: string;
+  /** Extra styles merged over the variant (e.g. landing glass button overrides). */
+  sx?: SxProps<Theme>;
 }
 
 const VARIANT_PROPS = {
@@ -43,6 +46,7 @@ export function Button({
   role,
   'aria-selected': ariaSelected,
   'aria-controls': ariaControls,
+  sx,
 }: ButtonProps) {
   const { variant: muiVariant, color } = VARIANT_PROPS[variant];
   return (
@@ -62,6 +66,7 @@ export function Button({
       disableElevation
       startIcon={loading ? <CircularProgress size={16} color="inherit" /> : startIcon}
       endIcon={endIcon}
+      sx={sx}
     >
       {children}
     </MuiButton>

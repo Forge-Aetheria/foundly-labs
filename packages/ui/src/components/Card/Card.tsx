@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
+import type { SxProps, Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 import { RADIUS } from '../../theme';
 
@@ -9,19 +10,24 @@ export interface CardProps {
   media?: ReactNode;
   actions?: ReactNode;
   elevated?: boolean;
+  /** Extra styles merged after the base surface (e.g. glassmorphism overrides). */
+  sx?: SxProps<Theme>;
 }
 
-export function Card({ children, header, media, actions, elevated = false }: CardProps) {
+export function Card({ children, header, media, actions, elevated = false, sx }: CardProps) {
   return (
     <Paper
       elevation={0}
-      sx={(theme) => ({
-        backgroundColor: theme.palette.surface.cardLight,
-        border: `1px solid ${theme.palette.border.subtle}`,
-        borderRadius: `${RADIUS.container}px`,
-        boxShadow: elevated ? theme.palette.shadow.fab : theme.palette.shadow.card,
-        overflow: 'hidden',
-      })}
+      sx={[
+        (theme) => ({
+          backgroundColor: theme.palette.surface.cardLight,
+          border: `1px solid ${theme.palette.border.subtle}`,
+          borderRadius: `${RADIUS.container}px`,
+          boxShadow: elevated ? theme.palette.shadow.fab : theme.palette.shadow.card,
+          overflow: 'hidden',
+        }),
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
     >
       {media ? <Box>{media}</Box> : null}
       {header ? <Box sx={{ px: 3, pt: 3 }}>{header}</Box> : null}
