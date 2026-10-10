@@ -4,6 +4,9 @@
 
 Documents the current UI surfaces of the two admin views that received the Phase-9 refinements. It is a UI contract for `apps/appointment` and service management within `apps/book`; all primitives come from `@foundly/ui` and colors from the theme tokens (FR-017, FR-021, FR-022).
 
+> The storefront views (Equipo, Galería, Perfil) are contracted separately in
+> `contracts/storefront.contract.md` (Phase 10).
+
 ## ServiceCatalog (`/admin/services`)
 
 | Area           | Contract                                                                                                                          |

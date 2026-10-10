@@ -10,7 +10,7 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
 | ------------------ | --------------- | ----------------------------------------------------------------- |
 | `/book`            | `/`             | Landing informativa del producto (features + CTA a registro)      |
 | `/book/onboarding` | `/onboarding`   | Wizard de registro de negocio en 3 pasos (cuenta · negocio · setup) |
-| `/book/admin/*`    | `/admin/*`      | Dashboard privado (Drawer shell, agenda / servicios / disponibilidad) |
+| `/book/admin/*`    | `/admin/*`      | Dashboard privado (Drawer shell, agenda / servicios / disponibilidad · equipo / galería / perfil) |
 | `/book/<slug>`     | `/<slug>`       | Portal público de reservas de cada negocio (guest booking)        |
 
 ## Superficies y flujos
@@ -24,6 +24,10 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
   se organiza en pestañas (Servicios · Equipo · Información) y el flujo de reserva guiado
   (especialista → fecha/franjas → datos → confirmación) reutiliza el motor de disponibilidad
   (`domain/availability`) y crea citas `origin: 'online'`.
+- **Storefront admin (equipo / galería / perfil)**: el panel gestiona exactamente el contenido que
+  muestran las secciones públicas del mini-sitio — profesionales (`Resource`), fotos (`Tenant.gallery`) y
+  el perfil (bio, logo, teléfono, redes y dirección). Las vistas usan `@foundly/ui` y mutan el mismo seam
+  de datos que lee `getPublicBusiness`, por lo que cualquier cambio queda reflejado en `/book/<slug>`.
 - **Dashboard privado**: todas las lecturas se aislan por tenant (el `tenantId` viene de la sesión,
   nunca de la URL); sin sesión válida `/admin/*` redirige a `/onboarding`.
 
@@ -46,7 +50,9 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
 
 ## Specs
 
-- `specs/book/001-book-admin-panel/` — panel de administración base.
+- `specs/book/001-book-admin-panel/` — panel de administración base (agenda, servicios, disponibilidad + storefront: equipo, galería, perfil).
 - `specs/book/002-onboarding-and-tenant-flow/` — onboarding, tenancy y rutas.
+- `specs/book/003-public-portal-minisite/` — mini-sitio público (perfil, galería, reseñas, reserva guiada).
+- `specs/book/004-book-brand-canvas/` — identidad visual y canvas de marca del módulo.
 
 > Pendiente: paginación/windowing de la agenda (T039 de `001`) y suite Playwright E2E (`e2e/`).

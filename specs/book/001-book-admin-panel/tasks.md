@@ -144,6 +144,22 @@ Single location: `apps/book/`.
 
 ---
 
+## Phase 10: Storefront admin — Equipo, Galería y Perfil (paridad con la landing pública)
+
+**Goal**: Extend the admin panel so the operator manages exactly the content shown on the public
+mini-sitio (`003-public-portal-minisite`): the professionals, the photo gallery and the business
+profile/contact. All views consume the same in-memory seam as `getPublicBusiness`, so edits reflect
+in `/book/<slug>`.
+
+- [x] T050 [US4] Add the Equipo/Galería/Perfil options to `apps/book/src/app/admin/components/navigation.ts` (icons `Groups`, `PhotoLibrary`, `Storefront`) and the placeholder-free pages `apps/book/src/app/admin/staff/page.tsx`, `gallery/page.tsx`, `profile/page.tsx`.
+- [x] T051 [US4] Implement the storefront feature (`apps/book/src/features/storefront/`): Zod schemas, tenant-scoped mutations (`createStaff`/`updateStaff`/`setStaffActive`/`removeStaff`, `updateProfile`, `addGalleryImage`/`removeGalleryImage`) and read helpers, all authorizing the admin session from the Foundly Pass seam.
+- [x] T052 [P] [US4] Implement the `StaffManager` view (`Card` + `DataTable` + `Badge` + `Modal` + `AlertDialog`) in `apps/book/src/features/storefront/components/StaffManager.tsx` using `@foundly/ui`.
+- [x] T053 [P] [US4] Implement the `GalleryManager` and `ProfileEditor` views in `apps/book/src/features/storefront/components/` using `@foundly/ui`.
+- [x] T054 [P] [US4] Write component + action tests (`actions.test.ts`, `StaffManager.test.tsx`, `GalleryManager.test.tsx`, `ProfileEditor.test.tsx`): CRUD, duplicate/validation rejection and public-portal reflection.
+- [x] T055 [US4] Document the storefront admin surface in `contracts/admin-views.contract.md`, `contracts/storefront.contract.md`, `spec.md`, `tasks.md` and `apps/book/README.md`.
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** → user stories.
