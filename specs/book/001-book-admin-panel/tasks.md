@@ -134,6 +134,16 @@ Single location: `apps/book/`.
 
 ---
 
+## Phase 9: View refinements — Services catalog & Appointments agenda (US4 polish)
+
+**Goal**: Surgically upgrade the Services catalog and the Appointments agenda views inside the existing shell, keeping the shared Clean Light UI identity. Mutations for services and appointments remain pending (T024–T026); the views expose their entry points with explicit "próximamente" feedback.
+
+- [x] T047 [US4] Add the services-catalog header (right-aligned pill "+ Crear servicio" in primary `#6C5CE7`), a quick name-search bar over the table and a right-aligned 'Acciones' column (Editar/Eliminar pill buttons with Modal/AlertDialog feedback while the mutations are pending) to `apps/book/src/features/services/components/ServiceCatalog.tsx`; render the tariff as a `Badge` and use dense rows.
+- [x] T048 [US4] Add the agenda header (pill "+ Nueva cita"), a day selector ("Hoy" + 6 days) and a status filter (Todas/Pendientes/Confirmadas/Completadas/Canceladas), token-mapped semantic status badges, an 'Acciones' column ("Detalles") and new-appointment/detail mock modals to `apps/book/src/features/appointments/components/Agenda.tsx`; enrich `apps/book/src/app/admin/agenda/page.tsx` to resolve service/resource names and client contact per appointment.
+- [x] T049 [P] [US4] Extend `ServiceCatalog.test.tsx` and `Agenda.test.tsx` (search, status filters, modals, `vitest-axe`) and document the view experience in `spec.md`, `tasks.md` and `contracts/admin-views.contract.md`.
+
+---
+
 ## Dependencies & Execution Order
 
 - **Setup (Phase 1)** → **Foundational (Phase 2)** → user stories.

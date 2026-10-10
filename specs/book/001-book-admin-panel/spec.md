@@ -77,6 +77,8 @@ As an operator, I want every admin screen to share the ecosystem's visual identi
 3. **Given** a data-entry form (appointment, service, block), **When** validation fails, **Then** clear, accessible error messaging is shown inline.
 4. **Given** any admin screen, **When** it renders, **Then** a persistent left navigation shell groups the module sections (Agenda, Servicios, Disponibilidad) and the secondary options (Configuración, Ayuda/Soporte, Acerca de Foundly), shows the Foundly Book brand identity (logo/icon) at the top and the active user profile (avatar + name + role) at the bottom, and highlights the current section.
 5. **Given** a small viewport, **When** the operator opens the navigation, **Then** the shell collapses into a temporary drawer that can be dismissed by keyboard and by selecting a section.
+6. **Given** the services catalog view, **When** it renders, **Then** the operator can search services by name from a quick-search bar, see the tariff and state as styled badges, and access per-service row actions (edit/delete entry points) with clear feedback when the underlying mutation is still pending.
+7. **Given** the agenda view, **When** it renders, **Then** the operator can filter by day (with a "today" shortcut) and by status, inspect an appointment's details (client, date/time, service, professional, state) and open a "new appointment" flow from the header.
 
 ---
 
@@ -113,6 +115,8 @@ As an operator, I want every admin screen to share the ecosystem's visual identi
 - **FR-016**: Every admin screen MUST be fully operable by keyboard and expose accessible labels, roles and inline validation messages.
 - **FR-017**: Every admin screen MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted.
 - **FR-018**: Administrative changes MUST follow the ecosystem's local-first principle: work must not be blocked by connectivity and pending changes must be recoverable.
+- **FR-021**: The services catalog view MUST offer a quick search by service name, a create entry point and per-service row actions (edit/delete), presenting explicit feedback when a mutation is not yet available; the catalogue MUST keep the Servicio/Duración/Tarifa/Estado columns and render the tariff as a clean badge.
+- **FR-022**: The agenda view MUST offer date filtering (including a "today" shortcut) and a status filter, show each appointment's service, professional and contact information, render semantic status badges, and provide detail and "new appointment" entry points (UI-level, backed by mock data until mutations land).
 - **FR-019**: The admin panel MUST present a persistent left navigation shell that groups the module's primary sections (agenda, services, availability) and its secondary options (settings, help/support, about), carrying the Foundly Book brand identity (logo/icon) at the top and the active user profile (avatar, display name and role) at the bottom.
 - **FR-020**: The navigation shell MUST mark the active section, remain fully keyboard-operable, and collapse into a temporary drawer on small viewports; navigation must use the ecosystem's shared iconography.
 

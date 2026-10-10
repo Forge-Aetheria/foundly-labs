@@ -80,6 +80,8 @@ Expected: views are built exclusively from `@foundly/ui` components; every scree
 4. Cancel it with a reason; confirm the audit entry exists.
 5. Deactivate a service that has a future appointment; confirm the appointment is unchanged.
 6. Add a block over an existing appointment; confirm the conflict is surfaced and requires resolution.
+7. Open `/admin/services`: confirm the quick search filters by name, the tariff renders as a badge, and "Editar"/"Eliminar" show explicit "próximamente" feedback.
+8. Open `/admin/agenda`: confirm the day ("Hoy") and status chips filter the table, "Detalles" opens the read-only modal, and "+ Nueva cita" opens the mock creation modal.
 7. Confirm every screen renders inside the sidebar shell with the Foundly Book logo, the module navigation (active section highlighted) and the user profile (avatar + name) at the bottom.
 8. Resize to a small viewport; confirm the sidebar collapses into a temporary drawer opened from the menu button and dismissible by keyboard.
 
