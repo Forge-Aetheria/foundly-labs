@@ -53,9 +53,9 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
 
 ## Dominio y datos
 
-- Tenancy: `src/domain/tenancy` (tipos `Tenant`/`User`, reglas de slug, provisioning). Lógica pura, sin framework.
-- Agendas/servicios/disponibilidad: `src/domain/appointments` y `src/domain/availability` (motor puro).
-- **Persistencia NO definida**: todo vive en el store en memoria (`src/server/store.ts`), el único
+- **Estructura modular**: `src/app/` es la capa delgada de rutas App Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `dialogs/`, `hooks/`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (types, utils, componentes, `infra/` con el seam de sesión/results, `tenancy/`).
+- **Tenancy y agendas**: los tipos y reglas puras son `shared/types/` (tenancy, appointments, availability) y `shared/utils/` (slug, provisioning, motor de disponibilidad). Lógica pura, sin framework.
+- **Persistencia NO definida**: todo vive en el store en memoria (`src/shared/infra/store.ts`), el único
   seam que debe reemplazarse cuando `specs/architecture.md` ratifique almacenamiento.
 
 ## Specs

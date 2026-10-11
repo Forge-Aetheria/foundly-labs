@@ -1,11 +1,6 @@
-import type { Metadata } from 'next';
-import { WizardShell } from './components/WizardShell';
+import { OnboardingView } from '../../modules/onboarding/OnboardingView';
 
-export const metadata: Metadata = {
-  title: 'Crea tu negocio — Foundly Book',
-  description: 'Registra tu negocio en Foundly Book en tres pasos.',
-};
-
+/** Onboarding route (public `/book/onboarding`): thin page → wizard view. */
 export default function OnboardingPage() {
-  return <WizardShell />;
+  return <OnboardingView />;
 }

@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { resetStore } from '../../server/store';
+import { resetStore } from '../../shared/infra/store';
 
 const redirectMock = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', () => ({

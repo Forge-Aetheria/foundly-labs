@@ -1,11 +1,7 @@
-import { listServices } from '../../../features/appointments/queries';
-import { StaffManager } from '../../../features/storefront/components/StaffManager';
-import { listStaff } from '../../../features/storefront/queries';
-import { getAdminTenantId } from '../../../features/tenants/queries';
+import { StaffView } from '../../../modules/staff/StaffView';
 
 export const dynamic = 'force-dynamic';
 
 export default function StaffPage() {
-  const tenantId = getAdminTenantId();
-  return <StaffManager staff={listStaff(tenantId)} services={listServices(tenantId)} />;
+  return <StaffView />;
 }

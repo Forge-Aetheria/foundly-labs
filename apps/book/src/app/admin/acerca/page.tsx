@@ -1,4 +1,4 @@
-import { PlaceholderPanel } from '../components/PlaceholderPanel';
+import { PlaceholderPanel } from '../../../shared/components/PlaceholderPanel';
 
 export default function AcercaPage() {
   return (

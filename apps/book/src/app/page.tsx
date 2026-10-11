@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { ProductLanding } from './components/ProductLanding';
+import { LandingView } from '../modules/landing/LandingView';
 import {
   BOOK_BENEFITS,
   BOOK_CTA,
@@ -11,17 +11,17 @@ import {
   BOOK_PRICING,
   BOOK_SPOTLIGHT,
   BOOK_STEPS,
-} from './book-product';
+} from '../modules/landing/book-product';
 
 export const metadata: Metadata = {
   title: 'Foundly Book',
   description: BOOK_HERO.subtitle,
 };
 
-/** Product page (public `/book`): module capabilities + register CTA (FR-001/FR-002). */
+/** Product page (public `/book`): thin route that renders the landing view. */
 export default function HomePage() {
   return (
-    <ProductLanding
+    <LandingView
       hero={BOOK_HERO}
       heroCapture={BOOK_HERO_CAPTURE}
       cta={BOOK_CTA}

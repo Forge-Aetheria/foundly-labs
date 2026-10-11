@@ -3,7 +3,7 @@ import { axe } from 'vitest-axe';
 import { describe, expect, it } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import HomePage from './page';
-import { BOOK_BENEFITS } from './book-product';
+import { BOOK_BENEFITS } from '../modules/landing/book-product';
 
 function renderHome() {
   return render(
@@ -40,7 +40,9 @@ describe('product page (FR-001/FR-002/FR-019)', () => {
     expect(screen.getAllByRole('button', { name: 'Empezar gratis' }).length).toBeGreaterThan(0);
 
     // Spotlight title + booking page preview
-    expect(screen.getByRole('heading', { name: /Tu Booking Page personalizada/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Tu Booking Page personalizada/ }),
+    ).toBeInTheDocument();
     expect(screen.getByText('Corte de cabello')).toBeInTheDocument();
 
     // Steps to success

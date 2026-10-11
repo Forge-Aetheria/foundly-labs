@@ -1,12 +1,7 @@
-import { listAvailabilityRules, listTimeBlocks } from '../../../features/appointments/queries';
-import { AvailabilityEditor } from '../../../features/availability/components/AvailabilityEditor';
-import { getAdminTenantId } from '../../../features/tenants/queries';
+import { AvailabilityView } from '../../../modules/availability/AvailabilityView';
 
 export const dynamic = 'force-dynamic';
 
 export default function AvailabilityPage() {
-  const tenantId = getAdminTenantId();
-  return (
-    <AvailabilityEditor rules={listAvailabilityRules(tenantId)} blocks={listTimeBlocks(tenantId)} />
-  );
+  return <AvailabilityView />;
 }

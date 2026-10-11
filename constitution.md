@@ -83,7 +83,10 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 │   │   └── astro.config.mjs
 │   │
 │   ├── book/                              # Next.js / React 19 (SaaS interactivo)
-│   │   ├── src/                           # app/ (router), components/, lib/, server/
+│   │   ├── src/
+│   │   │   ├── app/                       # Capa de rutas App Router (delgada): solo renderiza <Modulo>View
+│   │   │   ├── modules/<modulo>/          # Lógica de negocio por dominio (components/, dialogs/, hooks/, utils/, tests/, <Modulo>View.tsx)
+│   │   │   └── shared/                    # Reutilizable cross-app (components/, utils/, types/, infra/, tenancy/)
 │   │   ├── public/
 │   │   └── next.config.mjs
 │   │
