@@ -84,3 +84,23 @@ npm run check && npm run lint && npm run build
 
 Then run Lighthouse against `dist/` and confirm 100/100 Desktop and ≥ 98 Mobile for Performance,
 Accessibility, and SEO.
+
+## Monorepo workspace
+
+The repo is a **npm workspaces monorepo** (`apps/*`, `packages/*`):
+
+| App/package   | Stack                 | Rol                                    | Specs                            |
+| ------------- | --------------------- | -------------------------------------- | -------------------------------- |
+| `apps/landing`| Astro 5 (SSG)         | Vitrina pública (raíz `/`)             | `/specs/landing/`                |
+| `apps/book`   | Next.js / React 19    | Módulo SaaS interactivo (`/book`)      | `/specs/book/`                   |
+| `apps/store`  | Next.js / React 19    | Comercio/licencias (`/store`)          | `/specs/store/`                  |
+| `apps/api`    | NestJS (Node.js)      | Backend / API del ecosistema           | `/specs/api/`                    |
+| `packages/ui` | MUI v6 (design system)| `@foundly/ui`                          | `/specs/shared-ui/`              |
+
+Comandos de la API (`@foundly/api`):
+
+```bash
+npm run build -w @foundly/api   # build gate
+npm run test -w @foundly/api    # test gate
+npm run dev -w @foundly/api     # dev server (puerto 3002 / PORT)
+```

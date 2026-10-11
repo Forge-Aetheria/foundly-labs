@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "removeComments": true,
+    "noEmit": false,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "incremental": true
+  },
+  "exclude": ["node_modules", "test", "dist", "vitest.config.ts", "**/*spec.ts"]
+}

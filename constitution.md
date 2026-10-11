@@ -18,7 +18,7 @@ $$
 - **`constitution.md`** (este documento): define los principios no negociables de arquitectura, calidad, diseño y flujo de trabajo.
 - **`specs/architecture.md`**: define la topología del monorepo, límites entre apps y paquetes, y las decisiones de arquitectura vigentes.
 - **`code-rules.md`**: define las normas de código TypeScript, Astro, React/Next.js, CSS y estructura de componentes.
-- **`specs de dominio`** (`/specs/<dominio>/<nnn>-<feature>/`): especifican el comportamiento detallado de cada vista, isla interactiva o flujo, **acotadas a un único dominio** (`shared-ui`, `landing`, `book` o `store`).
+- **`specs de dominio`** (`/specs/<dominio>/<nnn>-<feature>/`): especifican el comportamiento detallado de cada vista, isla interactiva, flujo o servicio, **acotadas a un único dominio** (`shared-ui`, `landing`, `book`, `store` o `api`).
 
 Ninguna decisión de implementación puede violar un nivel superior de esta jerarquía. Ante conflicto entre dos documentos, prevalece el de mayor autoridad.
 
@@ -34,6 +34,7 @@ Todas las especificaciones del proyecto residen **exclusivamente** en la carpeta
 | `landing`   | `/specs/landing/`   | Vitrina pública `apps/landing` (Astro 5, SSG)                           |
 | `book`      | `/specs/book/`      | Módulo SaaS interactivo `apps/book` (Next.js / React 19)                |
 | `store`     | `/specs/store/`     | Módulo de comercio `apps/store` (Next.js / React 19)                    |
+| `api`       | `/specs/api/`       | Backend / API `apps/api` (NestJS, Node.js)                              |
 
 Cada especificación de dominio vive en `/specs/<dominio>/<nnn>-<feature>/` y usa numeración secuencial **dentro de su propio dominio**.
 
@@ -49,7 +50,7 @@ Los documentos de gobernanza transversal (no ligados a un dominio) residen en la
 ### III. Reglas de las specs de dominio
 
 - **Ubicación única**: ninguna spec puede residir fuera de `/specs/<dominio>/`.
-- **Regla previa a `/speckit.specify`**: antes de ejecutar cualquier comando `/speckit.specify`, la IA DEBE identificar el dominio de la nueva especificación. Si el usuario no lo especificó, la IA DEBE preguntarlo explícitamente antes de crear nada. Dominios válidos: `shared-ui`, `landing`, `book`, `store`. La spec DEBE crearse con `SPECIFY_FEATURE_DIRECTORY=specs/<dominio>/<nnn>-<feature>`.
+- **Regla previa a `/speckit.specify`**: antes de ejecutar cualquier comando `/speckit.specify`, la IA DEBE identificar el dominio de la nueva especificación. Si el usuario no lo especificó, la IA DEBE preguntarlo explícitamente antes de crear nada. Dominios válidos: `shared-ui`, `landing`, `book`, `store`, `api`. La spec DEBE crearse con `SPECIFY_FEATURE_DIRECTORY=specs/<dominio>/<nnn>-<feature>`.
 - **Acotadas a un dominio**: solo aplican al dominio que las contiene.
 - **Subordinadas**: NUNCA pueden contradecir `specs/business-model.md`, `constitution.md`, `specs/architecture.md` ni `code-rules.md`.
 - **Sin duplicación normativa**: si una regla aplica a más de un dominio, DEBE promoverse a un documento global en `/specs` o a `shared-ui`, nunca duplicarse.
@@ -91,6 +92,11 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 │       ├── public/
 │       └── next.config.mjs
 │
+│   └── api/                               # Backend / API (NestJS, Node.js)
+│       ├── src/
+│       ├── nest-cli.json
+│       └── tsconfig.json
+│
 ├── packages/                              # Código compartido del monorepo
 │   ├── ui/                                # Design system Clean Light UI (componentes reutilizables)
 │   └── config/                            # Configuración compartida (eslint, tsconfig, prettier, tailwind)
@@ -102,7 +108,8 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 │   ├── shared-ui/                         # Specs de paquetes compartidos / design system
 │   ├── landing/                           # Specs de apps/landing
 │   ├── book/                              # Specs de apps/book
-│   └── store/                             # Specs de apps/store
+│   ├── store/                             # Specs de apps/store
+│   └── api/                               # Specs de apps/api (backend)
 ├── constitution.md                        # Documento raíz (este archivo)
 ├── code-rules.md
 └── package.json                           # Raíz del workspace
@@ -115,9 +122,19 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 | `apps/landing` | Astro 5            | SSG (estático)          | Vitrina pública del ecosistema, SEO y performance           |
 | `apps/book`    | Next.js / React 19 | Módulo SaaS interactivo | Flujos de producto con estado y datos en tiempo de petición |
 | `apps/store`   | Next.js / React 19 | Módulo SaaS interactivo | Comercio/licencias y flujos transaccionales                 |
+| `apps/api`     | NestJS (Node.js)   | API (servidor HTTP)    | Backend de servicios/API del ecosistema                    |
 
 - **`apps/landing`**: Astro 5 + Tailwind CSS v4, salida estática (SSG), cero JS por defecto y islas React solo cuando son estrictamente necesarias.
 - **`apps/book` y `apps/store`**: Next.js con React 19, orientadas a módulos SaaS interactivos; pueden usar Server Components y Server Actions.
+- **`apps/api`**: NestJS (Node.js), servidor HTTP del ecosistema; su código se especifica bajo `/specs/api/`.
+
+**Gates de verificación por app**:
+
+| App           | Build                                   | Test                                    |
+| ------------- | --------------------------------------- | --------------------------------------- |
+| `apps/book`   | `npm run build -w @foundly/book`        | `npm run test -w @foundly/book`         |
+| `apps/store`  | `npm run build -w @foundly/store`       | `npm run test -w @foundly/store`        |
+| `apps/api`    | `npm run build -w @foundly/api`         | `npm run test -w @foundly/api`          |
 
 ### II. Paquetes compartidos (`packages/`)
 
@@ -145,7 +162,7 @@ Reglas de los paquetes:
 - "No spec, no code": ninguna línea de código de producción o refactorización mayor debe escribirse sin una especificación previa aprobada.
 - Toda spec DEBE **referenciar explícitamente `specs/business-model.md`**, ya que es la máxima autoridad del ecosistema.
 - El flujo es secuencial: **Spec (EARS) → Plan de Arquitectura → Tareas → Implementación**.
-- Todas las specs residen exclusivamente en `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`); los documentos transversales viven en la raíz de `/specs`. Antes de `/speckit.specify` la IA DEBE identificar o preguntar el dominio.
+- Todas las specs residen exclusivamente en `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`, `api`); los documentos transversales viven en la raíz de `/specs`. Antes de `/speckit.specify` la IA DEBE identificar o preguntar el dominio.
 
 ### II. Server-First & Zero-JS Default
 
