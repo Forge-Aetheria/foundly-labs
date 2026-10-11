@@ -7,29 +7,47 @@ import {
   Badge,
   Button,
   Card,
-  DataTable,
+  Checkbox,
   Modal,
   Stack,
+  Switch,
   TextField,
   Typography,
-  type DataTableColumn,
 } from '@foundly/ui';
-import type { Resource } from '../../../domain/appointments/types';
+import type { Resource, Service } from '../../../domain/appointments/types';
+import {
+  GLASS_CARD_SX,
+  PRIMARY_BUTTON_SX,
+  SECONDARY_BUTTON_SX,
+} from '../../../app/components/landingCanon';
 import { createStaff, removeStaff, setStaffActive, updateStaff } from '../actions';
 
 interface StaffManagerProps {
   staff: Resource[];
+  /** Tenant catalog used for the services multi-select and the card badges. */
+  services: Service[];
 }
 
 interface StaffDraft {
   id?: string;
   name: string;
   role: string;
-  avatar: string;
   bio: string;
+  avatar: string;
+  active: boolean;
+  serviceIds: string[];
 }
 
-const EMPTY_DRAFT: StaffDraft = { name: '', role: '', avatar: '', bio: '' };
+const EMPTY_DRAFT: StaffDraft = {
+  name: '',
+  role: '',
+  bio: '',
+  avatar: '',
+  active: true,
+  serviceIds: [],
+};
+
+const BIO_MAX = 250;
 
 function initials(name: string): string {
   return name
@@ -47,15 +65,15 @@ function AvatarBadge({ resource }: { resource: Resource }) {
         component="img"
         src={resource.avatar}
         alt=""
-        sx={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+        sx={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
       />
     );
   }
   return (
     <Stack
       sx={{
-        width: 40,
-        height: 40,
+        width: 56,
+        height: 56,
         borderRadius: '50%',
         flexShrink: 0,
         alignItems: 'center',
@@ -64,31 +82,31 @@ function AvatarBadge({ resource }: { resource: Resource }) {
         color: 'background.paper',
       }}
     >
-      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+      <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
         {initials(resource.name)}
       </Typography>
     </Stack>
   );
 }
 
-/** Equipo view: manage the professionals shown on the public landing (US4 storefront). */
-export function StaffManager({ staff }: StaffManagerProps) {
+/** Equipo y Especialistas: glassmorphism member grid + create/edit modal (005). */
+export function StaffManager({ staff, services }: StaffManagerProps) {
   const [members, setMembers] = useState<Resource[]>(staff);
   const [draft, setDraft] = useState<{ open: boolean; editing: boolean; value: StaffDraft }>({
     open: false,
     editing: false,
     value: EMPTY_DRAFT,
   });
-  const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
 
   function openCreate() {
-    setFormError(null);
+    setFieldErrors(null);
     setDraft({ open: true, editing: false, value: EMPTY_DRAFT });
   }
 
   function openEdit(resource: Resource) {
-    setFormError(null);
+    setFieldErrors(null);
     setDraft({
       open: true,
       editing: true,
@@ -96,8 +114,10 @@ export function StaffManager({ staff }: StaffManagerProps) {
         id: resource.id,
         name: resource.name,
         role: resource.role ?? '',
-        avatar: resource.avatar ?? '',
         bio: resource.bio ?? '',
+        avatar: resource.avatar ?? '',
+        active: resource.active,
+        serviceIds: resource.serviceIds ?? [],
       },
     });
   }
@@ -110,15 +130,48 @@ export function StaffManager({ staff }: StaffManagerProps) {
     setDraft((prev) => ({ ...prev, value: { ...prev.value, ...patchValue } }));
   }
 
+  function toggleService(serviceId: string, checked: boolean) {
+    setDraft((prev) => {
+      const current = prev.value.serviceIds;
+      return {
+        ...prev,
+        value: {
+          ...prev.value,
+          serviceIds: checked
+            ? [...current, serviceId]
+            : current.filter((id) => id !== serviceId),
+        },
+      };
+    });
+  }
+
+  function validate(value: StaffDraft): boolean {
+    const errors: Record<string, string> = {};
+    if (!value.name.trim()) errors.name = 'El nombre es obligatorio.';
+    if (!value.role.trim()) errors.role = 'El cargo es obligatorio.';
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
   function save() {
+    if (!draft.editing && !validate(draft.value)) return;
+    if (draft.editing && !validate(draft.value)) return;
+    const input = {
+      name: draft.value.name,
+      role: draft.value.role,
+      bio: draft.value.bio,
+      avatar: draft.value.avatar,
+      active: draft.value.active,
+      serviceIds: draft.value.serviceIds,
+    };
     const result = draft.editing
-      ? updateStaff({ id: draft.value.id, ...draft.value })
-      : createStaff({ ...draft.value, active: true });
+      ? updateStaff({ id: draft.value.id, ...input })
+      : createStaff(input);
     if (!result.ok) {
-      setFormError(result.error.message);
+      setFieldErrors(result.error.fields ?? { _: result.error.message });
       return;
     }
-    setFormError(null);
+    setFieldErrors(null);
     if (draft.editing) {
       setMembers((prev) => prev.map((item) => (item.id === result.data.id ? result.data : item)));
     } else {
@@ -143,105 +196,98 @@ export function StaffManager({ staff }: StaffManagerProps) {
     setDeleteTarget(null);
   }
 
-  const columns: DataTableColumn<Resource>[] = [
-    {
-      key: 'name',
-      header: 'Profesional',
-      render: (resource) => (
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <AvatarBadge resource={resource} />
-          <Stack spacing={0.25} sx={{ minWidth: 0 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {resource.name}
-            </Typography>
-            {resource.role ? (
-              <Typography variant="caption" color="text.secondary">
-                {resource.role}
-              </Typography>
-            ) : null}
-          </Stack>
-        </Stack>
-      ),
-    },
-    {
-      key: 'bio',
-      header: 'Bio',
-      render: (resource) =>
-        resource.bio ? (
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 320 }}>
-            {resource.bio}
-          </Typography>
-        ) : (
-          <Typography variant="caption" color="text.secondary">
-            Sin descripción
-          </Typography>
-        ),
-    },
-    {
-      key: 'status',
-      header: 'Estado',
-      render: (resource) => (
-        <Badge pill status={resource.active ? 'positive' : 'neutral'}>
-          {resource.active ? 'Activo' : 'Inactivo'}
-        </Badge>
-      ),
-    },
-    {
-      key: 'actions',
-      header: 'Acciones',
-      align: 'right',
-      render: (resource) => (
-        <Stack direction="row" spacing={1} justifyContent="flex-end">
-          {resource.active ? (
-            <Button variant="secondary" onClick={() => toggleActive(resource)}>
-              Desactivar
-            </Button>
-          ) : (
-            <Button variant="secondary" onClick={() => toggleActive(resource)}>
-              Activar
-            </Button>
-          )}
-          <Button variant="secondary" onClick={() => openEdit(resource)}>
-            Editar
-          </Button>
-          <Button variant="destructive" onClick={() => setDeleteTarget(resource)}>
-            Eliminar
-          </Button>
-        </Stack>
-      ),
-    },
-  ];
+  function serviceName(serviceId: string): string {
+    return services.find((service) => service.id === serviceId)?.name ?? '—';
+  }
 
   return (
-    <Card
-      header={
-        <Stack spacing={2}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
-            <Stack spacing={0.25}>
-              <Typography variant="h5" component="h1">
-                Equipo
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Profesionales que aparecen en la pestaña «Equipo» de tu mini-sitio.
-              </Typography>
-            </Stack>
-            <Button variant="primary" onClick={openCreate}>
-              + Añadir profesional
-            </Button>
-          </Stack>
+    <Stack spacing={3}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+        <Stack spacing={0.25}>
+          <Typography variant="h5" component="h1">
+            Equipo y Especialistas
+          </Typography>
           <Typography variant="body2" color="text.secondary">
-            Los cambios se reflejan al instante en la vista pública del negocio.
+            Profesionales del negocio: su perfil público, especialidades y servicios.
           </Typography>
         </Stack>
-      }
-    >
-      <DataTable
-        columns={columns}
-        rows={members}
-        dense
-        emptyMessage="No hay profesionales en el equipo."
-        getRowKey={(resource) => resource.id}
-      />
+        <Button variant="primary" sx={PRIMARY_BUTTON_SX} onClick={openCreate}>
+          + Añadir Profesional
+        </Button>
+      </Stack>
+
+      {members.length > 0 ? (
+        <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 2 }}>
+          {members.map((member) => (
+            <Card
+              key={member.id}
+              sx={[GLASS_CARD_SX, { flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 12px)' } }]}
+            >
+              <Stack spacing={1.5}>
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <AvatarBadge resource={member} />
+                  <Stack spacing={0.25} sx={{ minWidth: 0 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                      {member.name}
+                    </Typography>
+                    {member.role ? (
+                      <Typography variant="body2" color="text.secondary">
+                        {member.role}
+                      </Typography>
+                    ) : null}
+                  </Stack>
+                </Stack>
+
+                <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
+                  {(member.serviceIds ?? []).map((serviceId) => (
+                    <Badge key={serviceId} pill status="neutral">
+                      {serviceName(serviceId)}
+                    </Badge>
+                  ))}
+                  {(member.serviceIds?.length ?? 0) === 0 ? (
+                    <Typography variant="caption" color="text.secondary">
+                      Sin servicios asignados
+                    </Typography>
+                  ) : null}
+                  <Badge pill status={member.active ? 'positive' : 'neutral'}>
+                    {member.active ? 'Activo' : 'Inactivo'}
+                  </Badge>
+                </Stack>
+
+                {member.bio ? (
+                  <Typography variant="body2" color="text.secondary">
+                    {member.bio}
+                  </Typography>
+                ) : null}
+
+                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                  {member.active ? (
+                    <Button variant="secondary" sx={SECONDARY_BUTTON_SX} onClick={() => toggleActive(member)}>
+                      Desactivar
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" sx={SECONDARY_BUTTON_SX} onClick={() => toggleActive(member)}>
+                      Activar
+                    </Button>
+                  )}
+                  <Button variant="secondary" sx={SECONDARY_BUTTON_SX} onClick={() => openEdit(member)}>
+                    Editar
+                  </Button>
+                  <Button variant="destructive" onClick={() => setDeleteTarget(member)}>
+                    Eliminar
+                  </Button>
+                </Stack>
+              </Stack>
+            </Card>
+          ))}
+        </Stack>
+      ) : (
+        <Card sx={GLASS_CARD_SX}>
+          <Typography variant="body2" color="text.secondary">
+            No hay profesionales en el equipo. Añade el primero con «+ Añadir Profesional».
+          </Typography>
+        </Card>
+      )}
 
       {draft.open ? (
         <Modal
@@ -249,48 +295,101 @@ export function StaffManager({ staff }: StaffManagerProps) {
           onClose={close}
           title={draft.editing ? `Editar · ${draft.value.name}` : 'Añadir profesional'}
         >
-          <Stack spacing={1.5} sx={{ pt: 1, minWidth: { xs: 0, sm: 420 } }}>
+          <Stack spacing={1.5} sx={{ pt: 1, minWidth: { xs: 0, sm: 460 } }}>
             <TextField
-              label="Nombre"
+              label="Nombre completo"
               value={draft.value.name}
               onChange={(value) => patch({ name: value })}
-              error={Boolean(formError)}
+              error={Boolean(fieldErrors?.name)}
+              helperText={fieldErrors?.name}
               required
               fullWidth
             />
             <TextField
-              label="Rol / cargo"
-              placeholder="P. ej. Peluquera senior"
+              label="Cargo / Título profesional"
+              placeholder="P. ej. Peluquera Senior"
               value={draft.value.role}
               onChange={(value) => patch({ role: value })}
+              error={Boolean(fieldErrors?.role)}
+              helperText={fieldErrors?.role}
+              required
               fullWidth
             />
             <TextField
-              label="Foto (URL)"
+              label="Biografía corta"
+              value={draft.value.bio}
+              onChange={(value) => patch({ bio: value })}
+              multiline
+              rows={3}
+              maxLength={BIO_MAX}
+              helperText={`${draft.value.bio.length}/${BIO_MAX} caracteres`}
+              fullWidth
+            />
+
+            <TextField
+              label="Foto / Avatar (URL)"
               placeholder="https://…"
               value={draft.value.avatar}
               onChange={(value) => patch({ avatar: value })}
               fullWidth
             />
-            <TextField
-              label="Bio corta"
-              value={draft.value.bio}
-              onChange={(value) => patch({ bio: value })}
-              fullWidth
-            />
-            {formError ? (
-              <Typography variant="body2" color="error">
-                {formError}
-              </Typography>
+            {draft.value.avatar.trim() ? (
+              <Box
+                component="img"
+                src={draft.value.avatar.trim()}
+                alt="Vista previa del avatar"
+                sx={{ width: 88, height: 88, borderRadius: '50%', objectFit: 'cover', border: 1, borderColor: 'divider' }}
+              />
             ) : null}
+
+            <Stack spacing={1}>
+              <Typography variant="h6" component="h3">
+                Servicios que presta
+              </Typography>
+              {services.length > 0 ? (
+                <Stack spacing={0.5}>
+                  {services.map((service) => (
+                    <Checkbox
+                      key={service.id}
+                      label={service.name}
+                      checked={draft.value.serviceIds.includes(service.id)}
+                      onChange={(checked) => toggleService(service.id, checked)}
+                    />
+                  ))}
+                </Stack>
+              ) : (
+                <Typography variant="caption" color="text.secondary">
+                  No hay servicios en el catálogo. Añádelos desde «Servicios».
+                </Typography>
+              )}
+              {draft.value.serviceIds.length === 0 ? (
+                <Typography variant="body2" sx={{ color: 'warning.main', fontWeight: 600 }}>
+                  Advertencia: este profesional no tiene ningún servicio asignado.
+                </Typography>
+              ) : null}
+            </Stack>
+
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Switch
+                checked={draft.value.active}
+                onChange={(checked) => patch({ active: checked })}
+                label="Activo (visible en la vista pública)"
+              />
+            </Stack>
+
             <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ pt: 1 }}>
               <Button variant="secondary" onClick={close}>
                 Cancelar
               </Button>
-              <Button variant="primary" onClick={save}>
-                {draft.editing ? 'Guardar cambios' : 'Añadir'}
+              <Button variant="primary" sx={PRIMARY_BUTTON_SX} onClick={save}>
+                Guardar profesional
               </Button>
             </Stack>
+            {fieldErrors?._ ? (
+              <Typography variant="body2" color="error">
+                {fieldErrors._}
+              </Typography>
+            ) : null}
           </Stack>
         </Modal>
       ) : null}
@@ -307,6 +406,6 @@ export function StaffManager({ staff }: StaffManagerProps) {
           onCancel={() => setDeleteTarget(null)}
         />
       ) : null}
-    </Card>
+    </Stack>
   );
 }

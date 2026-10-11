@@ -4,7 +4,13 @@ import Box from '@mui/material/Box';
 import { Card, Stack, Typography } from '@foundly/ui';
 import { GLASS_CARD_SX } from '../../../../app/components/landingCanon';
 import { WEEKDAY_LABELS, formatRating, formatReviewDate } from '../../format';
-import type { PublicBusinessProfile, PublicReview, PublicService, PublicSpecialist } from '../../types';
+import type {
+  PublicBusinessProfile,
+  PublicGalleryPhoto,
+  PublicReview,
+  PublicService,
+  PublicSpecialist,
+} from '../../types';
 import { ServiceCard } from '../ServiceCard';
 import { RatingStars } from './RatingStars';
 
@@ -54,10 +60,10 @@ function GalleryBanner({
   name,
 }: {
   cover: string | null;
-  gallery: string[];
+  gallery: PublicGalleryPhoto[];
   name: string;
 }) {
-  const strips = [...(cover ? [cover] : []), ...gallery].slice(1, 4);
+  const strips = [...(cover ? [cover] : []), ...gallery.map((photo) => photo.url)].slice(1, 4);
   return (
     <Stack spacing={1.5}>
       {cover ? (
@@ -223,6 +229,28 @@ function TeamSection({ specialists }: { specialists: PublicSpecialist[] }) {
                   </Typography>
                 ) : null}
               </Stack>
+              {specialist.services && specialist.services.length > 0 ? (
+                <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75 }}>
+                  {specialist.services.map((service) => (
+                    <Stack
+                      key={service}
+                      component="span"
+                      sx={{
+                        display: 'inline-flex',
+                        px: 1.25,
+                        py: 0.25,
+                        borderRadius: '9999px',
+                        backgroundColor: 'surface.badgePill',
+                        color: 'primary.main',
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {service}
+                    </Stack>
+                  ))}
+                </Stack>
+              ) : null}
             </Stack>
           </Card>
         ))}
@@ -247,7 +275,7 @@ function AboutSection({ bio }: { bio: string | null }) {
   );
 }
 
-function GallerySection({ gallery }: { gallery: string[] }) {
+function GallerySection({ gallery }: { gallery: PublicGalleryPhoto[] }) {
   return (
     <Stack component="section" id="galeria" spacing={2} sx={SECTION_OFFSET}>
       <Typography variant="h4" component="h2">
@@ -255,22 +283,39 @@ function GallerySection({ gallery }: { gallery: string[] }) {
       </Typography>
       {gallery.length > 0 ? (
         <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1.5 }}>
-          {gallery.map((src, index) => (
-            <Box
-              key={src}
-              component="img"
-              src={src}
-              alt={`Foto ${index + 1}`}
+          {gallery.map((photo, index) => (
+            <Stack
+              key={photo.id}
+              spacing={0.5}
               sx={{
                 flex: '1 1 calc(33.333% - 12px)',
                 minWidth: { xs: '45%', md: '30%' },
-                aspectRatio: '4 / 3',
-                objectFit: 'cover',
-                borderRadius: 2,
-                border: 1,
-                borderColor: 'divider',
               }}
-            />
+            >
+              <Box
+                component="img"
+                src={photo.url}
+                alt={photo.title ?? `Foto ${index + 1}`}
+                sx={{
+                  width: '100%',
+                  aspectRatio: '4 / 3',
+                  objectFit: 'cover',
+                  borderRadius: 2,
+                  border: 1,
+                  borderColor: 'divider',
+                }}
+              />
+              {photo.title ? (
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  {photo.title}
+                </Typography>
+              ) : null}
+              {photo.category ? (
+                <Typography variant="caption" color="text.secondary">
+                  {photo.category}
+                </Typography>
+              ) : null}
+            </Stack>
           ))}
         </Stack>
       ) : (

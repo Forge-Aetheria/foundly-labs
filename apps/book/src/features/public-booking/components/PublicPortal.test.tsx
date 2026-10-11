@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { describe, expect, it, vi } from 'vitest';
@@ -23,8 +23,8 @@ const profile: PublicBusinessProfile = {
   social: { instagram: 'https://instagram.com/estudioana', whatsapp: 'https://wa.me/34612345678' },
   timezone: 'Europe/Madrid',
   gallery: [
-    'https://images.unsplash.com/photo-1',
-    'https://images.unsplash.com/photo-2',
+    { id: 'gallery-1', url: 'https://images.unsplash.com/photo-1' },
+    { id: 'gallery-2', url: 'https://images.unsplash.com/photo-2' },
   ],
   rating: 4.6,
   reviewCount: 3,
@@ -85,6 +85,24 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
 
     const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
     expect(results.violations).toHaveLength(0);
+  });
+
+  it('shows assigned service badges on the team section', async () => {
+    const withServices = {
+      ...profile,
+      specialists: [
+        { ...profile.specialists[0]!, services: ['Corte de cabello'] },
+        ...profile.specialists.slice(1),
+      ],
+    };
+    const { container } = render(
+      <FoundlyThemeProvider>
+        <PublicPortal profile={withServices} />
+      </FoundlyThemeProvider>,
+    );
+
+    const team = container.querySelector('#equipo')!;
+    expect(within(team as HTMLElement).getByText('Corte de cabello')).toBeInTheDocument();
   });
 
   it('opens the guided booking checkout from the sticky sidebar CTA', async () => {

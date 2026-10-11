@@ -28,6 +28,16 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
   muestran las secciones públicas del mini-sitio — profesionales (`Resource`), fotos (`Tenant.gallery`) y
   el perfil (bio, logo, teléfono, redes y dirección). Las vistas usan `@foundly/ui` y mutan el mismo seam
   de datos que lee `getPublicBusiness`, por lo que cualquier cambio queda reflejado en `/book/<slug>`.
+  `/admin/staff` ("Equipo y Especialistas") muestra el roster como un grid de tarjetas glassmorphism con
+  badges de servicios y estado, y su modal valida nombre/cargo (requeridos), avisa si no hay servicios
+  asignados y deja activar/desactivar cada profesional (`005-staff-management`).
+  `/admin/gallery` ("Galería") gestiona el portfolio visual: grid de tarjetas glass con título, descripción
+  y categoría (Local/Trabajos/Equipo), alta validando URL, lightbox de previsualización y borrado con
+  confirmación; cualquier cambio se refleja al instante en `#galeria` del mini-sitio (`006-gallery-management`).
+  `/admin/profile` ("Perfil y Acerca de") edita la identidad del comercio (nombre, categoría, URL pública con
+  validación, logo/portada con preview), contacto y redes, la bio, las políticas de reserva/cancelación y un
+  resumen del horario sincronizado con disponibilidad; todo se refleja en el header, la tarjeta sticky,
+  «Acerca de», «Dirección y horarios» y el footer público (`007-business-profile`).
 - **Dashboard privado**: todas las lecturas se aislan por tenant (el `tenantId` viene de la sesión,
   nunca de la URL); sin sesión válida `/admin/*` redirige a `/onboarding`.
 

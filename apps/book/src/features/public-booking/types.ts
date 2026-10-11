@@ -19,6 +19,8 @@ export interface PublicSpecialist {
   role: string | null;
   avatar: string | null;
   bio: string | null;
+  /** Assigned catalog service names shown on the team cards (005). */
+  services?: string[];
 }
 
 export interface PublicSocial {
@@ -40,6 +42,16 @@ export interface PublicReview {
   date: string;
 }
 
+/** A photo of the tenant gallery as rendered on the public landing (006). */
+export interface PublicGalleryPhoto {
+  id: string;
+  url: string;
+  title?: string;
+  description?: string;
+  /** Display category label (Local / Trabajos / Equipo). */
+  category?: string;
+}
+
 /** Complete read surface of the public provider landing (contracts/portal-profile.contract.md). */
 export interface PublicBusinessProfile {
   slug: string;
@@ -57,7 +69,7 @@ export interface PublicBusinessProfile {
   weeklyHours: BusinessHours[];
   policies: PublicPolicyView[];
   /** Provider-landing extras (003/river landing): rating, gallery and reviews. */
-  gallery?: string[];
+  gallery?: PublicGalleryPhoto[];
   rating?: number | null;
   reviewCount?: number;
   reviews?: PublicReview[];

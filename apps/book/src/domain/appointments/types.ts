@@ -20,6 +20,8 @@ export interface Resource {
   role: string | null;
   avatar: string | null;
   bio: string | null;
+  /** Catalog services this professional performs (admin multi-select, public badges). */
+  serviceIds?: string[];
 }
 
 export interface Service {

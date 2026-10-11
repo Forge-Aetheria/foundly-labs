@@ -47,11 +47,22 @@ export interface Tenant {
   address: string | null;
   phone: string | null;
   social: { instagram?: string; whatsapp?: string } | null;
-  /** Photo gallery (Unsplash URLs) shown on the provider landing. */
-  gallery?: string[];
+  /** Photo gallery (annotated photos) shown on the provider landing (006). */
+  gallery?: GalleryPhoto[];
   createdAt: string;
   updatedAt: string;
 }
+
+/** Closed set of gallery photo categories (admin tag + public badge). */
+export const GALLERY_CATEGORIES = ['local', 'trabajos', 'equipo'] as const;
+export type GalleryCategory = (typeof GALLERY_CATEGORIES)[number];
+
+/** Display labels for gallery categories (public + admin surfaces). */
+export const GALLERY_CATEGORY_LABELS: Record<GalleryCategory, string> = {
+  local: 'Local',
+  trabajos: 'Trabajos',
+  equipo: 'Equipo',
+};
 
 /** A free-form booking/cancellation policy shown on the public portal. */
 export interface PortalPolicy {
@@ -99,6 +110,19 @@ export interface OnboardingProvision {
   draftId: string;
   tenantId: string;
   userId: string;
+}
+
+/** A photo in the business gallery catalog, with optional metadata (006). */
+export interface GalleryPhoto {
+  id: string;
+  /** Absolute http(s) image URL. */
+  url: string;
+  /** Short optional title shown on the card/caption. */
+  title?: string;
+  /** Short optional description. */
+  description?: string;
+  /** Optional tag: local | trabajos | equipo. */
+  category?: GalleryCategory;
 }
 
 /** Defaults produced by the pure provisioning module (research R7). */

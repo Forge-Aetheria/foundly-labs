@@ -1,12 +1,27 @@
 import type { DayAvailability } from '../../domain/availability/types';
 import { computeAvailability } from '../../domain/availability/computeAvailability';
 import type { Tenant } from '../../domain/tenancy/types';
+import { GALLERY_CATEGORY_LABELS } from '../../domain/tenancy/types';
 import { getStore } from '../../server/store';
 import type { PublicBusinessProfile, PublicService, PublicSpecialist } from './types';
 
 export type ResolveResult =
   | { status: 'unavailable'; reason: 'not-found' | 'draft' | 'suspended' }
   | { status: 'available'; business: PublicBusinessProfile };
+
+/** Resolve the catalog service names a specialist performs (005-staff-management). */
+function resolveSpecialistServices(
+  store: ReturnType<typeof getStore>,
+  tenantId: string,
+  serviceIds: string[],
+): string[] {
+  const catalog = store.services.filter(
+    (service) => service.tenantId === tenantId && service.active,
+  );
+  return serviceIds
+    .map((id) => catalog.find((service) => service.id === id)?.name)
+    .filter((name): name is string => Boolean(name));
+}
 
 /** Current applicable rate for a service (effective period contains `at`). */
 function currentRate(serviceId: string, at: Date) {
@@ -53,6 +68,7 @@ export function getPublicBusiness(slug: string, now: Date = new Date()): Resolve
       role: resource.role,
       avatar: resource.avatar,
       bio: resource.bio,
+      services: resolveSpecialistServices(store, tenant.id, resource.serviceIds ?? []),
     }));
 
   const policies = store.portalPolicies
@@ -84,7 +100,13 @@ export function getPublicBusiness(slug: string, now: Date = new Date()): Resolve
       specialists,
       weeklyHours: tenant.businessHours,
       policies,
-      gallery: tenant.gallery ?? [],
+      gallery: (tenant.gallery ?? []).map((photo) => ({
+        id: photo.id,
+        url: photo.url,
+        title: photo.title,
+        description: photo.description,
+        category: photo.category ? GALLERY_CATEGORY_LABELS[photo.category] : undefined,
+      })),
       rating,
       reviewCount: tenantReviews.length,
       reviews: tenantReviews.map((review) => ({
