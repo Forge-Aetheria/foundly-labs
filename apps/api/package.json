@@ -12,6 +12,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@apollo/server": "^5.0.0",
     "@as-integrations/express5": "^1.1.2",
     "@foundly/database": "*",
     "@nestjs/apollo": "^13.0.2",
@@ -19,7 +20,6 @@
     "@nestjs/core": "^11.0.0",
     "@nestjs/graphql": "^13.0.2",
     "@nestjs/platform-express": "^11.0.0",
-    "@apollo/server": "^5.0.0",
     "graphql": "^16.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
@@ -28,11 +28,13 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.0",
+    "@swc/core": "^1.16.18",
     "@types/express": "^5.0.0",
     "@types/node": "^26.6.4",
     "@types/supertest": "^6.0.2",
     "supertest": "^7.1.1",
     "typescript": "^5.9.3",
+    "unplugin-swc": "^2.0.0",
     "vitest": "^3.2.4"
   }
 }

@@ -8,17 +8,18 @@ function schema(): string {
   return readFileSync(schemaPath, 'utf8');
 }
 
-describe('@foundly/database schema (DB-First, 002-persistence-graphql)', () => {
-  it('defines the seven base domain models', () => {
+describe('@foundly/database schema (DB-First, 003-db-first-graphql-core)', () => {
+  it('defines the seven booking entities and the specialist-service join', () => {
     const content = schema();
     for (const model of [
       'Tenant',
-      'Profile',
+      'BusinessProfile',
       'Service',
-      'Staff',
-      'Appointment',
-      'Gallery',
+      'Specialist',
       'Availability',
+      'Appointment',
+      'GalleryPhoto',
+      'SpecialistService',
     ]) {
       expect(content, `model ${model} should exist`).toMatch(new RegExp(`^model ${model} `, 'm'));
     }
@@ -30,8 +31,28 @@ describe('@foundly/database schema (DB-First, 002-persistence-graphql)', () => {
     expect(content).toMatch(/url\s*=\s*env\("DATABASE_URL"\)/);
   });
 
-  it('keeps the Tenant slug unique', () => {
+  it('keeps the public slug unique on BusinessProfile', () => {
     const content = schema();
-    expect(content).toMatch(/slug\s+String\s+@unique/);
+    expect(content).toMatch(/model BusinessProfile \{[\s\S]*?slug\s+String\s+@unique/);
+    expect(content).toMatch(/model Tenant \{[\s\S]*?\}/);
+  });
+
+  it('models the specialist-service assignment as a composite join', () => {
+    const content = schema();
+    expect(content).toMatch(
+      /model SpecialistService \{[\s\S]*?@@id\(\[specialistId, serviceId\]\)/,
+    );
+  });
+
+  it('stores an optional cancellation reason on appointments', () => {
+    const content = schema();
+    expect(content).toMatch(
+      /model Appointment \{[\s\S]*?cancellationReason\s+String\?/,
+    );
+  });
+
+  it('stores an optional plan on tenants (Foundly Pass entitlements)', () => {
+    const content = schema();
+    expect(content).toMatch(/model Tenant \{[\s\S]*?plan\s+String\?/);
   });
 });
