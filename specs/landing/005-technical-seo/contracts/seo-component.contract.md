@@ -2,7 +2,7 @@
 
 **Feature**: `005-technical-seo` | **Type**: Head/UI contract
 
-## Component: `src/components/seo/SEO.astro`
+## Component: `src/shared/components/SEO.astro`
 
 ```ts
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
 
 **Obligations**
 
-- MUST be the single source for page head metadata; `src/layouts/BaseLayout.astro` MUST render it
+- MUST be the single source for page head metadata; `src/shared/components/BaseLayout.astro` MUST render it
   inside `<head>` and pass `title`, `description`, `image`, `canonicalURL` through.
 - MUST emit exactly one `<title>`, one `<meta name="description">`, and one
   `<link rel="canonical">` (absolute URL).

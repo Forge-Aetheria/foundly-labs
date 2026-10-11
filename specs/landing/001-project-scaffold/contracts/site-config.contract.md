@@ -2,7 +2,7 @@
 
 **Feature**: `001-project-scaffold` | **Type**: Application UI contract
 
-## SiteConfig (`src/data/siteConfig.ts`)
+## SiteConfig (`src/shared/data/siteConfig.ts`)
 
 ```ts
 export interface SocialLink {
@@ -27,7 +27,7 @@ export const siteConfig: SiteConfig;
 - `url` MUST be an absolute URL with no trailing slash.
 - `social` MUST be present (may be empty) and each entry MUST have an absolute `href`.
 
-## BaseLayout (`src/layouts/BaseLayout.astro`)
+## BaseLayout (`src/shared/components/BaseLayout.astro`)
 
 ```ts
 export interface Props {

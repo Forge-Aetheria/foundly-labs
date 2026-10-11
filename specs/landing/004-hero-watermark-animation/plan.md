@@ -38,7 +38,7 @@ Performance/Accessibility/SEO.
 `pointer-events: none` + excluded from a11y tree; Hero container `overflow-hidden`; colors via
 tokens (the SVG carries its own brand gradient).
 
-**Scale/Scope**: One updated component (`src/components/sections/Hero.astro`) plus one new SVG
+**Scale/Scope**: One updated component (`src/modules/home/components/Hero.astro`) plus one new SVG
 asset; no data entities.
 
 ## Constitution Check
@@ -48,7 +48,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 | Principle                           | Gate                                                                                       | Pre-Research | Post-Design |
 | ----------------------------------- | ------------------------------------------------------------------------------------------ | ------------ | ----------- |
 | I. Rule of Law                      | Follows existing component conventions; text uses tokens and heading contrast is preserved | PASS         | PASS        |
-| II. Spec-Driven Development         | `specs/landing/004-hero-watermark-animation/spec.md` precedes this plan                            | PASS         | PASS        |
+| II. Spec-Driven Development         | `specs/landing/004-hero-watermark-animation/spec.md` precedes this plan                    | PASS         | PASS        |
 | III. Server-First & Zero-JS Default | Watermark is static markup + CSS keyframes; no `client:*`, no scripts                      | PASS         | PASS        |
 | IV. Strict Typing                   | No new types; Hero props already typed; no `any`                                           | PASS         | PASS        |
 | V. Performance & Core Web Vitals    | Transform/opacity-only animation; reduced-motion honored; one blurred element only         | PASS         | PASS        |
@@ -79,7 +79,7 @@ There is no `data-model.md`: this feature has no data entities (it is purely pre
 src/
 ├── assets/
 │   └── icon-fl.png             # Official "F" isotipo raster used by the watermark (moved from public/)
-└── components/sections/
+└── modules/<modulo>/components/
     └── Hero.astro              # Add watermark layer + scoped CSS keyframes (updated)
 ```
 

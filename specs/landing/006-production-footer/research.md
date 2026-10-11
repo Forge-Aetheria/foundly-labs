@@ -7,7 +7,7 @@ Technical Context.
 
 ## R1. Footer placement
 
-- **Decision**: Render `<Footer />` in `src/layouts/BaseLayout.astro`, immediately after the page
+- **Decision**: Render `<Footer />` in `src/shared/components/BaseLayout.astro`, immediately after the page
   content `<slot />` inside `<body>`.
 - **Rationale**: The footer must appear on every page (FR-001); the base layout is the single shared
   shell, so placing it there avoids repeating it per page.
@@ -28,10 +28,10 @@ Technical Context.
 
 ## R3. Where the link content lives
 
-- **Decision**: Define the footer columns in `src/data/footer.ts` as a typed `FooterColumn[]`; the
+- **Decision**: Define the footer columns in `src/shared/data/footer.ts` as a typed `FooterColumn[]`; the
   component only imports data and renders it.
 - **Rationale**: `code-rules.md` forbids declaring static content lists inside section components and
-  requires content in `src/data/`. Centralizing the links also aids future edits and SEO review.
+  requires content in `src/shared/data/`. Centralizing the links also aids future edits and SEO review.
 - **Alternatives considered**: Inlining the links in `Footer.astro` (rejected — violates code rules)
   and a content collection (rejected — overkill for a fixed, code-owned list).
 
@@ -54,7 +54,7 @@ Technical Context.
 
 ## R6. Ecosystem links
 
-- **Decision**: Derive the ecosystem links from `src/data/apps.ts`, linking each application to the
+- **Decision**: Derive the ecosystem links from `src/shared/data/apps.ts`, linking each application to the
   applications section (`/#apps`), and label "Foundly" as "Foundly Mobile" as requested.
 - **Rationale**: Avoids duplicating app names and keeps the footer in sync with the app grid; no
   standalone landing pages exist yet, so the `#apps` anchor is the correct target.

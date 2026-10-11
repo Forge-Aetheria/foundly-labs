@@ -58,7 +58,7 @@ Expected: no ESLint errors.
 
 - Confirm each token in [contracts/design-tokens.contract.md](./contracts/design-tokens.contract.md)
   exists in `src/styles/tokens.css`.
-- Search `src/components/**` for literal brand hex values (e.g. `#6C5CE7`, `#FFFFFF`): expect no
+- Search `src/**` for literal brand hex values (e.g. `#6C5CE7`, `#FFFFFF`): expect no
   matches in component files.
 
 Expected: all brand colors resolve through named tokens.

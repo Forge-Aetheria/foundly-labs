@@ -8,7 +8,7 @@
 
 ## Summary
 
-Enrich the canonical, strictly typed applications dataset (`src/data/apps.ts`) with the final
+Enrich the canonical, strictly typed applications dataset (`src/shared/data/apps.ts`) with the final
 production copy for the four Foundly Labs products — headline, subheadline, "what it solves"
 description, and key feature — plus per-product `logo` and `icon` asset paths served from `public/`.
 Update `AppCard.astro` so each ecosystem card renders its product image in the card header with a
@@ -22,7 +22,7 @@ grid within the Clean Light UI. The whole feature remains static-first and zero-
 **Primary Dependencies**: `astro@^5`, `tailwindcss@^4` via `@tailwindcss/vite` (existing scaffold).
 No new runtime or build dependencies are required.
 
-**Storage**: N/A — static site; product entries remain typed static data in `src/data/apps.ts`;
+**Storage**: N/A — static site; product entries remain typed static data in `src/shared/data/apps.ts`;
 product images are static files under `public/<product>/`.
 
 **Testing**: `astro check` (types) + ESLint (`eslint .`) + `astro build` smoke; manual responsive
@@ -37,6 +37,7 @@ blocking resources; product images must not cause layout shift. Maintain Lightho
 Desktop and ≥98 Mobile for Performance, Accessibility and SEO (constitution, Principle V).
 
 **Constraints**:
+
 - Strict typing: extend the `Application` contract with explicit fields; no `any`, no implicit `as`.
 - Tokens-only colors; no literal brand hex in markup (constitution, Principle VI).
 - Product asset paths are fixed by the spec: `/<product>/branding-logo.png` and `/<product>/icon.png`.
@@ -50,14 +51,14 @@ Desktop and ≥98 Mobile for Performance, Accessibility and SEO (constitution, P
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle                           | Gate                                                                                                             | Pre-Research | Post-Design |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------ | ----------- |
-| I. Rule of Law                      | Follows `code-rules.md` naming/locations (`ui/`, `data/`, `types/`); deviation on `<img>` is documented in R1     | PASS         | PASS        |
-| II. Spec-Driven Development         | `specs/landing/003-real-apps-data/spec.md` precedes this plan                                                            | PASS         | PASS        |
-| III. Server-First & Zero-JS Default | Cards and images are static HTML; no `client:*` added                                                             | PASS         | PASS        |
-| IV. Strict Typing                   | `Application` extended with explicit fields; no `any`                                                             | PASS         | PASS        |
-| V. Performance & Core Web Vitals    | Controlled image footprint to avoid CLS; no new client JS                                                        | PASS         | PASS        |
-| VI. Clean Light UI Design System    | Cards keep `bg-card-light/*`, `border-border-subtle`, `rounded-2xl`, `shadow-card`; image bg composited cleanly   | PASS         | PASS        |
+| Principle                           | Gate                                                                                                            | Pre-Research | Post-Design |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------ | ----------- |
+| I. Rule of Law                      | Follows `code-rules.md` naming/locations (`ui/`, `data/`, `types/`); deviation on `<img>` is documented in R1   | PASS         | PASS        |
+| II. Spec-Driven Development         | `specs/landing/003-real-apps-data/spec.md` precedes this plan                                                   | PASS         | PASS        |
+| III. Server-First & Zero-JS Default | Cards and images are static HTML; no `client:*` added                                                           | PASS         | PASS        |
+| IV. Strict Typing                   | `Application` extended with explicit fields; no `any`                                                           | PASS         | PASS        |
+| V. Performance & Core Web Vitals    | Controlled image footprint to avoid CLS; no new client JS                                                       | PASS         | PASS        |
+| VI. Clean Light UI Design System    | Cards keep `bg-card-light/*`, `border-border-subtle`, `rounded-2xl`, `shadow-card`; image bg composited cleanly | PASS         | PASS        |
 
 **Result**: No violations. Complexity Tracking is not required.
 
@@ -95,18 +96,19 @@ public/
     └── icon.png
 
 src/
-├── components/
-│   └── ui/
-│       └── AppCard.astro       # updated: header image + enriched copy layout
-├── data/
-│   └── apps.ts                 # updated: production copy + logo/icon paths
-└── types/
-    └── index.ts                # updated: Application gains headline/subheadline/keyFeature/logo/icon
+└── shared/
+    ├── components/
+    │   └── ui/
+    │       └── AppCard.astro       # updated: header image + enriched copy layout
+    ├── data/
+    │   └── apps.ts                 # updated: production copy + logo/icon paths
+    └── types/
+        └── index.ts                # updated: Application gains headline/subheadline/keyFeature/logo/icon
 ```
 
 **Structure Decision**: Reuse the existing single-project layout and `code-rules.md` conventions.
-The `Application` contract lives in `src/types/index.ts`; canonical values live in `src/data/apps.ts`;
-presentation stays in `src/components/ui/AppCard.astro` (imported by `src/components/sections/AppsGrid.astro`).
+The `Application` contract lives in `src/shared/types/index.ts`; canonical values live in `src/shared/data/apps.ts`;
+presentation stays in `src/shared/components/ui/AppCard.astro` (imported by `src/modules/home/components/AppsGrid.astro`).
 No new components or islands are introduced. The only new files are the `public/mixbit/` assets
 whose source must be supplied (see research.md R2).
 
@@ -114,6 +116,6 @@ whose source must be supplied (see research.md R2).
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation                          | Why Needed                                                                                              | Simpler Alternative Rejected Because                                                                                                      |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Violation                             | Why Needed                                                                                                                                          | Simpler Alternative Rejected Because                                                                                                        |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `code-rules.md` §6 prefers `<Image/>` | Product assets are fixed public URLs mandated by the spec (`/<product>/...`), which `astro:assets` cannot consume without moving files under `src/` | Moving assets to `src/assets` would violate the spec's mandated public paths and add a build-time import indirection for no measurable gain |

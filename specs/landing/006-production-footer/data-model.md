@@ -4,8 +4,8 @@
 
 ## Entity: FooterLink
 
-A single link rendered in a footer column. Defined in `src/types/index.ts`, used by
-`src/data/footer.ts`.
+A single link rendered in a footer column. Defined in `src/shared/types/index.ts`, used by
+`src/shared/data/footer.ts`.
 
 | Field       | Type    | Required | Validation                    | Notes                                                             |
 | ----------- | ------- | -------- | ----------------------------- | ----------------------------------------------------------------- |
@@ -23,7 +23,7 @@ A labelled group of links.
 | `title` | string       | yes      | non-empty    | Column heading     |
 | `links` | FooterLink[] | yes      | may be empty | Rendered as a list |
 
-**Canonical columns** (from `src/data/footer.ts`):
+**Canonical columns** (from `src/shared/data/footer.ts`):
 
 ### Ecosystem
 

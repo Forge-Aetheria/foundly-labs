@@ -9,7 +9,7 @@ Zod schemas.
 
 ## Entity: SiteConfig
 
-Central defaults for the site, defined in `src/data/siteConfig.ts` and consumed by
+Central defaults for the site, defined in `src/shared/data/siteConfig.ts` and consumed by
 `BaseLayout.astro`.
 
 | Field         | Type         | Required | Validation      | Notes                                    |
@@ -31,7 +31,7 @@ Central defaults for the site, defined in `src/data/siteConfig.ts` and consumed 
 
 ## Entity: NavItem
 
-Static navigation constants in `src/data/navigation.ts`.
+Static navigation constants in `src/shared/data/navigation.ts`.
 
 | Field      | Type      | Required | Validation                    | Notes                   |
 | ---------- | --------- | -------- | ----------------------------- | ----------------------- |
@@ -117,5 +117,5 @@ None. All entities are immutable, build-time data; there is no runtime mutation.
 
 ## Type Location
 
-Shared hand-written types (e.g. `SiteConfig`, `SocialLink`, `NavItem`) live in `src/types/index.ts`.
+Shared hand-written types (e.g. `SiteConfig`, `SocialLink`, `NavItem`) live in `src/shared/types/index.ts`.
 Collection types are inferred from their Zod schemas via `astro:content`.

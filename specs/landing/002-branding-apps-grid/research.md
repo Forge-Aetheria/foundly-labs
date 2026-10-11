@@ -7,8 +7,8 @@ plan's Technical Context.
 
 ## R1. Navbar implementation (static vs hydrated island)
 
-- **Decision**: Implement the navigation as a static `src/components/sections/Navbar.astro`
-  component and remove the unused sample island `src/components/islands/Nav.tsx`. The mobile menu
+- **Decision**: Implement the navigation as a static `src/shared/components/Navbar.astro`
+  component and remove the unused sample island `src/modules/<modulo>/islands/Nav.tsx`. The mobile menu
   uses a CSS-only disclosure (a `<details>`/`<summary>` toggle plus an always-visible desktop list).
 - **Rationale**: Satisfies Constitution Principle III (server-first, zero-JS default). Navigation
   is above the fold and must work with JavaScript disabled (spec edge case).
@@ -67,8 +67,8 @@ border-border-subtle rounded-2xl shadow-card` plus spacing, using the existing t
 ## R6. Typed application data
 
 - **Decision**: Define an `Application` interface (with a `category`/`status`/`target`) in
-  `src/types/index.ts` and the four entries in `src/data/apps.ts`, typed as `Application[]`.
-- **Rationale**: FR-010 requires a typed reusable structure; `src/data/` is the code-rules location
+  `src/shared/types/index.ts` and the four entries in `src/shared/data/apps.ts`, typed as `Application[]`.
+- **Rationale**: FR-010 requires a typed reusable structure; `src/shared/data/` is the code-rules location
   for static content, and Zod is unnecessary because this is a fixed, code-owned list.
 - **Alternatives considered**: A content collection with Zod (rejected — overkill for four
   code-owned records and would complicate the anchor-rendered grid) and inline arrays in the

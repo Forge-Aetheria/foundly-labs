@@ -2,7 +2,7 @@
 
 **Feature**: `006-production-footer` | **Type**: Section UI contract
 
-## Component: `src/components/sections/Footer.astro`
+## Component: `src/shared/components/Footer.astro`
 
 **DOM obligations**
 
@@ -11,7 +11,7 @@
   copy, and the FORGE Labs attribution sentence.
 - MUST render a responsive grid: `grid-cols-1 md:grid-cols-2 lg:grid-cols-4` (or equivalent), so it
   is a single column on small screens and up to four on desktop.
-- MUST render one column per entry in `src/data/footer.ts` (Ecosystem, Philosophy & Resources,
+- MUST render one column per entry in `src/shared/data/footer.ts` (Ecosystem, Philosophy & Resources,
   Contact & Social).
 - MUST render a bottom bar separated by a top divider, containing the copyright line.
 
@@ -32,12 +32,12 @@
 **Performance / structure obligations**
 
 - MUST NOT add any client-side JavaScript or `client:*` directive.
-- Link content MUST come from `src/data/footer.ts`; the component MUST NOT declare content lists
+- Link content MUST come from `src/shared/data/footer.ts`; the component MUST NOT declare content lists
   inline (code-rules §5).
 
 ## Layout integration
 
-- `src/layouts/BaseLayout.astro` MUST render `<Footer />` after the page `<slot />` so every page
+- `src/shared/components/BaseLayout.astro` MUST render `<Footer />` after the page `<slot />` so every page
   includes it.
 
 ## Verification

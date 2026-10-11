@@ -7,7 +7,7 @@ Technical Context.
 
 ## R1. Reusable SEO component API and injection
 
-- **Decision**: Create `src/components/seo/SEO.astro` with typed props `title?`, `description?`,
+- **Decision**: Create `src/shared/components/SEO.astro` with typed props `title?`, `description?`,
   `image?`, `canonicalURL?`. `BaseLayout` imports it and renders `<SEO ... />` inside `<head>`,
   passing the page's props through. All current inline meta tags move into the component.
 - **Rationale**: Single source of truth for head metadata and structured data; pages keep passing
@@ -61,7 +61,7 @@ Technical Context.
 - **Decision**: Emit two JSON-LD blocks from the `SEO` component using
   `<script type="application/ld+json" is:inline set:html={JSON.stringify(data)} />`: an
   `Organization` (name, url, logo, `parentOrganization` = FORGE Labs) and an `ItemList` of
-  `SoftwareApplication` entries derived from `src/data/apps.ts`.
+  `SoftwareApplication` entries derived from `src/shared/data/apps.ts`.
 - **Rationale**: `is:inline` prevents Astro from bundling/processing the tag (so no client JS and no
   module semantics); `JSON.stringify` guarantees valid escaping.
 - **Alternatives considered**: Using a global `<script>` (rejected — Astro would process it as

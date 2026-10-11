@@ -41,7 +41,7 @@ of each story.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T002 In `src/components/sections/Hero.astro`, add `relative overflow-hidden` to the Hero `<section>` and wrap the existing content (badge, heading, subtitle, CTAs) in a `relative z-10` container
+- [x] T002 In `src/modules/home/components/Hero.astro`, add `relative overflow-hidden` to the Hero `<section>` and wrap the existing content (badge, heading, subtitle, CTAs) in a `relative z-10` container
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -57,7 +57,7 @@ the heading/subtitle stay legible, and hovering/clicking/tabbing never hits the 
 
 ### Implementation for User Story 1
 
-- [x] T003 [US1] Add the decorative watermark container as the first child of the Hero `<section>` in `src/components/sections/Hero.astro`: `pointer-events-none absolute left-1/2 top-1/2 z-0` with `aria-hidden="true"`, rendering the official isotipo `src/assets/icon-fl.png` via `<Image src={iconFl} alt="" />` (`w-[40rem] max-w-none opacity-25 mix-blend-multiply blur-[0.5px]`)
+- [x] T003 [US1] Add the decorative watermark container as the first child of the Hero `<section>` in `src/modules/home/components/Hero.astro`: `pointer-events-none absolute left-1/2 top-1/2 z-0` with `aria-hidden="true"`, rendering the official isotipo `src/assets/icon-fl.png` via `<Image src={iconFl} alt="" />` (`w-[40rem] max-w-none opacity-25 mix-blend-multiply blur-[0.5px]`)
 - [x] T004 [US1] Verify the watermark renders behind the heading, the heading/subtitle remain legible, and the layer is not focusable and captures no pointer input
 
 **Checkpoint**: User Story 1 fully functional and independently testable
@@ -73,7 +73,7 @@ about 12 seconds; confirm no client JS was added.
 
 ### Implementation for User Story 2
 
-- [x] T005 [US2] Add a scoped `<style>` block in `src/components/sections/Hero.astro` defining `@keyframes y-tilt-spin` (`translate(-50%, -50%) perspective(1000px)` + lateral `rotateY` ±25° + counter `rotateX` ±5°) and apply `animation: y-tilt-spin 12s ease-in-out infinite` to the watermark container
+- [x] T005 [US2] Add a scoped `<style>` block in `src/modules/home/components/Hero.astro` defining `@keyframes y-tilt-spin` (`translate(-50%, -50%) perspective(1000px)` + lateral `rotateY` ±25° + counter `rotateX` ±5°) and apply `animation: y-tilt-spin 12s ease-in-out infinite` to the watermark container
 - [x] T006 [US2] Verify the 3D side-to-side sway is smooth, a full cycle is about 12s, and no client-side JavaScript or `client:*` directive was introduced
 
 **Checkpoint**: User Stories 1 and 2 both work independently
@@ -89,7 +89,7 @@ confirm no horizontal scroll; confirm the layer is excluded from the accessibili
 
 ### Implementation for User Story 3
 
-- [x] T007 [US3] Add a `@media (prefers-reduced-motion: reduce)` rule in the Hero scoped `<style>` of `src/components/sections/Hero.astro` that disables the animation and keeps the watermark centered and static
+- [x] T007 [US3] Add a `@media (prefers-reduced-motion: reduce)` rule in the Hero scoped `<style>` of `src/modules/home/components/Hero.astro` that disables the animation and keeps the watermark centered and static
 - [x] T008 [US3] Verify reduced motion pauses the watermark, there is no horizontal overflow from 320px up, and the decorative layer is hidden from assistive technologies
 
 **Checkpoint**: All user stories independently functional

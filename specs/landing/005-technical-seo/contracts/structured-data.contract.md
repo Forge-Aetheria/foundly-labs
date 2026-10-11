@@ -44,7 +44,7 @@ Two JSON-LD blocks are emitted inline in the page head via
 **Obligations**
 
 - The `Organization` block MUST include FORGE Labs as `parentOrganization`.
-- The `SoftwareApplication` list MUST be derived from `src/data/apps.ts` (one item per application).
+- The `SoftwareApplication` list MUST be derived from `src/shared/data/apps.ts` (one item per application).
 - Values MUST be serialized with `JSON.stringify` (safe escaping).
 - The tags MUST be `is:inline` so Astro does not treat them as executable modules.
 

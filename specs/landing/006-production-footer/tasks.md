@@ -31,8 +31,8 @@ of each story.
 
 **Purpose**: Typed footer content shared by the component
 
-- [X] T001 [P] Add `FooterLink` and `FooterColumn` types to `src/types/index.ts`
-- [X] T002 Create `src/data/footer.ts` with the three typed columns (Ecosystem derived from `src/data/apps.ts`, Philosophy & Resources, Contact & Social from `src/data/siteConfig.ts`)
+- [x] T001 [P] Add `FooterLink` and `FooterColumn` types to `src/shared/types/index.ts`
+- [x] T002 Create `src/shared/data/footer.ts` with the three typed columns (Ecosystem derived from `src/shared/data/apps.ts`, Philosophy & Resources, Contact & Social from `src/shared/data/siteConfig.ts`)
 
 ---
 
@@ -42,8 +42,8 @@ of each story.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [X] T003 Create `src/components/sections/Footer.astro` with the semantic `<footer>`, token-based light surface (`bg-surface-elevated/60 border-t border-border-subtle`), a responsive grid container (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`), and an empty bottom-bar wrapper
-- [X] T004 Render `<Footer />` after the page `<slot />` in `src/layouts/BaseLayout.astro`
+- [x] T003 Create `src/shared/components/Footer.astro` with the semantic `<footer>`, token-based light surface (`bg-surface-elevated/60 border-t border-border-subtle`), a responsive grid container (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`), and an empty bottom-bar wrapper
+- [x] T004 Render `<Footer />` after the page `<slot />` in `src/shared/components/BaseLayout.astro`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -58,8 +58,8 @@ the FORGE Labs credit link opening safely with a subtle hover state.
 
 ### Implementation for User Story 1
 
-- [X] T005 [US1] Add the branding column to `src/components/sections/Footer.astro`: the `<Image />` logo (with brand-name fallback), the short brand copy, and the FORGE Labs attribution sentence linking to `https://www.forgelab.lat` with `target="_blank"` and `rel="noopener noreferrer"`
-- [X] T006 [US1] Verify the footer renders on `/`, `/privacy`, and `/terms`, that the brand copy and FORGE Labs link are present, and that the link opens in a new tab with a subtle hover state
+- [x] T005 [US1] Add the branding column to `src/shared/components/Footer.astro`: the `<Image />` logo (with brand-name fallback), the short brand copy, and the FORGE Labs attribution sentence linking to `https://www.forgelab.lat` with `target="_blank"` and `rel="noopener noreferrer"`
+- [x] T006 [US1] Verify the footer renders on `/`, `/privacy`, and `/terms`, that the brand copy and FORGE Labs link are present, and that the link opens in a new tab with a subtle hover state
 
 **Checkpoint**: User Story 1 fully functional and independently testable
 
@@ -74,8 +74,8 @@ manifesto; confirm all four apps and the resource/social links render and resolv
 
 ### Implementation for User Story 2
 
-- [X] T007 [US2] Render the Ecosystem, Philosophy & Resources, and Contact & Social columns from `src/data/footer.ts` in `src/components/sections/Footer.astro`, applying `target="_blank"` + `rel="noopener noreferrer"` to external links and descriptive `aria-label`s to social links
-- [X] T008 [US2] Verify the four applications (Foundly Mobile, Foundly POS, LRC-Maker, Mixbit) and the philosophy/resource/social links render and resolve correctly
+- [x] T007 [US2] Render the Ecosystem, Philosophy & Resources, and Contact & Social columns from `src/shared/data/footer.ts` in `src/shared/components/Footer.astro`, applying `target="_blank"` + `rel="noopener noreferrer"` to external links and descriptive `aria-label`s to social links
+- [x] T008 [US2] Verify the four applications (Foundly Mobile, Foundly POS, LRC-Maker, Mixbit) and the philosophy/resource/social links render and resolve correctly
 
 **Checkpoint**: User Stories 1 and 2 both work independently
 
@@ -90,8 +90,8 @@ confirm every link is focusable with a visible focus state and external links ar
 
 ### Implementation for User Story 3
 
-- [X] T009 [US3] Add the bottom bar content to `src/components/sections/Footer.astro`: top divider plus the line "© 2026 Foundly Labs. Todos los derechos reservados. Powered by FORGE Labs."
-- [X] T010 [US3] Verify keyboard focus reaches every footer link with a visible focus indicator, icon/social links have accessible labels, and external links use `rel="noopener noreferrer"`
+- [x] T009 [US3] Add the bottom bar content to `src/shared/components/Footer.astro`: top divider plus the line "© 2026 Foundly Labs. Todos los derechos reservados. Powered by FORGE Labs."
+- [x] T010 [US3] Verify keyboard focus reaches every footer link with a visible focus indicator, icon/social links have accessible labels, and external links use `rel="noopener noreferrer"`
 
 **Checkpoint**: All user stories independently functional
 
@@ -101,8 +101,8 @@ confirm every link is focusable with a visible focus state and external links ar
 
 **Purpose**: Final validation across the feature
 
-- [X] T011 Run `npm run check`, `npm run lint`, and `npm run build`; confirm 0 errors/problems and that `dist/index.html` contains a `<footer>` and the `https://www.forgelab.lat` link
-- [X] T012 [P] Verify the responsive layout (single column at 320px, up to four columns on desktop) with no horizontal overflow, and confirm the footer adds no executable JavaScript
+- [x] T011 Run `npm run check`, `npm run lint`, and `npm run build`; confirm 0 errors/problems and that `dist/index.html` contains a `<footer>` and the `https://www.forgelab.lat` link
+- [x] T012 [P] Verify the responsive layout (single column at 320px, up to four columns on desktop) with no horizontal overflow, and confirm the footer adds no executable JavaScript
 
 ---
 
@@ -169,5 +169,5 @@ Task: "Verify responsive layout and zero-JS"
 - [Story] label maps a task to a specific user story for traceability
 - Tests are not requested; validation is via `npm run check`, `npm run lint`, `npm run build`, and manual checks
 - Commit after each task or logical group (use `feat(scope)` per the constitution)
-- Footer link content lives in `src/data/footer.ts` (code-rules §5); the component only renders it
+- Footer link content lives in `src/shared/data/footer.ts` (code-rules §5); the component only renders it
 - Avoid: vague tasks, same-file conflicts, cross-story dependencies that break independence

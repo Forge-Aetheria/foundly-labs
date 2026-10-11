@@ -22,7 +22,7 @@ Technical Context.
 ## R2. Where the animation lives
 
 - **Decision**: Define the keyframes in a scoped `<style>` block inside
-  `src/components/sections/Hero.astro`, named `y-tilt-spin`.
+  `src/modules/home/components/Hero.astro`, named `y-tilt-spin`.
 - **Rationale**: The motion is specific to the Hero; a scoped style avoids polluting global CSS and
   guarantees no JavaScript. Astro compiles this to plain CSS at build time.
 - **Alternatives considered**: Global keyframes in `src/styles/global.css` (rejected — unnecessary

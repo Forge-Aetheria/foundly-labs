@@ -51,7 +51,7 @@ Expected output: static pages plus `dist/sitemap-index.xml` and `dist/robots.txt
 - Parse the `<script type="application/ld+json">` blocks in a built page.
 - Confirm the Organization block names Foundly Labs and lists **FORGE Labs**
   (`https://www.forgelab.lat`) as `parentOrganization`.
-- Confirm the SoftwareApplication list has one entry per application in `src/data/apps.ts`.
+- Confirm the SoftwareApplication list has one entry per application in `src/shared/data/apps.ts`.
 - Run a Schema.org/Rich Results validator on the built HTML; expect zero errors.
 
 ### 6. Defaults and overrides (FR-014, SC-007)

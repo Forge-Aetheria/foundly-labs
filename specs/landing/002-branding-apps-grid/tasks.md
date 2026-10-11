@@ -42,8 +42,8 @@ of each story.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T003 [P] Add the `Application` interface and a `defaultTitle` field on `SiteConfig` in `src/types/index.ts`
-- [x] T004 [P] Set `defaultTitle` to `"Foundly Labs | Local-First Software Ecosystem"` in `src/data/siteConfig.ts`
+- [x] T003 [P] Add the `Application` interface and a `defaultTitle` field on `SiteConfig` in `src/shared/types/index.ts`
+- [x] T004 [P] Set `defaultTitle` to `"Foundly Labs | Local-First Software Ecosystem"` in `src/shared/data/siteConfig.ts`
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -59,11 +59,11 @@ logo; click both nav links and confirm they reach the `#apps` and `#manifesto` s
 
 ### Implementation for User Story 1
 
-- [x] T005 [US1] Update `src/data/navigation.ts` to the entries Inicio (`/`), Ecosistema (`/#apps`), and Local-First (`/#manifesto`)
-- [x] T006 [US1] Create `src/components/sections/Navbar.astro` with the full logo via `<Image />` (alt "Foundly Labs"), a CSS-only mobile disclosure, and links sourced from `src/data/navigation.ts`
-- [x] T007 [US1] Update `src/layouts/BaseLayout.astro` to use `siteConfig.defaultTitle` as the default title (compose `${title} · ${siteConfig.defaultTitle}` when a page title is given), set the brand Open Graph tags with the logo asset as default `og:image`, and mount `<Navbar />`
-- [x] T008 [US1] Remove the unused sample island `src/components/islands/Nav.tsx`
-- [x] T009 [US1] Create the anchor section shells `src/components/sections/AppsGrid.astro` (`id="apps"`) and `src/components/sections/Manifesto.astro` (`id="manifesto"`), and compose them into `src/pages/index.astro`
+- [x] T005 [US1] Update `src/shared/data/navigation.ts` to the entries Inicio (`/`), Ecosistema (`/#apps`), and Local-First (`/#manifesto`)
+- [x] T006 [US1] Create `src/shared/components/Navbar.astro` with the full logo via `<Image />` (alt "Foundly Labs"), a CSS-only mobile disclosure, and links sourced from `src/shared/data/navigation.ts`
+- [x] T007 [US1] Update `src/shared/components/BaseLayout.astro` to use `siteConfig.defaultTitle` as the default title (compose `${title} · ${siteConfig.defaultTitle}` when a page title is given), set the brand Open Graph tags with the logo asset as default `og:image`, and mount `<Navbar />`
+- [x] T008 [US1] Remove the unused sample island `src/modules/<modulo>/islands/Nav.tsx`
+- [x] T009 [US1] Create the anchor section shells `src/modules/home/components/AppsGrid.astro` (`id="apps"`) and `src/modules/home/components/Manifesto.astro` (`id="manifesto"`), and compose them into `src/pages/index.astro`
 - [x] T010 [US1] Verify the favicon, official title, Open Graph tags, navbar logo, and that both nav links reach `#apps`/`#manifesto` (including with JavaScript disabled)
 
 **Checkpoint**: User Story 1 fully functional and independently testable
@@ -80,9 +80,9 @@ column on small screens, two columns from the medium breakpoint, and four from t
 
 ### Implementation for User Story 2
 
-- [x] T011 [P] [US2] Create `src/data/apps.ts` with the four typed `Application` records (Foundly, Foundly POS, LRC-Maker, Mixbit) per [data-model.md](./data-model.md)
-- [x] T012 [P] [US2] Create `src/components/ui/AppCard.astro` rendering `name`, `category`, `status`, `target`, and `description` with `bg-card-light/60 backdrop-blur-md border border-border-subtle rounded-2xl shadow-card`
-- [x] T013 [US2] Render the four `AppCard`s inside `src/components/sections/AppsGrid.astro` using `grid-cols-1 md:grid-cols-2 lg:grid-cols-4`, with the `id="apps"` anchor and a section heading preserved
+- [x] T011 [P] [US2] Create `src/shared/data/apps.ts` with the four typed `Application` records (Foundly, Foundly POS, LRC-Maker, Mixbit) per [data-model.md](./data-model.md)
+- [x] T012 [P] [US2] Create `src/shared/components/ui/AppCard.astro` rendering `name`, `category`, `status`, `target`, and `description` with `bg-card-light/60 backdrop-blur-md border border-border-subtle rounded-2xl shadow-card`
+- [x] T013 [US2] Render the four `AppCard`s inside `src/modules/home/components/AppsGrid.astro` using `grid-cols-1 md:grid-cols-2 lg:grid-cols-4`, with the `id="apps"` anchor and a section heading preserved
 - [x] T014 [US2] Verify four cards render with the exact category, status, target, and description values, and that the grid is 1 column on small screens, 2 at `md`, and 4 at `lg`
 
 **Checkpoint**: User Stories 1 and 2 both work independently
@@ -99,8 +99,8 @@ to its anchor.
 
 ### Implementation for User Story 3
 
-- [x] T015 [P] [US3] Create `src/components/ui/Button.astro` (anchor-based `primary`/`secondary` variants using design tokens)
-- [x] T016 [US3] Add two centered CTA buttons to `src/components/sections/Hero.astro`: "Explorar Ecosistema" (primary → `#apps`) and "¿Por qué Local-First?" (secondary → `#manifesto`), keeping the tagline and subtitle
+- [x] T015 [P] [US3] Create `src/shared/components/ui/Button.astro` (anchor-based `primary`/`secondary` variants using design tokens)
+- [x] T016 [US3] Add two centered CTA buttons to `src/modules/home/components/Hero.astro`: "Explorar Ecosistema" (primary → `#apps`) and "¿Por qué Local-First?" (secondary → `#manifesto`), keeping the tagline and subtitle
 - [x] T017 [US3] Verify the tagline/subtitle are unchanged, both CTAs reach their anchors, and keyboard focus is visible
 
 **Checkpoint**: All user stories independently functional
@@ -113,7 +113,7 @@ to its anchor.
 
 - [x] T018 [P] Update `README.md` to mention the navbar, applications grid, and section anchors
 - [x] T019 Run the [quickstart.md](./quickstart.md) automated gates (`npm run check`, `npm run lint`, `npm run build`) and confirm 0 errors/warnings
-- [x] T020 [P] Confirm no literal brand hex values exist in `src/components/**` and complete the quickstart accessibility/no-JS checks
+- [x] T020 [P] Confirm no literal brand hex values exist in `src/**` and complete the quickstart accessibility/no-JS checks
 - [x] T021 Run Lighthouse against the built site and confirm the Performance, Accessibility, and SEO targets
 
 ---
@@ -154,15 +154,15 @@ to its anchor.
 
 ```bash
 # Launch independent US2 files together:
-Task: "Create src/data/apps.ts with the four typed Application records"
-Task: "Create src/components/ui/AppCard.astro"
+Task: "Create src/shared/data/apps.ts with the four typed Application records"
+Task: "Create src/shared/components/ui/AppCard.astro"
 ```
 
 ## Parallel Example: Foundational
 
 ```bash
-Task: "Add Application interface and defaultTitle in src/types/index.ts"
-Task: "Set defaultTitle in src/data/siteConfig.ts"
+Task: "Add Application interface and defaultTitle in src/shared/types/index.ts"
+Task: "Set defaultTitle in src/shared/data/siteConfig.ts"
 ```
 
 ---

@@ -35,4 +35,4 @@ Tailwind v4's `@theme` and become both CSS custom properties and Tailwind utilit
 ## Verification
 
 - A sample component references each token and renders the expected value.
-- A source scan of `src/components/**` reports zero literal brand hex values.
+- A source scan of `src/**` reports zero literal brand hex values.

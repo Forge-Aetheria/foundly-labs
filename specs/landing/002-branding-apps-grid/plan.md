@@ -21,7 +21,7 @@ static-first and zero-JS for navigation (CSS-only disclosure) and reuses the exi
 **Primary Dependencies**: `astro@^5`, `@tailwindcss/vite`, `tailwindcss@^4` (existing scaffold).
 No new runtime dependencies are required.
 
-**Storage**: N/A (static site; application entries are static typed data in `src/data/apps.ts`)
+**Storage**: N/A (static site; application entries are static typed data in `src/shared/data/apps.ts`)
 
 **Testing**: `astro check` (types) + ESLint + `astro build` smoke; manual responsive and keyboard
 checks. No unit test framework in scope.
@@ -44,14 +44,14 @@ images served locally from `public/`; anchors resolve across routes as `/#apps` 
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle                           | Gate                                                                                                   | Pre-Research | Post-Design |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------ | ----------- |
-| I. Rule of Law                      | Uses existing tokens and follows `code-rules.md` conventions (`ui/`, `sections/`, `data/`)             | PASS         | PASS        |
-| II. Spec-Driven Development         | `specs/landing/002-branding-apps-grid/spec.md` precedes this plan                                              | PASS         | PASS        |
-| III. Server-First & Zero-JS Default | Navbar and grid are static; mobile nav uses CSS-only disclosure; no `client:*` added                   | PASS         | PASS        |
-| IV. Strict Typing                   | `Application` type + `apps.ts` data; no `any`; existing `@/*` alias                                    | PASS         | PASS        |
-| V. Performance & Core Web Vitals    | No new client JS; local brand images; no layout-shift regressions                                      | PASS         | PASS        |
-| VI. Clean Light UI Design System    | Cards use `bg-card-light/60`, `backdrop-blur-md`, `border-border-subtle`, `rounded-2xl`, `shadow-card` | PASS         | PASS        |
+| Principle                           | Gate                                                                                                                                   | Pre-Research | Post-Design |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ----------- |
+| I. Rule of Law                      | Uses existing tokens and follows `code-rules.md` conventions (`shared/components/ui/`, `modules/<modulo>/components/`, `shared/data/`) | PASS         | PASS        |
+| II. Spec-Driven Development         | `specs/landing/002-branding-apps-grid/spec.md` precedes this plan                                                                      | PASS         | PASS        |
+| III. Server-First & Zero-JS Default | Navbar and grid are static; mobile nav uses CSS-only disclosure; no `client:*` added                                                   | PASS         | PASS        |
+| IV. Strict Typing                   | `Application` type + `apps.ts` data; no `any`; existing `@/*` alias                                                                    | PASS         | PASS        |
+| V. Performance & Core Web Vitals    | No new client JS; local brand images; no layout-shift regressions                                                                      | PASS         | PASS        |
+| VI. Clean Light UI Design System    | Cards use `bg-card-light/60`, `backdrop-blur-md`, `border-border-subtle`, `rounded-2xl`, `shadow-card`                                 | PASS         | PASS        |
 
 **Result**: No violations. Complexity Tracking is not required.
 
@@ -79,30 +79,33 @@ public/
 └── branding-logo-fl.png  # Full logo used by the navbar and as default OG image
 
 src/
-├── components/
-│   ├── ui/
-│   │   ├── AppCard.astro       # Clean Light UI application card (new)
-│   │   ├── Badge.astro         # existing
-│   │   └── Button.astro        # primary/secondary CTA primitive (new)
-│   └── sections/
-│       ├── Hero.astro          # add centered CTA buttons (updated)
-│       ├── Navbar.astro        # static navbar with logo + links (new; replaces islands/Nav.tsx)
-│       ├── AppsGrid.astro      # id="apps", responsive grid of AppCards (new)
-│       └── Manifesto.astro     # id="manifesto", local-first rationale (new)
-├── data/
-│   ├── apps.ts                 # typed application entries (new)
-│   └── navigation.ts           # Ecosistema/#apps + Local-First/#manifesto (updated)
-├── layouts/
-│   └── BaseLayout.astro        # official title, OG tags, favicon, navbar (updated)
 ├── pages/
-│   └── index.astro             # compose Hero + AppsGrid + Manifesto (updated)
-└── types/
-    └── index.ts                # add Application type (updated)
+│   └── index.astro             # renders modules/home/HomeView.astro (updated)
+├── modules/
+│   └── home/
+│       ├── HomeView.astro      # composes Hero + AppsGrid + Manifesto (new)
+│       └── components/
+│           ├── Hero.astro          # add centered CTA buttons (updated)
+│           ├── AppsGrid.astro      # id="apps", responsive grid of AppCards (new)
+│           └── Manifesto.astro     # id="manifesto", local-first rationale (new)
+└── shared/
+    ├── components/
+    │   ├── Navbar.astro        # static navbar; replaces the old islands/Nav.tsx (new)
+    │   ├── BaseLayout.astro    # official title, OG tags, favicon, navbar (updated)
+    │   └── ui/
+    │       ├── AppCard.astro       # Clean Light UI application card (new)
+    │       ├── Badge.astro         # existing
+    │       └── Button.astro        # primary/secondary CTA primitive (new)
+    ├── data/
+    │   ├── apps.ts                 # typed application entries (new)
+    │   └── navigation.ts           # Ecosistema/#apps + Local-First/#manifesto (updated)
+    └── types/
+        └── index.ts                # add Application type (updated)
 ```
 
 **Structure Decision**: Reuse the scaffold's folder contract from `code-rules.md`. Navigation is a
 static `.astro` section (not a hydrated island) to preserve the zero-JS default; application data
-is typed content in `src/data/` and rendered by an `AppsGrid` section composed of `AppCard`
+is typed content in `src/shared/data/` and rendered by an `AppsGrid` section composed of `AppCard`
 primitives. `BaseLayout` gains the official default title, brand OG tags, and the shared navbar.
 
 ## Complexity Tracking

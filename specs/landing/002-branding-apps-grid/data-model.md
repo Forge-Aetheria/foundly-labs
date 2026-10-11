@@ -8,7 +8,7 @@ declared in TypeScript; there is no runtime persistence.
 ## Entity: Application
 
 Represents a product in the Foundly Labs ecosystem. Defined as `Application` in
-`src/types/index.ts` and populated in `src/data/apps.ts`.
+`src/shared/types/index.ts` and populated in `src/shared/data/apps.ts`.
 
 | Field         | Type   | Required | Validation         | Notes                                     |
 | ------------- | ------ | -------- | ------------------ | ----------------------------------------- |
@@ -38,7 +38,7 @@ Represents a product in the Foundly Labs ecosystem. Defined as `Application` in
 
 ## Entity: NavigationLink (existing `NavItem`)
 
-Stored in `src/data/navigation.ts`; shape unchanged (`label`, `href`, optional `children`).
+Stored in `src/shared/data/navigation.ts`; shape unchanged (`label`, `href`, optional `children`).
 
 **Updated records**:
 
@@ -52,7 +52,7 @@ Stored in `src/data/navigation.ts`; shape unchanged (`label`, `href`, optional `
 
 ## Entity: SiteConfig (extended)
 
-`src/data/siteConfig.ts` gains a `defaultTitle` field.
+`src/shared/data/siteConfig.ts` gains a `defaultTitle` field.
 
 | Field          | Type   | Required | Validation | Notes          |
 | -------------- | ------ | -------- | ---------- | -------------- |

@@ -1,4 +1,4 @@
-# Contract: Application Card (`src/components/ui/AppCard.astro`)
+# Contract: Application Card (`src/shared/components/ui/AppCard.astro`)
 
 **Feature**: `003-real-apps-data` | **Type**: Component UI contract
 

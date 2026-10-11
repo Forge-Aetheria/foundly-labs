@@ -53,7 +53,7 @@ const features = defineCollection({
 - Schema validation MUST fail the build on invalid entries (Zod error).
 - Collections MAY be empty; an empty collection MUST NOT break the build.
 - Prices are stored as integer cents to avoid floating-point errors; presentation formatting lives
-  in `src/utils/formatters.ts`.
+  in `src/shared/utils/formatters.ts`.
 
 ## Verification
 

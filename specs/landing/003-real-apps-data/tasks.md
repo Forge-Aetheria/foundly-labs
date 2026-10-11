@@ -1,6 +1,5 @@
 ---
-
-description: "Task list for Production Copy & Branded Assets for the Apps Dataset"
+description: 'Task list for Production Copy & Branded Assets for the Apps Dataset'
 ---
 
 # Tasks: Production Copy & Branded Assets for the Apps Dataset
@@ -39,7 +38,7 @@ description: "Task list for Production Copy & Branded Assets for the Apps Datase
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [x] T002 Extend the `Application` interface in `src/types/index.ts` with explicit, non-optional fields `headline: string`, `subheadline: string`, `keyFeature: string`, `logo: string`, `icon: string` (keep existing `id`, `name`, `category`, `status`, `target`, `description`). Per contract `contracts/apps-data.contract.md`.
+- [x] T002 Extend the `Application` interface in `src/shared/types/index.ts` with explicit, non-optional fields `headline: string`, `subheadline: string`, `keyFeature: string`, `logo: string`, `icon: string` (keep existing `id`, `name`, `category`, `status`, `target`, `description`). Per contract `contracts/apps-data.contract.md`.
 
 **Checkpoint**: The type contract exposes every field used by the four stories.
 
@@ -49,15 +48,15 @@ description: "Task list for Production Copy & Branded Assets for the Apps Datase
 
 **Goal**: The canonical dataset and the ecosystem cards present the final production headline, subheadline, "what it solves" description and key feature for all four products.
 
-**Independent Test**: Inspect `src/data/apps.ts` and the rendered ecosystem section; each of the four cards shows its production headline, subheadline, description and key feature matching spec FR-002–FR-005 exactly.
+**Independent Test**: Inspect `src/shared/data/apps.ts` and the rendered ecosystem section; each of the four cards shows its production headline, subheadline, description and key feature matching spec FR-002–FR-005 exactly.
 
 ### Implementation for User Story 1
 
-- [x] T003 [US1] Set the Foundly record copy (`headline`, `subheadline`, `description`, `keyFeature`) in `src/data/apps.ts` per spec FR-002.
-- [x] T004 [US1] Set the Foundly POS record copy in `src/data/apps.ts` per spec FR-003.
-- [x] T005 [US1] Set the Mixbit record copy in `src/data/apps.ts` per spec FR-004.
-- [x] T006 [US1] Rename the LRC-Maker record to `name: "Foundly Maker"` (id `foundly-maker`) and set its copy in `src/data/apps.ts` per spec FR-005 and research R6.
-- [x] T007 [US1] Update `src/components/ui/AppCard.astro` to render `headline`, `subheadline`, `description` and `keyFeature` from the canonical `app` prop (no hard-coded copy), keeping name as an `h3` and the category badge.
+- [x] T003 [US1] Set the Foundly record copy (`headline`, `subheadline`, `description`, `keyFeature`) in `src/shared/data/apps.ts` per spec FR-002.
+- [x] T004 [US1] Set the Foundly POS record copy in `src/shared/data/apps.ts` per spec FR-003.
+- [x] T005 [US1] Set the Mixbit record copy in `src/shared/data/apps.ts` per spec FR-004.
+- [x] T006 [US1] Rename the LRC-Maker record to `name: "Foundly Maker"` (id `foundly-maker`) and set its copy in `src/shared/data/apps.ts` per spec FR-005 and research R6.
+- [x] T007 [US1] Update `src/shared/components/ui/AppCard.astro` to render `headline`, `subheadline`, `description` and `keyFeature` from the canonical `app` prop (no hard-coded copy), keeping name as an `h3` and the category badge.
 
 **Checkpoint**: User Story 1 is fully functional and testable independently (copy renders from the dataset).
 
@@ -67,11 +66,11 @@ description: "Task list for Production Copy & Branded Assets for the Apps Datase
 
 **Goal**: Every product record satisfies the strict, explicit contract so no field is missing or untyped and the dataset stays the single source of truth.
 
-**Independent Test**: All entries in `src/data/apps.ts` provide every declared field with no `any`/implicit casts, and `npm run check` reports 0 errors and 0 warnings.
+**Independent Test**: All entries in `src/shared/data/apps.ts` provide every declared field with no `any`/implicit casts, and `npm run check` reports 0 errors and 0 warnings.
 
 ### Implementation for User Story 2
 
-- [x] T008 [US2] Audit `src/data/apps.ts` to ensure all four records declare every `Application` field (non-empty) and contain no `any` or implicit `as` casts.
+- [x] T008 [US2] Audit `src/shared/data/apps.ts` to ensure all four records declare every `Application` field (non-empty) and contain no `any` or implicit `as` casts.
 - [x] T009 [US2] Run `npm run check` (`astro check`) and resolve all type errors/warnings to 0.
 
 **Checkpoint**: The typed dataset compiles cleanly and enforces field completeness.
@@ -87,8 +86,8 @@ description: "Task list for Production Copy & Branded Assets for the Apps Datase
 ### Implementation for User Story 3
 
 - [x] T010 [P] [US3] Add the missing Mixbit assets `public/mixbit/branding-logo.png` and `public/mixbit/icon.png` (research R2; required before build).
-- [x] T011 [US3] Add `logo` and `icon` public paths to each of the four records in `src/data/apps.ts` using the exact FR-011 values.
-- [x] T012 [US3] In `src/components/ui/AppCard.astro`, render the product image in the card header using `src={app.icon || app.logo}`, a fixed footprint (`h-10 w-auto object-contain` or `h-12 w-12 object-contain`) with explicit `width`/`height`, a light token-aligned surface for transparency, and `alt={\`Logo de ${app.name}\`}` (FR-012–FR-015).
+- [x] T011 [US3] Add `logo` and `icon` public paths to each of the four records in `src/shared/data/apps.ts` using the exact FR-011 values.
+- [x] T012 [US3] In `src/shared/components/ui/AppCard.astro`, render the product image in the card header using `src={app.icon || app.logo}`, a fixed footprint (`h-10 w-auto object-contain` or `h-12 w-12 object-contain`) with explicit `width`/`height`, a light token-aligned surface for transparency, and `alt={\`Logo de ${app.name}\`}` (FR-012–FR-015).
 
 **Checkpoint**: All four cards display their own branded image with accessible alt text and no layout shift.
 
@@ -102,8 +101,8 @@ description: "Task list for Production Copy & Branded Assets for the Apps Datase
 
 ### Implementation for User Story 4
 
-- [x] T013 [US4] Harden `src/components/ui/AppCard.astro` layout so long headline/subheadline/description/keyFeature wrap cleanly (no clipping/overlap) while preserving Clean Light UI tokens (`bg-card-light/*`, `border-border-subtle`, `rounded-2xl`, `shadow-card`).
-- [x] T014 [US4] Verify the responsive grid in `src/components/sections/AppsGrid.astro` (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`) keeps cards readable at narrow and wide viewports.
+- [x] T013 [US4] Harden `src/shared/components/ui/AppCard.astro` layout so long headline/subheadline/description/keyFeature wrap cleanly (no clipping/overlap) while preserving Clean Light UI tokens (`bg-card-light/*`, `border-border-subtle`, `rounded-2xl`, `shadow-card`).
+- [x] T014 [US4] Verify the responsive grid in `src/modules/home/components/AppsGrid.astro` (`grid-cols-1 md:grid-cols-2 lg:grid-cols-4`) keeps cards readable at narrow and wide viewports.
 
 **Checkpoint**: The full ecosystem grid is visually stable and within the Clean Light UI at all breakpoints.
 
@@ -183,4 +182,4 @@ Task: "Add public/mixbit/branding-logo.png and public/mixbit/icon.png"
 - `[Story]` label maps each task to its user story for traceability.
 - No automated tests are included (not requested); validation is via `quickstart.md` and the project gates.
 - Commit after each logical group.
-- Avoid editing `src/components/ui/AppCard.astro` from US1, US3 and US4 simultaneously — keep those edits sequential.
+- Avoid editing `src/shared/components/ui/AppCard.astro` from US1, US3 and US4 simultaneously — keep those edits sequential.

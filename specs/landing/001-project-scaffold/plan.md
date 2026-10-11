@@ -35,7 +35,7 @@ framework is introduced by this scaffold.
 and SEO; zero client JS for static components (constitution, Principle V)
 
 **Constraints**: Static output only; all colors via named tokens (no inline brand hex values);
-`strict: true` with no `any`; React confined to `src/components/islands/`
+`strict: true` with no `any`; React confined to `src/modules/<modulo>/islands/`
 
 **Scale/Scope**: Landing site with ~3 routes (`index`, `privacy`, `terms`), one shared layout, a
 token layer, content-collection schemas (pricing/faqs/features), and central site configuration
@@ -44,14 +44,14 @@ token layer, content-collection schemas (pricing/faqs/features), and central sit
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle                           | Gate                                                                                                           | Pre-Research | Post-Design |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------ | ----------- |
-| I. Rule of Law                      | Plan respects `constitution.md` and the mandated `code-rules.md` conventions                                   | PASS         | PASS        |
-| II. Spec-Driven Development         | `specs/landing/001-project-scaffold/spec.md` precedes this plan and drives it                                          | PASS         | PASS        |
-| III. Server-First & Zero-JS Default | Static HTML by default; React isolated under `src/components/islands/`; no hydration directive in the scaffold | PASS         | PASS        |
-| IV. Strict Typing                   | `strict: true` + `noImplicitAny: true`; `@/*` alias; Zod-validated content; no `any`                           | PASS         | PASS        |
-| V. Performance & Core Web Vitals    | Self-hosted, preloaded fonts; static output; Lighthouse 100/≥98 targets; no WebGL/canvas in scope              | PASS         | PASS        |
-| VI. Clean Light UI Design System    | Full palette exposed as named tokens; zero hardcoded brand colors                                              | PASS         | PASS        |
+| Principle                           | Gate                                                                                                                 | Pre-Research | Post-Design |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------ | ----------- |
+| I. Rule of Law                      | Plan respects `constitution.md` and the mandated `code-rules.md` conventions                                         | PASS         | PASS        |
+| II. Spec-Driven Development         | `specs/landing/001-project-scaffold/spec.md` precedes this plan and drives it                                        | PASS         | PASS        |
+| III. Server-First & Zero-JS Default | Static HTML by default; React isolated under `src/modules/<modulo>/islands/`; no hydration directive in the scaffold | PASS         | PASS        |
+| IV. Strict Typing                   | `strict: true` + `noImplicitAny: true`; `@/*` alias; Zod-validated content; no `any`                                 | PASS         | PASS        |
+| V. Performance & Core Web Vitals    | Self-hosted, preloaded fonts; static output; Lighthouse 100/≥98 targets; no WebGL/canvas in scope                    | PASS         | PASS        |
+| VI. Clean Light UI Design System    | Full palette exposed as named tokens; zero hardcoded brand colors                                                    | PASS         | PASS        |
 
 **Result**: No violations. Complexity Tracking is not required.
 
@@ -82,34 +82,38 @@ specs/landing/001-project-scaffold/
 │   └── favicon.svg           # Default favicon referenced by BaseLayout
 └── src/
     ├── content.config.ts     # Collection definitions (glob loader) + Zod schemas
-    ├── assets/               # Local logos, branding, images
-    ├── components/
-    │   ├── ui/               # Static UI primitives (.astro): Button, Card, Badge
-    │   ├── sections/         # Landing sections (.astro): Hero, Features, Pricing, Footer
-    │   └── islands/          # Interactive, hydratable islands (.tsx): Nav, Calculator, Modals
-    ├── content/              # Collection entry files (pricing, faqs, features)
-    ├── data/
-    │   ├── siteConfig.ts     # name, description, url, social links
-    │   └── navigation.ts     # Static navigation constants
-    ├── layouts/
-    │   └── BaseLayout.astro  # <html lang="es">, SEO meta, font preload, background wrapper
-    ├── pages/
+    ├── pages/                # Thin routes: each renders a <Modulo>View
     │   ├── index.astro
     │   ├── privacy.astro
     │   └── terms.astro
+    ├── modules/              # Domain modules
+    │   └── <modulo>/
+    │       ├── <Modulo>View.astro
+    │       ├── components/   # Landing sections (.astro)
+    │       └── islands/      # Interactive, hydratable islands (.tsx)
+    ├── shared/               # Reusable within the app
+    │   ├── components/       # Chrome + layout
+    │   │   ├── BaseLayout.astro  # <html lang="es">, SEO meta, font preload, background wrapper
+    │   │   └── ui/           # Static UI primitives (.astro): Button, Card, Badge
+    │   ├── data/
+    │   │   ├── siteConfig.ts # name, description, url, social links
+    │   │   └── navigation.ts # Static navigation constants
+    │   ├── types/
+    │   │   └── index.ts      # Shared TypeScript types
+    │   └── utils/
+    │       ├── formatters.ts # Currency/cent formatting helpers
+    │       └── analytics.ts  # Analytics integration helpers
+    ├── content/              # Collection entry files (pricing, faqs, features)
     ├── styles/
     │   ├── global.css        # @import "tailwindcss"; @config; imports tokens.css
     │   └── tokens.css        # @theme Clean Light UI tokens
-    ├── types/
-    │   └── index.ts          # Shared TypeScript types
-    └── utils/
-        ├── formatters.ts     # Currency/cent formatting helpers
-        └── analytics.ts      # Analytics integration helpers
+    └── assets/               # Local logos, branding, images
 ```
 
 **Structure Decision**: A single static Astro project rooted at the repository root. The layout
-follows the folder contract defined in `code-rules.md` (separating `ui/`, `sections/`, and
-`islands/`), keeps metadata in `src/data/`, and defines Zod-validated collections in
+follows the app structure defined in `constitution.md` §7 and `code-rules.md` (thin `pages/`,
+domain `modules/<modulo>/` with `components/` and `islands/`, and shared `shared/` code), keeps
+metadata in `src/shared/data/`, and defines Zod-validated collections in
 `src/content.config.ts`. No `backend/` or `frontend/` split is needed because there is no server
 runtime.
 

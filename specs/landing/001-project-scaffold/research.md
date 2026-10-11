@@ -66,7 +66,7 @@ considered.
   the Astro 5 Content Layer `glob()` loader and Zod schemas with explicit TypeScript types.
 - **Rationale**: Satisfies the strict-typing principle and `code-rules.md` (content validated with
   `astro:content` + `zod`). Collections may start empty; the site must still build.
-- **Alternatives considered**: Plain typed constants in `src/data/` only (rejected — the spec
+- **Alternatives considered**: Plain typed constants in `src/shared/data/` only (rejected — the spec
   requires schema-validated collections) and a legacy `src/content/config.ts` (rejected — the
   Content Layer config in `src/content.config.ts` is the Astro 5 default).
 
@@ -87,7 +87,7 @@ considered.
   description, canonical, Open Graph (`og:*`), Twitter card (`summary_large_image`), and favicon.
   `<html lang="es">` is fixed.
 - **Rationale**: Satisfies FR-006/FR-008 with per-page overrides while keeping defaults centralized
-  in `src/data/siteConfig.ts`.
+  in `src/shared/data/siteConfig.ts`.
 - **Alternatives considered**: A separate `Head.astro` component (deferred — can be extracted
   later) and third-party SEO integrations (rejected — unnecessary for a small static site).
 

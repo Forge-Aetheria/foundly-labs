@@ -7,7 +7,7 @@ configuration, and the Schema.org objects emitted as JSON-LD.
 
 ## Entity: SEOProps
 
-Inputs accepted by `src/components/seo/SEO.astro`. All optional; each falls back to a default.
+Inputs accepted by `src/shared/components/SEO.astro`. All optional; each falls back to a default.
 
 | Field          | Type   | Required | Validation                    | Default                   |
 | -------------- | ------ | -------- | ----------------------------- | ------------------------- |
@@ -21,7 +21,7 @@ Inputs accepted by `src/components/seo/SEO.astro`. All optional; each falls back
 
 ## Entity: SiteConfig (extended)
 
-`src/data/siteConfig.ts` gains the official SEO defaults and parent organization.
+`src/shared/data/siteConfig.ts` gains the official SEO defaults and parent organization.
 
 | Field                | Type            | Required | Notes                                                                   |
 | -------------------- | --------------- | -------- | ----------------------------------------------------------------------- |
@@ -55,7 +55,7 @@ Emitted as JSON-LD on every page.
 
 ## Structured data: SoftwareApplication (ecosystem)
 
-Derived from `src/data/apps.ts`; emitted as an `ItemList` of `SoftwareApplication` items.
+Derived from `src/shared/data/apps.ts`; emitted as an `ItemList` of `SoftwareApplication` items.
 
 | JSON-LD field          | Source                                                |
 | ---------------------- | ----------------------------------------------------- |

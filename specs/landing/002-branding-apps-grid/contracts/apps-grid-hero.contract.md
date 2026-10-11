@@ -2,16 +2,16 @@
 
 **Feature**: `002-branding-apps-grid` | **Type**: Section UI contract
 
-## AppsGrid (`src/components/sections/AppsGrid.astro`)
+## AppsGrid (`src/modules/home/components/AppsGrid.astro`)
 
 **Obligations**
 
 - Root element MUST carry `id="apps"` so `/#apps` resolves.
 - MUST render a responsive grid: `grid-cols-1 md:grid-cols-2 lg:grid-cols-4`.
-- MUST render one `AppCard` per entry in `src/data/apps.ts`.
+- MUST render one `AppCard` per entry in `src/shared/data/apps.ts`.
 - Section MUST include a heading (e.g. the ecosystem title) and no client-side JavaScript.
 
-## AppCard (`src/components/ui/AppCard.astro`)
+## AppCard (`src/shared/components/ui/AppCard.astro`)
 
 ```ts
 interface Props {
@@ -26,7 +26,7 @@ interface Props {
   `border border-border-subtle`, `rounded-2xl`, `shadow-card`.
 - MUST NOT contain literal brand hex values.
 
-## Hero (`src/components/sections/Hero.astro`) — extended
+## Hero (`src/modules/home/components/Hero.astro`) — extended
 
 ```ts
 interface Props {
@@ -44,7 +44,7 @@ interface Props {
   - Secondary "¿Por qué Local-First?" → `#manifesto`.
 - Buttons MUST be keyboard focusable with a visible focus state and rendered as links.
 
-## Button (`src/components/ui/Button.astro`) — new
+## Button (`src/shared/components/ui/Button.astro`) — new
 
 ```ts
 interface Props {
@@ -59,7 +59,7 @@ interface Props {
   surface/border.
 - Renders an anchor (`<a>`) so it works without JavaScript.
 
-## Manifesto (`src/components/sections/Manifesto.astro`) — new
+## Manifesto (`src/modules/home/components/Manifesto.astro`) — new
 
 **Obligations**
 

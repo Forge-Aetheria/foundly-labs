@@ -1,4 +1,4 @@
-# Contract: Application Data (`src/data/apps.ts` + `src/types/index.ts`)
+# Contract: Application Data (`src/shared/data/apps.ts` + `src/shared/types/index.ts`)
 
 **Feature**: `003-real-apps-data` | **Type**: Data contract
 

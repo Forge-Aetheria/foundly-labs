@@ -1,4 +1,4 @@
-# Contract: Application Data (`src/data/apps.ts`)
+# Contract: Application Data (`src/shared/data/apps.ts`)
 
 **Feature**: `002-branding-apps-grid` | **Type**: Data contract
 

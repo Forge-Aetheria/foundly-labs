@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-**Input**: User description: "Create a clean, elegant, zero-JS site footer in `src/components/sections/Footer.astro`, integrated into the base layout, with brand attribution to FORGE Labs (forgelab.lat) and secondary navigation/SEO links."
+**Input**: User description: "Create a clean, elegant, zero-JS site footer in `src/shared/components/Footer.astro`, integrated into the base layout, with brand attribution to FORGE Labs (forgelab.lat) and secondary navigation/SEO links."
 
 ## User Scenarios & Testing _(mandatory)_
 

@@ -2,7 +2,7 @@
 
 **Feature**: `004-hero-watermark-animation` | **Type**: Section UI contract
 
-## Hero (`src/components/sections/Hero.astro`) — extended
+## Hero (`src/modules/home/components/Hero.astro`) — extended
 
 ```ts
 interface Props {

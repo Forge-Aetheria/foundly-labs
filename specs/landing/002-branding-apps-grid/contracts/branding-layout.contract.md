@@ -2,7 +2,7 @@
 
 **Feature**: `002-branding-apps-grid` | **Type**: Layout / navigation UI contract
 
-## BaseLayout (`src/layouts/BaseLayout.astro`) — extended
+## BaseLayout (`src/shared/components/BaseLayout.astro`) — extended
 
 ```ts
 export interface BaseLayoutProps {
@@ -22,7 +22,7 @@ export interface BaseLayoutProps {
   official brand; the default `og:image` MUST be the full logo asset URL.
 - The navbar MUST render once, site-wide, from `BaseLayout`.
 
-## Navbar (`src/components/sections/Navbar.astro`) — new
+## Navbar (`src/shared/components/Navbar.astro`) — new
 
 ```ts
 interface Props {
@@ -34,7 +34,7 @@ interface Props {
 
 - MUST display the full Foundly Labs logo (`<Image />` from `src/assets/branding-logo-fl.png`) with
   a text alternative "Foundly Labs".
-- MUST render the links from `src/data/navigation.ts`, including `Ecosistema → /#apps` and
+- MUST render the links from `src/shared/data/navigation.ts`, including `Ecosistema → /#apps` and
   `Local-First → /#manifesto`.
 - MUST be usable without JavaScript and keyboard navigable.
 - MUST present a mobile menu via a CSS-only disclosure; desktop links visible from the `md`

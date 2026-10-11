@@ -16,6 +16,7 @@ files already served from `public/` without relocating them. A plain `<img>` wit
 shift. The images are small PNGs already shipped in the repo, so the optimization loss is negligible.
 
 **Alternatives considered**:
+
 - Move assets to `src/assets/<product>/` and import them into `<Image/>`: rejected — violates the
   spec's mandated public paths and adds indirection for no measurable performance gain.
 - `LoadingImage`/`Picture` with remote URL: rejected — files are local, not remote, and no transform
@@ -35,6 +36,7 @@ contain both files, but `public/mixbit/` does not exist. FR-011 mandates the Mix
 and SC-007 requires 0 references to wrong/missing product folders.
 
 **Alternatives considered**:
+
 - Omit Mixbit from the dataset: rejected — FR-001 requires exactly four products.
 - Point Mixbit at another product's folder: rejected — violates FR-011 and SC-007.
 
@@ -48,6 +50,7 @@ and SC-007 requires 0 references to wrong/missing product folders.
 guarantees logos with differing aspect ratios never overflow or distort.
 
 **Alternatives considered**:
+
 - Auto width with no height constraint: rejected — causes layout "jumps" as images load.
 - Fixed square `object-cover`: rejected — would crop non-square logos.
 
@@ -62,6 +65,7 @@ without a hard box or halo.
 slightly more opaque inner surface reads cleanly.
 
 **Alternatives considered**:
+
 - No background: rejected — transparent art can ghost the card border/gradient behind it.
 - Hard white box: rejected — introduces a visible rectangle over the card.
 
@@ -73,6 +77,7 @@ slightly more opaque inner surface reads cleanly.
 wordmark is the fallback when no icon exists. Satisfies FR-012 and the "header never empty" edge case.
 
 **Alternatives considered**:
+
 - Prefer the full logo: rejected — wider wordmarks crowd the card header; the icon is more compact.
 - Render both: rejected — adds visual noise and is out of scope.
 
@@ -86,6 +91,7 @@ wordmark is the fallback when no icon exists. Satisfies FR-012 and the "header n
 the display name would contradict FR-005 and FR-011. This is a data-value update, not a new entity.
 
 **Alternatives considered**:
+
 - Keep "LRC-Maker" as `name` and only add assets: rejected — misaligns display name with asset
   folder and the user-facing copy.
 
@@ -101,6 +107,7 @@ the "single source of truth" guarantee (FR-007). String types are sufficient; no
 are needed.
 
 **Alternatives considered**:
+
 - Optional fields: rejected — would allow silent empty rendering, weakening SC-001.
 - Nested `assets: { logo; icon }`: rejected — flatter fields match the requested shape and existing
   `apps.ts` style, and simplify the card's `app.icon || app.logo`.

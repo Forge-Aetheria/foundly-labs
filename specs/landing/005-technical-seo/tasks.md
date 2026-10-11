@@ -41,9 +41,9 @@ of each story.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T002 [P] Extend `SiteConfig` with the official `defaultTitle`, official `description`, `defaultImage`, and `parentOrganization` (FORGE Labs) in `src/types/index.ts` and `src/data/siteConfig.ts`; add an `SEOProps` type
-- [x] T003 Create `src/components/seo/SEO.astro` with typed props (`title`, `description`, `image`, `canonicalURL`), default resolution, `<title>`, `<meta name="description">`, and an absolute self-referencing `<link rel="canonical">`
-- [x] T004 Inject `<SEO />` into `src/layouts/BaseLayout.astro` (passing the page props through) and remove the inline title/description/canonical/OG/Twitter tags
+- [x] T002 [P] Extend `SiteConfig` with the official `defaultTitle`, official `description`, `defaultImage`, and `parentOrganization` (FORGE Labs) in `src/shared/types/index.ts` and `src/shared/data/siteConfig.ts`; add an `SEOProps` type
+- [x] T003 Create `src/shared/components/SEO.astro` with typed props (`title`, `description`, `image`, `canonicalURL`), default resolution, `<title>`, `<meta name="description">`, and an absolute self-referencing `<link rel="canonical">`
+- [x] T004 Inject `<SEO />` into `src/shared/components/BaseLayout.astro` (passing the page props through) and remove the inline title/description/canonical/OG/Twitter tags
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -76,8 +76,8 @@ confirm per-page overrides work.
 
 ### Implementation for User Story 2
 
-- [x] T008 [US2] Add Open Graph tags (`og:type=website`, `og:site_name=Foundly Labs`, `og:title`, `og:description`, `og:url`, `og:image`) to `src/components/seo/SEO.astro`
-- [x] T009 [US2] Add Twitter Card tags (`twitter:card=summary_large_image`, `twitter:title`, `twitter:description`, `twitter:image`) and resolve the default image to an absolute URL in `src/components/seo/SEO.astro`
+- [x] T008 [US2] Add Open Graph tags (`og:type=website`, `og:site_name=Foundly Labs`, `og:title`, `og:description`, `og:url`, `og:image`) to `src/shared/components/SEO.astro`
+- [x] T009 [US2] Add Twitter Card tags (`twitter:card=summary_large_image`, `twitter:title`, `twitter:description`, `twitter:image`) and resolve the default image to an absolute URL in `src/shared/components/SEO.astro`
 - [x] T010 [US2] Verify the OG/Twitter tags use the official defaults and that a page-level `title`/`description`/`image` overrides them
 
 **Checkpoint**: User Stories 1 and 2 both work independently
@@ -90,12 +90,12 @@ confirm per-page overrides work.
 applications.
 
 **Independent Test**: Parse the built page's JSON-LD, confirm the Organization references FORGE
-Labs and the SoftwareApplication list matches `src/data/apps.ts`, and validate with zero errors.
+Labs and the SoftwareApplication list matches `src/shared/data/apps.ts`, and validate with zero errors.
 
 ### Implementation for User Story 3
 
-- [x] T011 [US3] Add the `Organization` JSON-LD block (name, url, logo, `parentOrganization` = FORGE Labs) via `<script type="application/ld+json" is:inline set:html={JSON.stringify(...)} />` in `src/components/seo/SEO.astro`
-- [x] T012 [US3] Add the `SoftwareApplication` `ItemList` JSON-LD derived from `src/data/apps.ts` in `src/components/seo/SEO.astro`
+- [x] T011 [US3] Add the `Organization` JSON-LD block (name, url, logo, `parentOrganization` = FORGE Labs) via `<script type="application/ld+json" is:inline set:html={JSON.stringify(...)} />` in `src/shared/components/SEO.astro`
+- [x] T012 [US3] Add the `SoftwareApplication` `ItemList` JSON-LD derived from `src/shared/data/apps.ts` in `src/shared/components/SEO.astro`
 - [x] T013 [US3] Verify both JSON-LD blocks parse/validate with zero errors and that no executable client JavaScript was added
 
 **Checkpoint**: All user stories independently functional
@@ -108,7 +108,7 @@ Labs and the SoftwareApplication list matches `src/data/apps.ts`, and validate w
 
 - [x] T014 Run `npm run check`, `npm run lint`, and `npm run build` and confirm 0 errors/problems and the new build artifacts
 - [x] T015 [P] Validate the structured data with a Schema.org/Rich Results validator and confirm preview tags render
-- [x] T016 [P] Add `src/components/seo/` to the component locations in `code-rules.md` to resolve the structural deviation recorded in the plan
+- [x] T016 [P] Add `src/shared/components/` to the component locations in `code-rules.md` to resolve the structural deviation recorded in the plan
 
 ---
 
@@ -145,7 +145,7 @@ Labs and the SoftwareApplication list matches `src/data/apps.ts`, and validate w
 ## Parallel Example: Foundational / US1
 
 ```bash
-Task: "Extend SiteConfig and add SEOProps in src/types/index.ts and src/data/siteConfig.ts"
+Task: "Extend SiteConfig and add SEOProps in src/shared/types/index.ts and src/shared/data/siteConfig.ts"
 Task: "Create public/robots.txt"
 ```
 
