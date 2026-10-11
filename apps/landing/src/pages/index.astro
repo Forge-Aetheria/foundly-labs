@@ -1,17 +1,5 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import Hero from '@/components/sections/Hero.astro';
-import AppsGrid from '@/components/sections/AppsGrid.astro';
-import Manifesto from '@/components/sections/Manifesto.astro';
+import HomeView from '@/modules/home/HomeView.astro';
 ---
 
-<BaseLayout>
-  <main>
-    <Hero
-      title="Local-First, Agile Commerce, Zero Compromise."
-      description="El ecosistema Foundly Labs: productos ágiles y local-first para comercio, finanzas y creación."
-    />
-    <AppsGrid />
-    <Manifesto />
-  </main>
-</BaseLayout>
+<HomeView />

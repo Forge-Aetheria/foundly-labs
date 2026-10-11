@@ -1,4 +1,4 @@
-import type { Application } from '@/types';
+import type { Application } from '@/shared/types';
 
 export const apps: Application[] = [
   {
@@ -42,7 +42,8 @@ export const apps: Application[] = [
       'Estudio local-first en el navegador para marcar tiempos de letras sobre audio o video y exportar .lrc, .ass o .json.',
     description:
       'Estudio local en navegador para sincronizar audio/video con letras de canciones. Marca tiempos línea por línea o a nivel de palabra, ajusta con precisión al milisegundo, previsualiza con estilo Spotify y exporta archivos .lrc / .ass.',
-    keyFeature: 'Tipografía cinética a nivel de palabra, stamping táctil/teclado y exportación .lrc/.ass.',
+    keyFeature:
+      'Tipografía cinética a nivel de palabra, stamping táctil/teclado y exportación .lrc/.ass.',
     logo: '/foundly-maker/branding-logo.png',
     icon: '/foundly-maker/icon.png',
   },

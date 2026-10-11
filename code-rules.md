@@ -15,7 +15,7 @@ The use of `any`, `unknown` without type guards, or implicit type casting (`as t
 
 - **Component Props**: Defined inside the Astro component frontmatter or React component file as an `interface Props`.
 - **Content & Data Schemas**: Content collection schemas (pricing plans, features, FAQs, testimonials) must be typed and validated using `astro:content` and `zod`.
-- **Global / Shared Types**: Tipos compartidos en `packages/*` (p. ej. `packages/ui`) o en `apps/landing/src/types/index.ts` según su alcance.
+- **Global / Shared Types**: Tipos compartidos en `packages/*` (p. ej. `packages/ui`) o en `apps/landing/src/shared/types/index.ts` según su alcance.
 
 ## 2. Astro 5 Architecture & Island Standards
 
@@ -38,17 +38,20 @@ When client-side UI hydration is required, isolate the component in React and as
 
 Rutas relativas a `apps/landing/`, salvo los paquetes compartidos, que viven en `packages/`.
 
-| Element                    | Naming Standard              | Location                         | Example                                             |
-| -------------------------- | ---------------------------- | -------------------------------- | --------------------------------------------------- |
-| Pages / Routes             | kebab-case (`.astro`)        | `src/pages/`                     | `src/pages/index.astro`, `src/pages/privacy.astro`  |
-| Astro Sections             | PascalCase (`.astro`)        | `src/components/sections/`       | `Hero.astro`, `Navbar.astro`, `Footer.astro`        |
-| Astro UI Primitives        | PascalCase (`.astro`)        | `src/components/ui/`             | `AppCard.astro`, `Badge.astro`, `Button.astro`      |
-| React Islands              | PascalCase (`.tsx`)          | `src/components/islands/`        | `PricingCalculator.tsx`, `MobileMenu.tsx`           |
-| SEO Components             | PascalCase (`.astro`)        | `src/components/seo/`            | `SEO.astro`                                         |
-| Layouts                    | PascalCase (`.astro`)        | `src/layouts/`                   | `BaseLayout.astro`                                  |
-| Data / Content Collections | kebab-case (`.json` / `.ts`) | `src/content/` or `src/data/`    | `src/data/apps.ts`, `src/content/pricing/`          |
-| Utilities & Constants      | camelCase (`.ts`)            | `src/utils/`                     | `src/utils/analytics.ts`, `src/utils/formatters.ts` |
-| Shared Packages            | PascalCase / kebab-case      | `packages/ui`, `packages/config` | `packages/ui/src/index.ts`                          |
+| Element                    | Naming Standard              | Location                             | Example                                            |
+| -------------------------- | ---------------------------- | ------------------------------------ | -------------------------------------------------- |
+| Pages / Routes             | kebab-case (`.astro`)        | `src/pages/`                         | `src/pages/index.astro`, `src/pages/privacy.astro` |
+| Module Views               | PascalCase (`.astro`)        | `src/modules/<modulo>/`              | `src/modules/home/HomeView.astro`                  |
+| Astro Sections             | PascalCase (`.astro`)        | `src/modules/<modulo>/components/`   | `Hero.astro`, `AppsGrid.astro`                     |
+| React Islands              | PascalCase (`.tsx`)          | `src/modules/<modulo>/islands/`      | `PricingCalculator.tsx`, `MobileMenu.tsx`          |
+| Astro UI Primitives        | PascalCase (`.astro`)        | `src/shared/components/ui/`          | `AppCard.astro`, `Badge.astro`, `Button.astro`     |
+| SEO / Layout / Chrome      | PascalCase (`.astro`)        | `src/shared/components/`             | `SEO.astro`, `BaseLayout.astro`, `Navbar.astro`    |
+| Data / Content Collections | kebab-case (`.json` / `.ts`) | `src/shared/data/` or `src/content/` | `src/shared/data/apps.ts`, `src/content/pricing/`  |
+| Types                      | kebab-case (`.ts`)           | `src/shared/types/`                  | `src/shared/types/index.ts`                        |
+| Utilities & Constants      | camelCase (`.ts`)            | `src/shared/utils/`                  | `src/shared/utils/analytics.ts`                    |
+| Shared Packages            | PascalCase / kebab-case      | `packages/ui`, `packages/config`     | `packages/ui/src/index.ts`                         |
+
+> **Patrón de app (constitution §7)**: todas las apps comparten **rutas delgadas + `modules/` + `shared/`**. En las apps Next.js (`apps/book`, `apps/store`) las rutas viven en `src/app/`, la lógica de dominio en `src/modules/<modulo>/` y lo reutilizable en `src/shared/`.
 
 ## 4. UI, Styling & Design System Rules
 
@@ -88,7 +91,7 @@ Cards representing features, testimonials, or pricing tiers must strictly follow
 ## 5. Separation of Content and Components
 
 - Declaring static content arrays, pricing lists, FAQ text, or feature descriptions directly inside layout or section components is strictly forbidden.
-- **Content Location**: All copy and landing content must reside in `src/data/` or Astro Content Collections (`src/content/`).
+- **Content Location**: All copy and landing content must reside in `src/shared/data/` or Astro Content Collections (`src/content/`).
 - **Component Purpose**: Astro section components (`HeroSection.astro`, `FeaturesSection.astro`) must only import data and render semantic HTML.
 
 ## 6. Performance & Web Vitals Execution

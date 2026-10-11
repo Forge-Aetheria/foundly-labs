@@ -34,6 +34,16 @@ Reglas de dependencias (constitución §3.II):
 - El código compartido vive solo en `packages/` (sin duplicación entre apps).
 - **Persistencia ratificada (resolución del TODO(PERSISTENCE))**: la estrategia de almacenamiento es **Prisma + PostgreSQL** (Supabase o Postgres local vía Docker), expuesta únicamente a través del paquete compartido `@foundly/database` (`prisma/schema.prisma` DB-First + cliente generado). Las apps `apps/api` (y futuras) consumen el cliente desde ese seam; `apps/book`/`apps/store` siguen desacopladas de la tecnología mientras continúen usando su store en memoria.
 
+### I. Estructura interna de las apps (rutas delgadas + `modules/` + `shared/`)
+
+Todas las apps comparten el mismo patrón de organización interna (detalle canónico en `constitution.md` §3 y §7):
+
+- **Rutas delgadas**: `apps/landing/src/pages/` y `apps/{book,store}/src/app/` solo renderizan una vista de módulo (`<Modulo>View.astro` / `<Modulo>View.tsx`).
+- **`modules/<modulo>/`**: la lógica de dominio de cada app — componentes, islas/dialogs, utils, tests y su `<Modulo>View`.
+- **`shared/`**: lo reutilizable dentro de la app — componentes, datos, tipos y utils; en las apps Next también `infra/` (seam de sesión/store) y `tenancy/`.
+
+`apps/store` (**aún no generada**) deberá nacer con esta misma estructura.
+
 ---
 
 ## 2. Dominio Único, Múltiples Zonas (Single Domain Multi-Zone)

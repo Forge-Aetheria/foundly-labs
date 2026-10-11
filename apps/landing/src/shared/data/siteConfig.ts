@@ -1,5 +1,5 @@
 import logo from '@/assets/branding-logo-fl.png';
-import type { SiteConfig } from '@/types';
+import type { SiteConfig } from '@/shared/types';
 
 export const siteConfig: SiteConfig = {
   name: 'Foundly Labs',

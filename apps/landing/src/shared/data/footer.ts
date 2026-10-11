@@ -1,6 +1,6 @@
-import { apps } from '@/data/apps';
-import { siteConfig } from '@/data/siteConfig';
-import type { FooterColumn, FooterLink } from '@/types';
+import { apps } from '@/shared/data/apps';
+import { siteConfig } from '@/shared/data/siteConfig';
+import type { FooterColumn, FooterLink } from '@/shared/types';
 
 const socialAria: Record<string, string> = {
   github: 'GitHub de Foundly Labs',

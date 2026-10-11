@@ -38,23 +38,21 @@ npm install
 
 ```text
 src/
-├── assets/          # Local branding assets (full logo)
-├── components/
-│   ├── ui/          # Static UI primitives (AppCard, Badge, Button)
-│   ├── sections/    # Landing sections (Navbar, Hero, AppsGrid, Manifesto)
-│   └── islands/     # Interactive, hydratable islands (.tsx)
+├── pages/           # Thin routes (index, privacy, terms) — only render a <Modulo>View
+├── modules/         # Domain modules: home/, legal/ (components/ + <Modulo>View.astro)
+├── shared/          # Reusable code
+│   ├── components/  # Navbar, Footer, SEO, BaseLayout, ui/ primitives (AppCard, Badge, Button)
+│   ├── data/        # Static constants (siteConfig, navigation, apps, footer)
+│   ├── types/       # Shared TypeScript types
+│   └── utils/       # Formatters and analytics helpers
 ├── content/         # Content collection entries (pricing, faqs, features)
-├── data/            # Static constants (siteConfig, navigation, apps)
-├── layouts/         # BaseLayout.astro (SEO, fonts, backgrounds, navbar)
-├── pages/           # Routes (index, privacy, terms)
 ├── styles/          # global.css + tokens.css
-├── types/           # Shared TypeScript types
-└── utils/           # Formatters and analytics helpers
+└── assets/          # Local branding assets (full logo)
 ```
 
-The home page composes the Hero, the applications grid (`#apps`), and the local-first manifesto
-(`#manifesto`). The navbar links to those anchors as `/#apps` and `/#manifesto`, and the Hero CTAs
-link to `#apps` and `#manifesto`.
+The home page (`pages/index.astro`) renders `modules/home/HomeView.astro`, which composes the Hero,
+the applications grid (`#apps`), and the local-first manifesto (`#manifesto`). The navbar links to
+those anchors as `/#apps` and `/#manifesto`, and the Hero CTAs link to `#apps` and `#manifesto`.
 
 ## Design tokens
 
@@ -89,14 +87,14 @@ Accessibility, and SEO.
 
 The repo is a **npm workspaces monorepo** (`apps/*`, `packages/*`):
 
-| App/package   | Stack                 | Rol                                    | Specs                            |
-| ------------- | --------------------- | -------------------------------------- | -------------------------------- |
-| `apps/landing`| Astro 5 (SSG)         | Vitrina pública (raíz `/`)             | `/specs/landing/`                |
-| `apps/book`   | Next.js / React 19    | Módulo SaaS interactivo (`/book`)      | `/specs/book/`                   |
-| `apps/store`  | Next.js / React 19    | Comercio/licencias (`/store`)          | `/specs/store/`                  |
-| `apps/api`    | NestJS (Node.js)      | Backend / API del ecosistema           | `/specs/api/`                    |
-| `packages/ui` | MUI v6 (design system)| `@foundly/ui`                          | `/specs/shared-ui/`              |
-| `packages/database` | Prisma + PostgreSQL | `@foundly/database` (persistencia DB-First) | `/specs/api/`              |
+| App/package         | Stack                  | Rol                                         | Specs               |
+| ------------------- | ---------------------- | ------------------------------------------- | ------------------- |
+| `apps/landing`      | Astro 5 (SSG)          | Vitrina pública (raíz `/`)                  | `/specs/landing/`   |
+| `apps/book`         | Next.js / React 19     | Módulo SaaS interactivo (`/book`)           | `/specs/book/`      |
+| `apps/store`        | Next.js / React 19     | Comercio/licencias (`/store`)               | `/specs/store/`     |
+| `apps/api`          | NestJS (Node.js)       | Backend / API del ecosistema                | `/specs/api/`       |
+| `packages/ui`       | MUI v6 (design system) | `@foundly/ui`                               | `/specs/shared-ui/` |
+| `packages/database` | Prisma + PostgreSQL    | `@foundly/database` (persistencia DB-First) | `/specs/api/`       |
 
 Comandos de la API (`@foundly/api`) y la base de datos (`@foundly/database`):
 

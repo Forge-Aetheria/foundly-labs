@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/shared/components/BaseLayout.astro';
+import Hero from './components/Hero.astro';
+import AppsGrid from './components/AppsGrid.astro';
+import Manifesto from './components/Manifesto.astro';
+import { homeHero, type HomeHeroContent } from './home-content';
+
+interface Props {
+  hero?: HomeHeroContent;
+}
+
+const { hero = homeHero } = Astro.props;
+---
+
+<BaseLayout>
+  <main>
+    <Hero title={hero.title} description={hero.description} badge={hero.badge} />
+    <AppsGrid />
+    <Manifesto />
+  </main>
+</BaseLayout>

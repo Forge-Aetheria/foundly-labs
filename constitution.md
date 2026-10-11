@@ -67,19 +67,13 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 │   ├── landing/                           # Astro 5 + Tailwind v4 (SSG)
 │   │   ├── public/                        # Assets de branding, favicons, robots
 │   │   ├── src/
-│   │   │   ├── assets/                    # Assets locales procesados por Astro
-│   │   │   ├── components/
-│   │   │   │   ├── ui/                    # Primitivos estáticos (AppCard, Badge, Button)
-│   │   │   │   ├── sections/              # Secciones de landing (Navbar, Hero, AppsGrid…)
-│   │   │   │   ├── islands/               # Islas React (.tsx) hidratables
-│   │   │   │   └── seo/                   # Componentes SEO (SEO.astro)
+│   │   │   ├── pages/                     # Rutas delgadas: solo renderiza <Modulo>View
+│   │   │   ├── modules/<modulo>/          # Secciones/UI por dominio (home, legal) + <Modulo>View.astro
+│   │   │   ├── shared/                    # Reutilizable (components/, data/, types/, utils/)
 │   │   │   ├── content/                   # Content collections (pricing, faqs, features)
-│   │   │   ├── data/                      # Constantes estáticas (siteConfig, apps…)
-│   │   │   ├── layouts/                   # BaseLayout.astro
-│   │   │   ├── pages/                     # Rutas (index, privacy, terms)
 │   │   │   ├── styles/                    # tokens.css + global.css
-│   │   │   ├── types/                     # Tipos compartidos de la app
-│   │   │   └── utils/                     # Formateadores y helpers
+│   │   │   ├── assets/                    # Assets locales procesados por Astro
+│   │   │   └── env.d.ts
 │   │   └── astro.config.mjs
 │   │
 │   ├── book/                              # Next.js / React 19 (SaaS interactivo)
@@ -90,11 +84,14 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 │   │   ├── public/
 │   │   └── next.config.mjs
 │   │
-│   └── store/                             # Next.js / React 19 (SaaS interactivo)
-│       ├── src/
-│       ├── public/
-│       └── next.config.mjs
-│
+│   ├── store/                             # Next.js / React 19 (SaaS interactivo)
+│   │   ├── src/
+│   │   │   ├── app/                       # Capa de rutas App Router (delgada): solo renderiza <Modulo>View
+│   │   │   ├── modules/<modulo>/          # Lógica de negocio por dominio (components/, dialogs/, hooks/, utils/, tests/, <Modulo>View.tsx)
+│   │   │   └── shared/                    # Reutilizable cross-app (components/, utils/, types/, infra/)
+│   │   ├── public/
+│   │   └── next.config.mjs
+│   │
 │   └── api/                               # Backend / API (NestJS, Node.js)
 │       ├── src/
 │       ├── nest-cli.json
@@ -125,7 +122,7 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 | `apps/landing` | Astro 5            | SSG (estático)          | Vitrina pública del ecosistema, SEO y performance           |
 | `apps/book`    | Next.js / React 19 | Módulo SaaS interactivo | Flujos de producto con estado y datos en tiempo de petición |
 | `apps/store`   | Next.js / React 19 | Módulo SaaS interactivo | Comercio/licencias y flujos transaccionales                 |
-| `apps/api`     | NestJS (Node.js)   | API (servidor HTTP)    | Backend de servicios/API del ecosistema                    |
+| `apps/api`     | NestJS (Node.js)   | API (servidor HTTP)     | Backend de servicios/API del ecosistema                     |
 
 - **`apps/landing`**: Astro 5 + Tailwind CSS v4, salida estática (SSG), cero JS por defecto y islas React solo cuando son estrictamente necesarias.
 - **`apps/book` y `apps/store`**: Next.js con React 19, orientadas a módulos SaaS interactivos; pueden usar Server Components y Server Actions.
@@ -133,11 +130,11 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 
 **Gates de verificación por app**:
 
-| App           | Build                                   | Test                                    |
-| ------------- | --------------------------------------- | --------------------------------------- |
-| `apps/book`   | `npm run build -w @foundly/book`        | `npm run test -w @foundly/book`         |
-| `apps/store`  | `npm run build -w @foundly/store`       | `npm run test -w @foundly/store`        |
-| `apps/api`    | `npm run build -w @foundly/api`         | `npm run test -w @foundly/api`          |
+| App          | Build                             | Test                             |
+| ------------ | --------------------------------- | -------------------------------- |
+| `apps/book`  | `npm run build -w @foundly/book`  | `npm run test -w @foundly/book`  |
+| `apps/store` | `npm run build -w @foundly/store` | `npm run test -w @foundly/store` |
+| `apps/api`   | `npm run build -w @foundly/api`   | `npm run test -w @foundly/api`   |
 
 ### II. Paquetes compartidos (`packages/`)
 
@@ -186,7 +183,7 @@ Reglas de los paquetes:
 
 - La configuración de TypeScript debe mantener `strict: true` y `noImplicitAny: true` en todo el monorepo.
 - Se prohíbe el uso de `any` y los casteos implícitos (`as targetType`); todo prop, estado o contrato de datos debe estar tipado mediante interfaces o schemas de Zod.
-- Los tipos globales compartidos viven en `packages/*` o en `src/types/` según su alcance.
+- Los tipos globales compartidos viven en `packages/*` o en `src/shared/types/` según su alcance.
 
 ## 6. Guía de Diseño, Estética & Sistema de Tokens (Clean Light UI)
 
@@ -254,21 +251,26 @@ La paleta canónica del ecosistema es la de **`specs/system-design.md` v3.0.0** 
 
 Estas rutas son las canónicas; cualquier documento que use otras rutas debe corregirse.
 
-| Elemento                    | Ruta canónica                                                 | Convención            |
-| --------------------------- | ------------------------------------------------------------- | --------------------- |
-| Islas interactivas (Astro)  | `apps/landing/src/components/islands/`                        | PascalCase (`.tsx`)   |
-| Secciones (Astro)           | `apps/landing/src/components/sections/`                       | PascalCase (`.astro`) |
-| Primitivos UI (Astro)       | `apps/landing/src/components/ui/`                             | PascalCase (`.astro`) |
-| Componentes SEO             | `apps/landing/src/components/seo/`                            | PascalCase (`.astro`) |
-| Layouts                     | `apps/landing/src/layouts/`                                   | PascalCase (`.astro`) |
-| Páginas / rutas             | `apps/landing/src/pages/`                                     | kebab-case (`.astro`) |
-| Componentes compartidos     | `packages/ui/`                                                | PascalCase            |
-| Datos / content collections | `apps/landing/src/data/` y `apps/landing/src/content/`        | kebab-case            |
-| Configuración compartida    | `packages/config/`                                            | kebab-case            |
-| Specs de dominio            | `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`) | `nnn-feature`         |
-| Documentos globales         | `/specs/` (raíz)                                              | kebab-case            |
+| Elemento                      | Ruta canónica                                                        | Convención              |
+| ----------------------------- | -------------------------------------------------------------------- | ----------------------- |
+| Rutas (Astro)                 | `apps/landing/src/pages/`                                            | kebab-case (`.astro`)   |
+| Vistas de módulo (Astro)      | `apps/landing/src/modules/<modulo>/<Modulo>View.astro`               | PascalCase (`.astro`)   |
+| Secciones (Astro)             | `apps/landing/src/modules/<modulo>/components/`                      | PascalCase (`.astro`)   |
+| Islas interactivas (Astro)    | `apps/landing/src/modules/<modulo>/islands/`                         | PascalCase (`.tsx`)     |
+| UI reutilizable (Astro)       | `apps/landing/src/shared/components/ui/`                             | PascalCase (`.astro`)   |
+| SEO / layout / chrome (Astro) | `apps/landing/src/shared/components/`                                | PascalCase (`.astro`)   |
+| Datos / content (Astro)       | `apps/landing/src/shared/data/` y `apps/landing/src/content/`        | kebab-case              |
+| Tipos / utils (Astro)         | `apps/landing/src/shared/types/` y `apps/landing/src/shared/utils/`  | kebab-case / camelCase  |
+| Rutas App Router (Next)       | `apps/{book,store}/src/app/`                                         | kebab-case (`.tsx`)     |
+| Vistas de módulo (Next)       | `apps/{book,store}/src/modules/<modulo>/<Modulo>View.tsx`            | PascalCase (`.tsx`)     |
+| Módulos de dominio (Next)     | `apps/{book,store}/src/modules/<modulo>/`                            | kebab-case              |
+| Código compartido (Next)      | `apps/{book,store}/src/shared/`                                      | kebab-case / PascalCase |
+| Componentes compartidos       | `packages/ui/`                                                       | PascalCase              |
+| Configuración compartida      | `packages/config/`                                                   | kebab-case              |
+| Specs de dominio              | `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`, `api`) | `nnn-feature`           |
+| Documentos globales           | `/specs/` (raíz)                                                     | kebab-case              |
 
-> **Corrección explícita**: la carpeta real de islas es `src/components/islands/` y las secciones son `src/components/sections/`. Se elimina cualquier referencia previa a `src/islands/` o a componentes de sección sueltos en la raíz de `components/`.
+> **Corrección explícita**: todas las apps comparten el patrón **rutas delgadas + `modules/` + `shared/`**. En `apps/landing` las rutas (`src/pages/`) solo renderizan su `<Modulo>View`; las secciones viven en `src/modules/<modulo>/components/`, las islas en `src/modules/<modulo>/islands/` y lo reutilizable (UI, SEO, layout, datos, tipos, utils) en `src/shared/`. En `apps/book` y `apps/store` las rutas (`src/app/`) también son delgadas y la lógica vive en `src/modules/` y `src/shared/`. Se elimina cualquier referencia previa a `src/components/`, `src/data/`, `src/layouts/`, `src/types/` o `src/utils/`.
 
 ## 8. Convención de Commits y Flujo de Trabajo
 
