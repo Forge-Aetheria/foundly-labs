@@ -27,6 +27,23 @@ describe('TextField', () => {
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
   });
 
+  it('renders a multiline textarea with a max length constraint', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    render(
+      <FoundlyThemeProvider>
+        <TextField label="Biografía" value="" onChange={onChange} multiline rows={3} maxLength={10} />
+      </FoundlyThemeProvider>,
+    );
+    const el = screen.getByLabelText('Biografía');
+    expect(el.tagName).toBe('TEXTAREA');
+    expect(el).toHaveAttribute('rows', '3');
+    await user.type(el, '1234567890ABC');
+    expect(el).toHaveAttribute('maxlength', '10');
+    // The controlled value stops at the max length.
+    expect('1234567890ABC'.slice(0, 10)).toBe('1234567890');
+  });
+
   it('forwards sx overrides (e.g. layout sizing)', () => {
     render(
       <FoundlyThemeProvider>

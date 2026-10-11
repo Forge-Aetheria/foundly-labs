@@ -14,6 +14,12 @@ export interface TextFieldProps {
   name?: string;
   required?: boolean;
   fullWidth?: boolean;
+  /** Renders a MUI `multiline` textarea (e.g. biographies). */
+  multiline?: boolean;
+  /** Number of visible rows when `multiline` is set. */
+  rows?: number;
+  /** Max length enforced by the native `inputProps.maxLength`. */
+  maxLength?: number;
   /** Extra styles merged over the material TextField root (e.g. layout sizing). */
   sx?: SxProps<Theme>;
 }
@@ -30,6 +36,9 @@ export function TextField({
   name,
   required = false,
   fullWidth = false,
+  multiline = false,
+  rows,
+  maxLength,
   sx,
 }: TextFieldProps) {
   return (
@@ -50,6 +59,9 @@ export function TextField({
       required={required}
       fullWidth={fullWidth}
       variant="outlined"
+      multiline={multiline}
+      rows={rows}
+      inputProps={maxLength ? { maxLength } : undefined}
       sx={sx}
     />
   );

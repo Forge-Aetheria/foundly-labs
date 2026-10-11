@@ -9,3 +9,5 @@ export { TextField, type TextFieldProps } from './TextField';
 export { Typography, type TypographyProps } from './Typography';
 export { Container, type ContainerProps } from './Container';
 export { Stack, type StackProps } from './Stack';
+export { Checkbox, type CheckboxProps } from './Checkbox';
+export { Switch, type SwitchProps } from './Switch';
