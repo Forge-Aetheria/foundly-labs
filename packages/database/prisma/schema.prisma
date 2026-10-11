@@ -1,0 +1,133 @@
+// Foundly — DB-First schema (Prisma + PostgreSQL)
+// Models mirror the domain designed in apps/book for 1:1 future mapping.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  category     String
+  status       String   @default("active")
+  timezone     String
+  currency     String   @default("EUR")
+  businessHours Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile      Profile?
+  services     Service[]
+  staff        Staff[]
+  appointments Appointment[]
+  gallery      Gallery[]
+  availability Availability[]
+}
+
+model Profile {
+  id        String  @id @default(cuid())
+  tenantId  String  @unique
+  bio       String?
+  address   String?
+  phone     String?
+  instagram String?
+  whatsapp  String?
+  avatar    String?
+  cover     String?
+  policies  Json?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  tenantId        String
+  name            String
+  description     String?
+  durationMinutes Int
+  bufferMinutes   Int      @default(0)
+  category        String?
+  priceCents      Int
+  currency        String   @default("EUR")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  appointments Appointment[]
+}
+
+model Staff {
+  id         String   @id @default(cuid())
+  tenantId   String
+  name       String
+  role       String?
+  avatar     String?
+  bio        String?
+  serviceIds String[] @default([])
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  appointments Appointment[]
+}
+
+model Appointment {
+  id                     String   @id @default(cuid())
+  tenantId               String
+  staffId                String
+  serviceId              String
+  clientName             String
+  clientContact          String?
+  startAt                DateTime
+  endAt                  DateTime
+  status                 String   @default("pending")
+  appliedDurationMinutes Int
+  appliedAmountCents     Int
+  appliedCurrency        String   @default("EUR")
+  origin                 String   @default("online")
+  notes                  String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  staff   Staff   @relation(fields: [staffId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+}
+
+model Gallery {
+  id          String  @id @default(cuid())
+  tenantId    String
+  url         String
+  title       String?
+  description String?
+  category    String?
+  sortOrder   Int     @default(0)
+  createdAt   DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Availability {
+  id                     String  @id @default(cuid())
+  tenantId               String
+  staffId                String?
+  weekday                Int
+  startTime              String
+  endTime                String
+  slotGranularityMinutes Int     @default(30)
+  minLeadTimeMinutes     Int     @default(0)
+  bookingHorizonDays     Int     @default(60)
+  breaks                 Json?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+}

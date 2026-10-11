@@ -1,14 +1,22 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "declaration": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "removeComments": true,
-    "noEmit": false,
+    "sourceMap": true,
+    "declaration": true,
     "rootDir": "./src",
-    "outDir": "./dist",
-    "incremental": true
+    "outDir": "./dist"
   },
-  "exclude": ["node_modules", "test", "dist", "vitest.config.ts", "**/*spec.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

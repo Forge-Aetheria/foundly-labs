@@ -96,11 +96,13 @@ The repo is a **npm workspaces monorepo** (`apps/*`, `packages/*`):
 | `apps/store`  | Next.js / React 19    | Comercio/licencias (`/store`)          | `/specs/store/`                  |
 | `apps/api`    | NestJS (Node.js)      | Backend / API del ecosistema           | `/specs/api/`                    |
 | `packages/ui` | MUI v6 (design system)| `@foundly/ui`                          | `/specs/shared-ui/`              |
+| `packages/database` | Prisma + PostgreSQL | `@foundly/database` (persistencia DB-First) | `/specs/api/`              |
 
-Comandos de la API (`@foundly/api`):
+Comandos de la API (`@foundly/api`) y la base de datos (`@foundly/database`):
 
 ```bash
 npm run build -w @foundly/api   # build gate
 npm run test -w @foundly/api    # test gate
-npm run dev -w @foundly/api     # dev server (puerto 3002 / PORT)
+npm run dev -w @foundly/api     # dev server (puerto 3002 / PORT; GraphQL en /graphql)
+npm run generate -w @foundly/database  # prisma generate (cliente DB-First)
 ```

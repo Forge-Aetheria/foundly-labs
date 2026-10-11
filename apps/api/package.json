@@ -12,9 +12,15 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@as-integrations/express5": "^1.1.2",
+    "@foundly/database": "*",
+    "@nestjs/apollo": "^13.0.2",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/graphql": "^13.0.2",
     "@nestjs/platform-express": "^11.0.0",
+    "@apollo/server": "^5.0.0",
+    "graphql": "^16.10.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
   },

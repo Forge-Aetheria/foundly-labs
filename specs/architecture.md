@@ -32,7 +32,7 @@ Reglas de dependencias (constitución §3.II):
 - `packages/*` **nunca** importa desde `apps/*`.
 - Las dependencias entre paquetes son **acíclicas**.
 - El código compartido vive solo en `packages/` (sin duplicación entre apps).
-- **Persistencia no definida**: la estrategia de almacenamiento de las apps SaaS todavía no está ratificada. Las apps deben mantenerse desacopladas de cualquier tecnología de persistencia (tipos/interfaces y mocks en memoria) hasta que se decida y documente aquí.
+- **Persistencia ratificada (resolución del TODO(PERSISTENCE))**: la estrategia de almacenamiento es **Prisma + PostgreSQL** (Supabase o Postgres local vía Docker), expuesta únicamente a través del paquete compartido `@foundly/database` (`prisma/schema.prisma` DB-First + cliente generado). Las apps `apps/api` (y futuras) consumen el cliente desde ese seam; `apps/book`/`apps/store` siguen desacopladas de la tecnología mientras continúen usando su store en memoria.
 
 ---
 

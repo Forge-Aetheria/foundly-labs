@@ -31,3 +31,5 @@ Thumbs.db
 .idea/
 *.tmp
 *.swp
+# code-first auto schema output
+apps/api/src/schema.gql
