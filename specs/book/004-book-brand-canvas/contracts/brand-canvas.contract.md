@@ -12,12 +12,12 @@ Defined in `apps/book/src/app/globals.css` under `:root`. These are a **book-loc
 shared Clean Light UI palette (`constitution.md` §6.I) that mirrors `apps/landing/src/styles/tokens.css`
 and MUST NOT be promoted to `@foundly/ui`.
 
-| CSS variable           | Value                     | Purpose / mirror                                        |
-| ---------------------- | ------------------------- | ------------------------------------------------------- |
-| `--book-gradient-from` | `#c8b6ff`                 | Gradient start — mirror of `--color-gradient-from`      |
-| `--book-gradient-to`   | `#d8b4fe`                 | Gradient end token — mirror of `--color-gradient-to`    |
-| `--book-glass`         | `rgba(255, 255, 255, 0.7)` | Sticky header glass — mirror of `bg-card-light/70`      |
-| `--book-glass-card`    | `rgba(255, 255, 255, 0.6)` | Card glassmorphism — mirror of `bg-card-light/60`       |
+| CSS variable           | Value                      | Purpose / mirror                                     |
+| ---------------------- | -------------------------- | ---------------------------------------------------- |
+| `--book-gradient-from` | `#c8b6ff`                  | Gradient start — mirror of `--color-gradient-from`   |
+| `--book-gradient-to`   | `#d8b4fe`                  | Gradient end token — mirror of `--color-gradient-to` |
+| `--book-glass`         | `rgba(255, 255, 255, 0.7)` | Sticky header glass — mirror of `bg-card-light/70`   |
+| `--book-glass-card`    | `rgba(255, 255, 255, 0.6)` | Card glassmorphism — mirror of `bg-card-light/60`    |
 
 ## Canvas class (`.book-app-canvas`)
 
@@ -34,7 +34,7 @@ Applied on `<body>` by the root layout (`apps/book/src/app/layout.tsx`). Obligat
 
 - **Root layout** (`apps/book/src/app/layout.tsx`) MUST import `./globals.css` and set
   `className="book-app-canvas"` on `<body>` so every route inherits the canvas (FR-001).
-- **Product page** (`apps/book/src/app/components/ProductLanding.tsx`):
+- **Product page** (`apps/book/src/modules/landing/LandingView.tsx`):
   - MUST NOT paint an opaque wrapper/full-screen background (FR-005).
   - The sticky header MUST use the book-local glass token `--book-glass` (70% white) with
     `backdrop-filter: blur(12px)` and a subtle `border.subtle` at 60% alpha, mirroring the landing
@@ -49,7 +49,7 @@ Applied on `<body>` by the root layout (`apps/book/src/app/layout.tsx`). Obligat
 - **Cards on the product page** (showcase, benefits): MUST use the book-local `--book-glass-card` (60%
   white) with `backdrop-filter: blur(8px)` over the shared border/radius/shadow — mirroring the
   landing's `AppCard` (FR-006). The shared `@foundly/ui` `Card` forwards `sx` to enable this.
-- **Admin shell** (`apps/book/src/app/admin/components/AdminShell.tsx`):
+- **Admin shell** (`apps/book/src/shared/components/AdminShell.tsx`):
   - MUST NOT paint an opaque full-screen background; `background.default` was removed so the root canvas
     shows through (FR-005 / US4). The white sidebar and drawer remain intentional panels.
 

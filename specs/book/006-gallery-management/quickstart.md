@@ -25,19 +25,19 @@
 
 ## Validation matrix (contract `contracts/admin-gallery.contract.md`)
 
-| Scenario                    | Expected                                                              |
-| --------------------------- | --------------------------------------------------------------------- |
-| Add valid photo             | Card appears; visible in public `#galeria`                            |
-| Add empty/invalid URL       | Inline `VALIDATION_ERROR`, nothing added                               |
-| Add duplicate URL           | `CONFLICT`, nothing added                                              |
-| Preview (lightbox)          | Modal opens with the photo; dismissible                                |
-| Remove with confirmation    | Card gone; gone from public `#galeria`                                 |
-| Optional title/category     | Photo saved and rendered without them                                 |
+| Scenario                 | Expected                                   |
+| ------------------------ | ------------------------------------------ |
+| Add valid photo          | Card appears; visible in public `#galeria` |
+| Add empty/invalid URL    | Inline `VALIDATION_ERROR`, nothing added   |
+| Add duplicate URL        | `CONFLICT`, nothing added                  |
+| Preview (lightbox)       | Modal opens with the photo; dismissible    |
+| Remove with confirmation | Card gone; gone from public `#galeria`     |
+| Optional title/category  | Photo saved and rendered without them      |
 
 ## Test commands
 
-| Command                              | Scope                                        |
-| ------------------------------------ | -------------------------------------------- |
-| `npm run test -w @foundly/book`      | Vitest + RTL + vitest-axe (book app)         |
-| `npm run test -w @foundly/ui`        | Shared UI primitives suite                   |
-| `npm run build -w @foundly/book`     | Production build + type check                |
+| Command                          | Scope                                |
+| -------------------------------- | ------------------------------------ |
+| `npm run test -w @foundly/book`  | Vitest + RTL + vitest-axe (book app) |
+| `npm run test -w @foundly/ui`    | Shared UI primitives suite           |
+| `npm run build -w @foundly/book` | Production build + type check        |

@@ -4,7 +4,7 @@
 
 ## Changes to existing entities
 
-### Resource (Professional) — `apps/book/src/domain/appointments/types.ts`
+### Resource (Professional) — `apps/book/src/shared/types/appointments.ts`
 
 Adds the services the professional performs:
 
@@ -12,7 +12,7 @@ Adds the services the professional performs:
 export interface Resource {
   id: string;
   name: string;
-  type: ResourceType;       // 'professional' | 'room' | 'asset'
+  type: ResourceType; // 'professional' | 'room' | 'asset'
   active: boolean;
   timezone: string;
   tenantId: string;
@@ -37,7 +37,7 @@ multi-select and the resolver for public service badges.
 
 ## Derived / read surface
 
-### Public specialist (`apps/book/src/features/public-booking/types.ts`)
+### Public specialist (`apps/book/src/modules/public-booking/utils/types.ts`)
 
 ```ts
 export interface PublicSpecialist {

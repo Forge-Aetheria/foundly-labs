@@ -4,12 +4,12 @@
 
 ## Prior art in the codebase
 
-- `apps/book/src/features/storefront/components/ProfileEditor.tsx` + `updateProfile` already persist
+- `apps/book/src/modules/profile/components/ProfileEditor.tsx` + `updateProfile` already persist
   identity (name, category), about (bio), contact (address, phone, instagram, whatsapp) and
   logo/cover URLs to `Tenant`, and `getPublicBusiness` already surfaces them to the public header,
   sticky card, "Acerca de" and "Dirección y horarios".
 - The gap: the editor does NOT expose the public URL (slug), the reservation/cancellation policies or a
-  visual hours summary. Slug validation already exists in `domain/tenancy/slug.ts` (`validateSlug`/
+  visual hours summary. Slug validation already exists in `shared/utils/slug.ts` (`validateSlug`/
   `normalizeSlug`, format + reserved + uniqueness); `portalPolicies` (a separate store collection)
   and `businessHours` already feed the public page.
 - No new `@foundly/ui` primitive is required; `TextField` (multiline/maxLength) covers textareas.

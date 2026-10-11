@@ -10,35 +10,35 @@ read by `getPublicBusiness`, so edits surface in `/book/<slug>` (FR-026).
 
 ## Equipo (`/admin/staff`) — `StaffManager.tsx`
 
-| Area        | Contract                                                                                                                                                                                                                     |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Header      | Title `Equipo` + subtitle + right-aligned pill primary **"+ Añadir profesional"** (`primary.main` #6C5CE7).                                                                                                                  |
-| Columns     | **Profesional** (avatar initials or photo + name + role caption) · **Bio** · **Estado** (`Activo`/`Inactivo` badge) · **Acciones** (right: Activ·/Desactiv· secondary, "Editar" secondary, "Eliminar" destructive).            |
-| Create/edit | `Modal` with `TextField` (nombre, rol, foto URL, bio corta); required name with inline error from `ActionResult`. Regional forms save via `createStaff`/`updateStaff`.                                                         |
-| Toggle/delete | "Activ·/Desactiv·" calls `setStaffActive`; "Eliminar" opens a destructive `AlertDialog` ("Sí, eliminar") and calls `removeStaff`.                                                                                           |
-| Density     | `DataTable dense`.                                                                                                                                                                                                           |
+| Area          | Contract                                                                                                                                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Header        | Title `Equipo` + subtitle + right-aligned pill primary **"+ Añadir profesional"** (`primary.main` #6C5CE7).                                                                                                         |
+| Columns       | **Profesional** (avatar initials or photo + name + role caption) · **Bio** · **Estado** (`Activo`/`Inactivo` badge) · **Acciones** (right: Activ·/Desactiv· secondary, "Editar" secondary, "Eliminar" destructive). |
+| Create/edit   | `Modal` with `TextField` (nombre, rol, foto URL, bio corta); required name with inline error from `ActionResult`. Regional forms save via `createStaff`/`updateStaff`.                                              |
+| Toggle/delete | "Activ·/Desactiv·" calls `setStaffActive`; "Eliminar" opens a destructive `AlertDialog` ("Sí, eliminar") and calls `removeStaff`.                                                                                   |
+| Density       | `DataTable dense`.                                                                                                                                                                                                  |
 
 ## Galería (`/admin/gallery`) — `GalleryManager.tsx`
 
-| Area     | Contract                                                                                                                                |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Header   | Title `Galería` + subtitle + pill primary **"+ Añadir imagen"**. `Card` root, tokens for the canvas.                                     |
-| Grid     | Responsive photo grid (`4/3` tiles); each tile has a full-width secondary **"Quitar foto"** that opens a destructive `AlertDialog`.        |
-| Add      | `Modal` with URL `TextField`; duplicate URLs are rejected (`CONFLICT`) with inline error; success appends to `Tenant.gallery`.           |
-| Empty    | "Todavía no has añadido fotos…" hint when the gallery is empty.                                                                           |
+| Area   | Contract                                                                                                                            |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Header | Title `Galería` + subtitle + pill primary **"+ Añadir imagen"**. `Card` root, tokens for the canvas.                                |
+| Grid   | Responsive photo grid (`4/3` tiles); each tile has a full-width secondary **"Quitar foto"** that opens a destructive `AlertDialog`. |
+| Add    | `Modal` with URL `TextField`; duplicate URLs are rejected (`CONFLICT`) with inline error; success appends to `Tenant.gallery`.      |
+| Empty  | "Todavía no has añadido fotos…" hint when the gallery is empty.                                                                     |
 
 ## Perfil (`/admin/profile`) — `ProfileEditor.tsx`
 
-| Area      | Contract                                                                                                                               |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Header    | Title `Perfil y Acerca de` + right-aligned pill primary **"Guardar perfil"**.                                                          |
-| Fields    | `TextField`s: nombre, categoría, bio, dirección, teléfono, logo URL, portada URL, Instagram, WhatsApp. Two-column layout on `sm+`.     |
-| Save      | Calls `updateProfile`; on success shows a `Badge pill` "Guardado"; errors render inline via `ActionResult`.                             |
-| Sync      | Persists `name/category/bio/address/phone/social` on the tenant read by `getPublicBusiness`.                                            |
+| Area   | Contract                                                                                                                           |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Header | Title `Perfil y Acerca de` + right-aligned pill primary **"Guardar perfil"**.                                                      |
+| Fields | `TextField`s: nombre, categoría, bio, dirección, teléfono, logo URL, portada URL, Instagram, WhatsApp. Two-column layout on `sm+`. |
+| Save   | Calls `updateProfile`; on success shows a `Badge pill` "Guardado"; errors render inline via `ActionResult`.                        |
+| Sync   | Persists `name/category/bio/address/phone/social` on the tenant read by `getPublicBusiness`.                                       |
 
 ## Data & mutations
 
-- Feature module: `apps/book/src/features/storefront/` (`schemas.ts`, `actions.ts`, `queries.ts`, `components/`).
+- Feature module: `apps/book/src/modules/{staff,gallery,profile}/` (`schemas.ts`, `actions.ts`, `queries.ts`, `components/`).
 - Every action authorizes the admin role through the Foundly Pass session seam, resolves the tenant id
   from the session (never the client), validates with Zod and returns the typed `ActionResult`.
 - Reads mirror the public contract: `listStaff` ↔ `specialists`, `listGallery` ↔ `gallery`, `getTenantProfile` ↔ portal identity.

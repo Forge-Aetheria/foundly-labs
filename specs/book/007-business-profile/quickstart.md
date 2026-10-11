@@ -24,19 +24,19 @@
 
 ## Validation matrix (contract `contracts/admin-profile.contract.md`)
 
-| Scenario                    | Expected                                                            |
-| --------------------------- | ------------------------------------------------------------------- |
-| Save valid profile          | Badge "Guardado"; public header/sticky/About/Dirección reflect it    |
-| Invalid or taken slug       | Inline `VALIDATION_ERROR`; nothing changed                           |
-| Empty optional contact      | Persists as null; public blocks show placeholders                    |
-| Logo/portada URL            | Live preview shown before saving                                     |
-| Add/remove policies         | List updates locally and persists via `updatePolicies`               |
-| Hours summary               | Matches the availability configuration                               |
+| Scenario               | Expected                                                          |
+| ---------------------- | ----------------------------------------------------------------- |
+| Save valid profile     | Badge "Guardado"; public header/sticky/About/Dirección reflect it |
+| Invalid or taken slug  | Inline `VALIDATION_ERROR`; nothing changed                        |
+| Empty optional contact | Persists as null; public blocks show placeholders                 |
+| Logo/portada URL       | Live preview shown before saving                                  |
+| Add/remove policies    | List updates locally and persists via `updatePolicies`            |
+| Hours summary          | Matches the availability configuration                            |
 
 ## Test commands
 
-| Command                              | Scope                          |
-| ------------------------------------ | ------------------------------ |
-| `npm run test -w @foundly/book`      | Vitest + RTL + vitest-axe      |
-| `npm run test -w @foundly/ui`        | Shared UI primitives suite     |
-| `npm run build -w @foundly/book`     | Production build + type check  |
+| Command                          | Scope                         |
+| -------------------------------- | ----------------------------- |
+| `npm run test -w @foundly/book`  | Vitest + RTL + vitest-axe     |
+| `npm run test -w @foundly/ui`    | Shared UI primitives suite    |
+| `npm run build -w @foundly/book` | Production build + type check |

@@ -2,7 +2,7 @@
 
 **Feature**: `specs/book/001-book-admin-panel/` | **Date**: 2026-10-08
 
-Derived from the Key Entities in `spec.md`. The model is expressed as **plain TypeScript interfaces** (`apps/book/src/domain/appointments/types.ts`) and held in an **in-memory store** (`apps/book/src/server/store.ts`). No persistence technology is defined or implied.
+Derived from the Key Entities in `spec.md`. The model is expressed as **plain TypeScript interfaces** (`apps/book/src/shared/types/appointments.ts`) and held in an **in-memory store** (`apps/book/src/shared/infra/store.ts`). No persistence technology is defined or implied.
 
 ## Conventions
 

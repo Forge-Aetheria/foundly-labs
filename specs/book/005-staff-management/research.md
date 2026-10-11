@@ -4,10 +4,10 @@
 
 ## Prior art in the codebase
 
-- `apps/book/src/features/storefront/` already implements `StaffManager` (table), `createStaff` /
+- `apps/book/src/modules/{staff,gallery,profile}/` already implements `StaffManager` (table), `createStaff` /
   `updateStaff` / `setStaffActive` / `removeStaff`, and tenant-scoped authorization. This feature
   upgrades the surface (table → glass card grid) and the data (adds service assignment).
-- The public portal (`features/public-booking`) maps tenant `resources` → `specialists` and renders
+- The public portal (`modules/public-booking`) maps tenant `resources` → `specialists` and renders
   them in `ProviderSections#TeamSection`; deactivated resources are already excluded
   (`resource.active`), so the status toggle reuses that guarantee (spec FR-007).
 - `@foundly/ui` has no `Switch`/`Checkbox`/`Select` primitives; `TextField` lacks `multiline`/`maxLength`.

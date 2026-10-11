@@ -6,7 +6,7 @@ Defines the TypeScript type surface consumed by `apps/book`. Field-level definit
 
 ## Interfaces
 
-Exported from `apps/book/src/domain/appointments/types.ts`:
+Exported from `apps/book/src/shared/types/appointments.ts`:
 
 | Interface               | Purpose                                | Key fields                                                                                                                                     |
 | ----------------------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -29,9 +29,9 @@ Exported from `apps/book/src/domain/appointments/types.ts`:
 
 ## Boundaries
 
-- The domain types live in `apps/book/src/domain` and MUST NOT import React, Next.js, MUI, or any storage client.
-- The in-memory store (`apps/book/src/server/store.ts`) is the only module that reads/writes collections of these types.
-- Input validation is performed with the Zod schemas in `apps/book/src/features/**/schemas.ts`.
+- The domain types live in `apps/book/src/shared` and MUST NOT import React, Next.js, MUI, or any storage client.
+- The in-memory store (`apps/book/src/shared/infra/store.ts`) is the only module that reads/writes collections of these types.
+- Input validation is performed with the Zod schemas in `apps/book/src/modules/**/utils/schemas.ts`.
 
 ## Verification
 

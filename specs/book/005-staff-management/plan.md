@@ -19,7 +19,7 @@ primitives (Switch, Checkbox) plus `TextField` multiline/maxLength support.
 
 **Primary Dependencies**: `@foundly/ui` (design system) · MUI v6 (as engine of `@foundly/ui`) · Zod 4
 
-**Storage**: None — in-memory seam `apps/book/src/server/store.ts`
+**Storage**: None — in-memory seam `apps/book/src/shared/infra/store.ts`
 
 **Testing**: Vitest + RTL + vitest-axe (`npm run test -w @foundly/book`)
 
@@ -29,14 +29,14 @@ primitives (Switch, Checkbox) plus `TextField` multiline/maxLength support.
 
 **Performance Goals**: N/A (small admin surfaces)
 
-**Constraints**: C1 — views use `@foundly/ui` only; C2 — `apps/book/src/domain` stays free of
+**Constraints**: C1 — views use `@foundly/ui` only; C2 — `apps/book/src/shared` stays free of
 React/Next/MUI/storage imports; C3 — persistence only through the store seam.
 
 **Scale/Scope**: single-screen admin feature; ~1 grid view + 1 modal + data-model tweak.
 
 ## Constitution Check
 
-*GATE: must pass before implementation.*
+_GATE: must pass before implementation._
 
 - Specs live under `/specs/<dominio>/<nnn>-<feature>/` → **OK** (`book/005-staff-management`).
 - Views consume `@foundly/ui` + tokens, no hex literals → **OK** (pill `#6C5CE7` expressed as `primary.main`).
@@ -66,13 +66,13 @@ packages/ui/src/components/
 ├── Checkbox/             # NEW primitive (@foundly/ui)
 └── TextField/            # EXTEND: multiline, rows, maxLength
 
-apps/book/src/domain/appointments/types.ts   # EXTEND: Resource.serviceIds?
-apps/book/src/server/store.ts                # EXTEND: seed serviceIds
-apps/book/src/features/storefront/
+apps/book/src/shared/types/appointments.ts   # EXTEND: Resource.serviceIds?
+apps/book/src/shared/infra/store.ts                # EXTEND: seed serviceIds
+apps/book/src/modules/{staff,gallery,profile}/
 ├── schemas.ts            # EXTEND: serviceIds
 ├── actions.ts            # EXTEND: createStaff/updateStaff serviceIds
 └── components/StaffManager.tsx  # REWRITE: card grid + rich modal
-apps/book/src/features/public-booking/
+apps/book/src/modules/public-booking/utils/
 ├── types.ts              # EXTEND: PublicSpecialist.services
 ├── queries.ts            # EXTEND: map services
 └── components/provider/ProviderSections.tsx  # TeamSection services badges
@@ -80,10 +80,10 @@ specs/book/005-staff-management/  # feature docs (this feature)
 ```
 
 **Structure Decision**: Feature docs live in the domain spec folder; the implementation reuses the
-existing `storefront` feature module under `apps/book/src/features/` (no new app/package).
+existing `storefront` feature module under `apps/book/src/modules/` (no new app/package).
 
 ## Complexity Tracking
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
+| Violation                                                     | Why Needed                                                                                              | Simpler Alternative Rejected Because                    |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | Two new shared primitives (Switch, Checkbox) in `@foundly/ui` | The DS lacks form-control primitives; the spec demands a switch + multi-select using `@foundly/ui` only | Using raw MUI in the admin view would violate C1/FR-009 |

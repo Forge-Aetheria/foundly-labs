@@ -4,11 +4,11 @@
 
 ## Prior art in the codebase
 
-- `apps/book/src/features/storefront/` already ships a `GalleryManager` (URL grid + separate
+- `apps/book/src/modules/{staff,gallery,profile}/` already ships a `GalleryManager` (URL grid + separate
   add-remove) and `addGalleryImage`/`removeGalleryImage`. This feature upgrades the model from plain
   URL strings to annotated photos (title, category) and adds a lightbox preview with precise removal.
 - The public landing renders `#galeria` from `Tenant.gallery` via `getPublicBusiness`
-  (`features/public-booking/queries.ts`) and `ProviderSections#GallerySection`; no UI changes are
+  (`modules/public-booking/utils/queries.ts`) and `ProviderSections#GallerySection`; no UI changes are
   needed there beyond rendering the new metadata and an empty state.
 - `@foundly/ui` already provides `Modal` (lightbox shell), `TextField` (multiline/maxLength), `Badge`
   and `Chip` (selectable tag picker); no new shared primitives are required.

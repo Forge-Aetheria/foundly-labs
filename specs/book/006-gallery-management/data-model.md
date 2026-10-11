@@ -4,16 +4,16 @@
 
 ## New entity: GalleryPhoto
 
-A single photo in the business's visual catalog. Lives in `apps/book/src/domain/tenancy/types.ts`.
+A single photo in the business's visual catalog. Lives in `apps/book/src/shared/types/tenancy.ts`.
 
 ```ts
 export type GalleryCategory = 'local' | 'trabajos' | 'equipo';
 
 export interface GalleryPhoto {
-  id: string;              // stable identity (rejection of duplicates, precise removal)
-  url: string;             // absolute http(s) image URL
-  title?: string;          // short optional title/description
-  description?: string;    // short optional description
+  id: string; // stable identity (rejection of duplicates, precise removal)
+  url: string; // absolute http(s) image URL
+  title?: string; // short optional title/description
+  description?: string; // short optional description
   category?: GalleryCategory; // optional tag: local | trabajos | equipo
 }
 ```
@@ -43,7 +43,7 @@ Seed data for both tenants (`estudio-ana`, `rona-piercing`) migrates `string[]` 
 
 ## Derived / read surface
 
-### Public gallery photo (`apps/book/src/features/public-booking/types.ts`)
+### Public gallery photo (`apps/book/src/modules/public-booking/utils/types.ts`)
 
 ```ts
 export interface PublicGalleryPhoto {

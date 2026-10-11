@@ -18,7 +18,7 @@ The feature is a UI/UX refactor of `apps/book`'s public-booking feature plus a s
 
 **Primary Dependencies**: `@foundly/ui` (workspace, MUI v6) primitives (`Card`, `Button`, `Modal`, `Badge`, `Chip`, `Typography`, `Stack`, `Container`); `@mui/icons-material` (already a book dependency); Zod for client-field validation; Next.js routing/dynamic segments
 
-**Storage**: In-memory store seam (`apps/book/src/server/store.ts`) extended with tenant profile, specialist metadata and portal policies; **no persistence technology** (deferred per `specs/architecture.md`)
+**Storage**: In-memory store seam (`apps/book/src/shared/infra/store.ts`) extended with tenant profile, specialist metadata and portal policies; **no persistence technology** (deferred per `specs/architecture.md`)
 
 **Testing**: Vitest + React Testing Library + `vitest-axe` for the portal components and the booking flow; Vitest for the portal query contract and the slot/conflict behavior
 
@@ -38,17 +38,17 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 Authority hierarchy (Principle 1): `specs/business-model.md` > `constitution.md` > `specs/architecture.md` > `code-rules.md` > specs de dominio.
 
-| Gate                                                                                                                             | Source                              | Status               |
-| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | -------------------- |
-| I. Rule of Law — spec references `specs/business-model.md` (Book §2.3, Foundly Pass §3); monorepo boundaries respected            | constitution §1                     | PASS                 |
-| II. Spec-Driven Development — `spec.md` precedes this plan                                                                        | constitution §5.I                   | PASS                 |
-| III. Server-First & Zero-JS — portal SSR; client JS only for the booking modal and interactive tabs                              | constitution §5.II                  | PASS (constraint C1) |
-| IV. Strict Typing — Zod validation for client data + strict TS; no `any`                                                          | constitution §5.IV                  | PASS                 |
-| V. Performance & Core Web Vitals — SSR portal, no horizontal overflow                                                             | constitution §5.III                 | PASS                 |
-| VI. Clean Light UI — interface composed exclusively from `@foundly/ui` tokens/components                                         | constitution §6, `code-rules.md` §4 | PASS                 |
-| Specs-by-domain — feature lives in `specs/book/` and refines the existing portal (002)                                           | constitution §2                     | PASS                 |
-| Packages rules — no shared data package introduced; `@foundly/ui` unchanged                                                       | constitution §3.II                  | PASS                 |
-| Workflow gates — ESLint + type check + build                                                                                      | constitution §8                     | PASS                 |
+| Gate                                                                                                                   | Source                              | Status               |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | -------------------- |
+| I. Rule of Law — spec references `specs/business-model.md` (Book §2.3, Foundly Pass §3); monorepo boundaries respected | constitution §1                     | PASS                 |
+| II. Spec-Driven Development — `spec.md` precedes this plan                                                             | constitution §5.I                   | PASS                 |
+| III. Server-First & Zero-JS — portal SSR; client JS only for the booking modal and interactive tabs                    | constitution §5.II                  | PASS (constraint C1) |
+| IV. Strict Typing — Zod validation for client data + strict TS; no `any`                                               | constitution §5.IV                  | PASS                 |
+| V. Performance & Core Web Vitals — SSR portal, no horizontal overflow                                                  | constitution §5.III                 | PASS                 |
+| VI. Clean Light UI — interface composed exclusively from `@foundly/ui` tokens/components                               | constitution §6, `code-rules.md` §4 | PASS                 |
+| Specs-by-domain — feature lives in `specs/book/` and refines the existing portal (002)                                 | constitution §2                     | PASS                 |
+| Packages rules — no shared data package introduced; `@foundly/ui` unchanged                                            | constitution §3.II                  | PASS                 |
+| Workflow gates — ESLint + type check + build                                                                           | constitution §8                     | PASS                 |
 
 **Constraints introduced by gates**:
 
@@ -83,35 +83,36 @@ apps/book/
 │   ├── app/
 │   │   └── [tenantSlug]/
 │   │       └── page.tsx          # server page → resolves profile, renders PublicPortal/UnavailablePanel
-│   ├── domain/
-│   │   ├── appointments/types.ts # Resource gains `role`, `avatar`, `bio` (specialist metadata)
-│   │   └── tenancy/types.ts      # Tenant gains `bio`, `address`, `phone`, `social`, `cover`; PortalPolicy
-│   ├── features/
+│   ├── modules/
 │   │   └── public-booking/
-│   │       ├── queries.ts        # getPublicBusiness → full profile (identity, about, contact, services+rate, specialists, hours, policies)
-│   │       ├── actions.ts        # bookPublicAppointment (existing) + fetchOfferedSlots(resourceId-aware)
-│   │       ├── schemas.ts        # client fields (name/email/phone/notes)
-│   │       └── components/
-│   │           ├── PublicPortal.tsx       # composition + tabs controller
-│   │           ├── BrandHero.tsx          # cover, avatar/logo, identity, badges, about, contact
-│   │           ├── UnavailablePanel.tsx   # existing
-│   │           ├── ServiceCard.tsx        # card with name, description, duration, price, pill "Reservar"
-│   │           ├── SpecialistsTab.tsx     # specialist list (avatar initials + role) + empty state
-│   │           ├── PoliciesTab.tsx        # weekly hours per weekday + policies
-│   │           └── booking/
-│   │               ├── BookingFlow.tsx    # @foundly/ui Modal + 4-step state machine
-│   │               ├── SpecialistStep.tsx
-│   │               ├── SlotStep.tsx
-│   │               ├── ClientStep.tsx
-│   │               └── ConfirmStep.tsx
-│   └── server/
-│       └── store.ts              # extended seed: profile, specialists, policies
+│   │       ├── PublicBookingView.tsx      # thin-route view → renders the portal
+│   │       ├── components/
+│   │       │   ├── PublicPortal.tsx       # composition + tabs/landing controller
+│   │       │   ├── ProviderSections.tsx   # tabs content
+│   │       │   ├── ProviderNav.tsx / ProviderSidebar.tsx
+│   │       │   ├── UnavailablePanel.tsx   # existing
+│   │       │   ├── ServiceCard.tsx        # card with name, description, duration, price, pill "Reservar"
+│   │       │   └── RatingStars.tsx
+│   │       ├── dialogs/
+│   │       │   ├── BookingFlow.tsx        # @foundly/ui Modal + 4-step state machine
+│   │       │   ├── SpecialistStep.tsx
+│   │       │   ├── SlotStep.tsx
+│   │       │   ├── ClientStep.tsx
+│   │       │   └── ConfirmStep.tsx
+│   │       └── utils/
+│   │           ├── queries.ts        # getPublicBusiness → full profile (identity, about, contact, services+rate, specialists, hours, policies)
+│   │           ├── actions.ts        # bookPublicAppointment (existing) + fetchOfferedSlots(resourceId-aware)
+│   │           └── schemas.ts        # client fields (name/email/phone/notes)
+│   └── shared/
+│       ├── types/                    # appointments (Resource), tenancy (Tenant, PortalPolicy)
+│       ├── utils/                    # format.ts (formatPrice/formatTimeLabel)
+│       └── infra/                    # store.ts # extended seed: profile, specialists, policies
 ├── public/           # branding-logo.png, icon.png
 ├── next.config.mjs
 └── package.json
 ```
 
-**Structure Decision**: The refactor lives entirely in `apps/book`. Server data flows through `features/public-booking/queries.ts` (profile + prices + specialists + hours), the interactive booking flow is a client `Modal` (`BookingFlow`) that calls the existing action seam for slots and booking, and the whole portal is wrapped by the `@foundly/ui` theme from the root layout. The `@foundly/ui` primitives for tabs/stepper/avatar are composed locally (Button pills for tabs, Stack-circle initials for avatars) since the design system exposes no `Tabs`/`Stepper`/`Avatar` primitives (research R3/R4/R10); extending the library is deferred.
+**Structure Decision**: The refactor lives entirely in `apps/book`. Server data flows through `modules/public-booking/utils/queries.ts` (profile + prices + specialists + hours), the interactive booking flow is a client `Modal` (`BookingFlow`) that calls the existing action seam for slots and booking, and the whole portal is wrapped by the `@foundly/ui` theme from the root layout. The `@foundly/ui` primitives for tabs/stepper/avatar are composed locally (Button pills for tabs, Stack-circle initials for avatars) since the design system exposes no `Tabs`/`Stepper`/`Avatar` primitives (research R3/R4/R10); extending the library is deferred.
 
 ## Complexity Tracking
 

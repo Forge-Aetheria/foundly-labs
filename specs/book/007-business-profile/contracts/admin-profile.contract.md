@@ -9,21 +9,21 @@ Saves write to the same store seam read by `getPublicBusiness`, so the public he
 
 ## Sections
 
-| Section                  | Fields & behavior                                                                                                                                                    |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Identidad**            | `Nombre del negocio` (required) · `Categoría / Rubro` (required) · `URL pública` (slug, pre-filled, live-format hint). If the slug is invalid or taken, saving is blocked with an inline error. |
-| **Logo y portada**       | `Logo (URL)` y `Portada (URL)` each with a live `<img>` preview; empty values clear them.                                                                            |
-| **Contacto y redes**     | `Teléfono` · `Instagram` · `WhatsApp` · `Dirección` (optional; empty persists as null and public blocks show placeholders).                                           |
-| **Acerca de**            | `Bio / descripción` multiline (≤ 1000) with character counter.                                                                                                       |
-| **Políticas**            | Ordered editor list of `{ título, descripción }` entries (add one per row, remove per entry); empty list is allowed.                                                  |
-| **Horario de atención**  | Visual weekly summary (Mon–Sun with open hours or "Cerrado") derived from the availability configuration; read-only here.                                            |
+| Section                 | Fields & behavior                                                                                                                                                                               |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Identidad**           | `Nombre del negocio` (required) · `Categoría / Rubro` (required) · `URL pública` (slug, pre-filled, live-format hint). If the slug is invalid or taken, saving is blocked with an inline error. |
+| **Logo y portada**      | `Logo (URL)` y `Portada (URL)` each with a live `<img>` preview; empty values clear them.                                                                                                       |
+| **Contacto y redes**    | `Teléfono` · `Instagram` · `WhatsApp` · `Dirección` (optional; empty persists as null and public blocks show placeholders).                                                                     |
+| **Acerca de**           | `Bio / descripción` multiline (≤ 1000) with character counter.                                                                                                                                  |
+| **Políticas**           | Ordered editor list of `{ título, descripción }` entries (add one per row, remove per entry); empty list is allowed.                                                                            |
+| **Horario de atención** | Visual weekly summary (Mon–Sun with open hours or "Cerrado") derived from the availability configuration; read-only here.                                                                       |
 
 ## Actions
 
-| Action                | Input summary                                        | Better                                                |
-| --------------------- | ---------------------------------------------------- | ----------------------------------------------------- |
-| `Guardar perfil`      | identity + contact + about (+ logo/cover)            | Persists via `updateProfile`; success → `Badge` "Guardado"; errors inline (`fields`). |
-| `Guardar` (políticas) | policies list                                        | Persists via `updatePolicies` and keeps the local list. |
+| Action                | Input summary                             | Better                                                                                |
+| --------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| `Guardar perfil`      | identity + contact + about (+ logo/cover) | Persists via `updateProfile`; success → `Badge` "Guardado"; errors inline (`fields`). |
+| `Guardar` (políticas) | policies list                             | Persists via `updatePolicies` and keeps the local list.                               |
 
 `updateProfile` validates slug format/uniqueness (excluding self) and returns `ActionResult`;
 `updatePolicies` replaces the tenant's `portalPolicies`. Both authorize the admin session.

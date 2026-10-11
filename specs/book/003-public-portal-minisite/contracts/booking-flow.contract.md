@@ -6,12 +6,12 @@ Defines the interactive booking flow surface. Client state lives inside an `@fou
 
 ## Flow steps (FR-009…FR-015)
 
-| Step  | Title          | Behaviour                                                                                        |
-| ----- | -------------- | ------------------------------------------------------------------------------------------------ |
-| 1     | Especialista   | Only shown when the tenant has > 1 active specialist; otherwise skipped (FR-010). Preselected single specialist when exactly 1. |
-| 2     | Fecha y hora   | Minimalist day-pill selector (weekday + day, e.g. "lun 12") + time-slot grid from `fetchOfferedSlots(resourceId, serviceId, day)`; only bookable slots offered (FR-011). Both use landing pill buttons. |
-| 3     | Tus datos      | Validated fields: `name` (required), `email` (required, format), `phone` (required, format), `notes` (optional). Inline errors block progression (FR-012). |
-| 4     | Confirmación   | Summary glass card: service, specialist, date+time, client data + "Confirmar cita". Creates the appointment (FR-013). |
+| Step | Title        | Behaviour                                                                                                                                                                                               |
+| ---- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | Especialista | Only shown when the tenant has > 1 active specialist; otherwise skipped (FR-010). Preselected single specialist when exactly 1.                                                                         |
+| 2    | Fecha y hora | Minimalist day-pill selector (weekday + day, e.g. "lun 12") + time-slot grid from `fetchOfferedSlots(resourceId, serviceId, day)`; only bookable slots offered (FR-011). Both use landing pill buttons. |
+| 3    | Tus datos    | Validated fields: `name` (required), `email` (required, format), `phone` (required, format), `notes` (optional). Inline errors block progression (FR-012).                                              |
+| 4    | Confirmación | Summary glass card: service, specialist, date+time, client data + "Confirmar cita". Creates the appointment (FR-013).                                                                                   |
 
 ## Visual surface
 
@@ -19,7 +19,7 @@ Defines the interactive booking flow surface. Client state lives inside an `@fou
   blur, 12px overlay radius), showing the module canvas behind it.
 - Every control and card replicates the landing canon (`004-book-brand-canvas`): primary/secondary pill
   buttons (`PRIMARY_BUTTON_SX`/`SECONDARY_BUTTON_SX`) and translucent glass cards (`GLASS_CARD_SX`), all
-  from `apps/book/src/app/components/landingCanon.ts`.
+  from `apps/book/src/shared/utils/landingCanon.ts`.
 
 ## Action contract
 
@@ -31,12 +31,12 @@ Defines the interactive booking flow surface. Client state lives inside an `@fou
 
 ## Field validation (schemas)
 
-| Field   | Rule                                                        |
-| ------- | ----------------------------------------------------------- |
-| `name`  | required, 1–120 chars                                       |
-| `email` | required, valid email format                                |
-| `phone` | required, 8–20 chars (digits, spaces, `+`, `-`)             |
-| `notes` | optional, max 2000 chars                                    |
+| Field   | Rule                                            |
+| ------- | ----------------------------------------------- |
+| `name`  | required, 1–120 chars                           |
+| `email` | required, valid email format                    |
+| `phone` | required, 8–20 chars (digits, spaces, `+`, `-`) |
+| `notes` | optional, max 2000 chars                        |
 
 ## Guarantees
 

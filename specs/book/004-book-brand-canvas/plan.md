@@ -52,17 +52,17 @@ _GATE: Must pass before implementation. Re-checked after implementation._
 
 Authority hierarchy (Principle 1): `specs/business-model.md` > `constitution.md` > `specs/architecture.md` > `code-rules.md` > specs de dominio.
 
-| Gate                                                                                                             | Source                              | Status               |
-| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------- | -------------------- |
-| I. Rule of Law — spec references `specs/business-model.md` (Book §2.3); monorepo boundaries respected             | constitution §1                     | PASS                 |
-| II. Spec-Driven Development — `spec.md` documents the executed feature                                           | constitution §5.I                   | PASS                 |
-| III. Server-First & Zero-JS — canvas is pure CSS; no client JS added                                              | constitution §5.II                  | PASS                 |
-| IV. Strict Typing — no new TS surface; no `any` introduced                                                        | constitution §5.IV                  | PASS                 |
-| V. Performance & Core Web Vitals — CSS-only background, no layout shift, no new JS bundles                        | constitution §5.III                 | PASS                 |
-| VI. Clean Light UI — colors map to tokens; local extension per §6.I; cards keep shared surfaces/shadows           | constitution §6, `code-rules.md` §4 | PASS                 |
-| Specs-by-domain — feature lives in `specs/book/004-book-brand-canvas/`                                           | constitution §2                     | PASS                 |
-| Packages rules — `@foundly/ui` unchanged; no shared data package                                                 | constitution §3.II                  | PASS                 |
-| Workflow gates — ESLint + type check + build + tests green                                                       | constitution §8                     | PASS                 |
+| Gate                                                                                                    | Source                              | Status |
+| ------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------ |
+| I. Rule of Law — spec references `specs/business-model.md` (Book §2.3); monorepo boundaries respected   | constitution §1                     | PASS   |
+| II. Spec-Driven Development — `spec.md` documents the executed feature                                  | constitution §5.I                   | PASS   |
+| III. Server-First & Zero-JS — canvas is pure CSS; no client JS added                                    | constitution §5.II                  | PASS   |
+| IV. Strict Typing — no new TS surface; no `any` introduced                                              | constitution §5.IV                  | PASS   |
+| V. Performance & Core Web Vitals — CSS-only background, no layout shift, no new JS bundles              | constitution §5.III                 | PASS   |
+| VI. Clean Light UI — colors map to tokens; local extension per §6.I; cards keep shared surfaces/shadows | constitution §6, `code-rules.md` §4 | PASS   |
+| Specs-by-domain — feature lives in `specs/book/004-book-brand-canvas/`                                  | constitution §2                     | PASS   |
+| Packages rules — `@foundly/ui` unchanged; no shared data package                                        | constitution §3.II                  | PASS   |
+| Workflow gates — ESLint + type check + build + tests green                                              | constitution §8                     | PASS   |
 
 **Constraints introduced by gates**:
 

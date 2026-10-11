@@ -20,7 +20,7 @@ the pure slug rules already in the domain.
 
 **Primary Dependencies**: `@foundly/ui` (design system) · MUI v6 (engine) · Zod 4
 
-**Storage**: None — in-memory seam `apps/book/src/server/store.ts`
+**Storage**: None — in-memory seam `apps/book/src/shared/infra/store.ts`
 
 **Testing**: Vitest + RTL + vitest-axe (`npm run test -w @foundly/book`, `-w @foundly/ui`)
 
@@ -30,21 +30,21 @@ the pure slug rules already in the domain.
 
 **Performance Goals**: N/A
 
-**Constraints**: C1 — views use `@foundly/ui` only; C2 — `apps/book/src/domain` stays framework-free; C3 — persistence only via the store seam.
+**Constraints**: C1 — views use `@foundly/ui` only; C2 — `apps/book/src/shared` stays framework-free; C3 — persistence only via the store seam.
 
 **Scale/Scope**: one admin profile editor + model validation; no new entities required (Tenant,
 PortalPolicy and BusinessHours already exist).
 
 ## Constitution Check
 
-*GATE: must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: must pass before Phase 0 research. Re-check after Phase 1 design._
 
 - Specs live under `/specs/<dominio>/<nnn>-<feature>/` → **OK** (`book/007-business-profile`).
 - Views consume `@foundly/ui` + tokens → **OK** (glass cards/pills via `GLASS_CARD_SX`, `primary.main`).
-- Domain logic pure → **OK** (slug validation reuses `domain/tenancy/slug.ts`; hours summary is read-only data binding).
+- Domain logic pure → **OK** (slug validation reuses `shared/utils/slug.ts`; hours summary is read-only data binding).
 - Persistence not defined → **OK** (mutations through the store seam; images and links URL-based).
 
-*Re-check after Phase 1 design:* **PASS** — no new entities or `@foundly/ui` primitives; slug rules
+_Re-check after Phase 1 design:_ **PASS** — no new entities or `@foundly/ui` primitives; slug rules
 reused from the domain; the hours summary is a read-only projection of `businessHours`; both new
 mutations remain behind the store seam.
 
@@ -66,22 +66,22 @@ specs/book/007-business-profile/
 ### Source Code (repository root)
 
 ```text
-apps/book/src/features/storefront/schemas.ts
+apps/book/src/modules/{staff,gallery,profile}/utils/schemas.ts
 ├── EXTEND profileSchema with slug (format/uniqueness)
 └── ADD policiesSchema (title/body entries), policySchema
-apps/book/src/features/storefront/actions.ts
+apps/book/src/modules/{staff,gallery,profile}/utils/actions.ts
 ├── EXTEND updateProfile (slug validate + unique, resolve conflicts)
 └── ADD updatePolicies (replace tenant portalPolicies)
-apps/book/src/features/storefront/queries.ts
+apps/book/src/modules/{staff,gallery,profile}/utils/queries.ts
 └── ADD listPolicies(tenantId)
-apps/book/src/features/storefront/components/ProfileEditor.tsx   # REWRITE: identity+slug, previews, contact, about, policies editor, hours summary
+apps/book/src/modules/profile/components/ProfileEditor.tsx   # REWRITE: identity+slug, previews, contact, about, policies editor, hours summary
 apps/book/src/app/admin/profile/page.tsx                         # pass policies + hours to the editor
 specs/book/007-business-profile/                                 # feature docs (this feature)
 
 # Read-only references (no change expected):
-apps/book/src/domain/tenancy/slug.ts        # validateSlug/normalizeSlug (existing)
-apps/book/src/domain/tenancy/types.ts       # Tenant/PortalPolicy/BusinessHours (existing)
-apps/book/src/features/public-booking/queries.ts  # getPublicBusiness already exposes identity/contact/policies/hours
+apps/book/src/shared/utils/slug.ts        # validateSlug/normalizeSlug (existing)
+apps/book/src/shared/types/tenancy.ts       # Tenant/PortalPolicy/BusinessHours (existing)
+apps/book/src/modules/public-booking/utils/queries.ts  # getPublicBusiness already exposes identity/contact/policies/hours
 ```
 
 **Structure Decision**: Feature docs in the domain spec folder; implementation stays inside the
@@ -90,7 +90,7 @@ existing `storefront` feature module; no new app/package or `@foundly/ui` primit
 
 ## Complexity Tracking
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| Two mutations for one form (`updateProfile` + `updatePolicies`) | The policies are a separate collection (`portalPolicies`) from the tenant profile; editing both in one form is simpler for the operator | Merging policies into the tenant object would leak a concern the store already models separately |
-| New exposed field only via existing entity (slug) | The service must keep register (`slug`) while allowing format/uniqueness validation | Reusing onboarding's `validateSlug` avoids a second rule source; changing slug is intentionally restricted to valid/unique values |
+| Violation                                                       | Why Needed                                                                                                                              | Simpler Alternative Rejected Because                                                                                              |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Two mutations for one form (`updateProfile` + `updatePolicies`) | The policies are a separate collection (`portalPolicies`) from the tenant profile; editing both in one form is simpler for the operator | Merging policies into the tenant object would leak a concern the store already models separately                                  |
+| New exposed field only via existing entity (slug)               | The service must keep register (`slug`) while allowing format/uniqueness validation                                                     | Reusing onboarding's `validateSlug` avoids a second rule source; changing slug is intentionally restricted to valid/unique values |

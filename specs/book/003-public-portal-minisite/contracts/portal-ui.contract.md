@@ -4,7 +4,7 @@
 
 Fixes the visual structure and accessibility contract of the public provider landing. It is a UI
 contract for `apps/book`; all primitives come from `@foundly/ui` (C1, FR-018) plus the landing-canonic
-overrides in `apps/book/src/app/components/landingCanon.ts`.
+overrides in `apps/book/src/shared/utils/landingCanon.ts`.
 
 ## Internal navigation (FR-005)
 
@@ -24,9 +24,9 @@ overrides in `apps/book/src/app/components/landingCanon.ts`.
   reviews).
 - Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints).
 
-| Column | Sections / content                                                                                     |
-| ------ | ------------------------------------------------------------------------------------------------------ |
-| Main   | Gallery banner (cover + photo strip), Políticas card, Servicios (grouped by category), Equipo, Acerca de, Galería (grid), Reseñas (summary + cards), Dirección y horarios. |
+| Column           | Sections / content                                                                                                                                                                   |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Main             | Gallery banner (cover + photo strip), Políticas card, Servicios (grouped by category), Equipo, Acerca de, Galería (grid), Reseñas (summary + cards), Dirección y horarios.           |
 | Sidebar (sticky) | Avatar/logo + name + category, rating stars + numeric, pill **Reservar** (`#6C5CE7`), hours `<details>` disclosure ("Abierto · Cierra a las HH:mm"), address + phone + social links. |
 
 ## Cards and tokens

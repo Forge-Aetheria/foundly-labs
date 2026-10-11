@@ -20,7 +20,7 @@ description: 'Task list for the Foundly Book public portal mini-site feature'
 
 ## Path Conventions
 
-Single location: `apps/book/`. Portal code lives under `src/features/public-booking/`; the route under `src/app/[tenantSlug]/` per `plan.md`.
+Single location: `apps/book/`. Portal code lives under `src/modules/public-booking/`; the route under `src/app/[tenantSlug]/` per `plan.md`.
 
 ---
 
@@ -28,8 +28,8 @@ Single location: `apps/book/`. Portal code lives under `src/features/public-book
 
 **Purpose**: Prepare the portal's shared types and formatting helpers.
 
-- [x] T001 [P] Create the portal DTO barrel `apps/book/src/features/public-booking/types.ts` exporting `PublicService`, `PublicSpecialist`, `PublicBusinessProfile` and `PortalPolicyView` (leafy, serializable types per `contracts/portal-profile.contract.md`).
-- [x] T002 [P] Add formatting helpers `formatPrice(amountCents, currency)` (Intl es-ES currency) and `formatTimeLabel(iso)` in `apps/book/src/features/public-booking/format.ts` (used by service cards and slot labels).
+- [x] T001 [P] Create the portal DTO barrel `apps/book/src/modules/public-booking/utils/types.ts` exporting `PublicService`, `PublicSpecialist`, `PublicBusinessProfile` and `PortalPolicyView` (leafy, serializable types per `contracts/portal-profile.contract.md`).
+- [x] T002 [P] Add formatting helpers `formatPrice(amountCents, currency)` (Intl es-ES currency) and `formatTimeLabel(iso)` in `apps/book/src/shared/utils/format.ts` (used by service cards and slot labels).
 
 ---
 
@@ -39,14 +39,14 @@ Single location: `apps/book/`. Portal code lives under `src/features/public-book
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [x] T003 Extend `Resource` in `apps/book/src/domain/appointments/types.ts` with optional `role: string | null`, `avatar: string | null` and `bio: string | null` (per `data-model.md` §3, constraint: "bio optional, max 500 chars").
-- [x] T004 [P] Extend `Tenant` in `apps/book/src/domain/tenancy/types.ts` with `bio`, `address`, `phone`, `cover`, `social` (`{ instagram?: string; whatsapp?: string } | null`) and add `PortalPolicy { id, title, body }` (constraints from `data-model.md` §1–§2: `bio` max 2000, `address` max 200, `phone` max 30, all `null` by default; `PortalPolicy.title` 1–120 chars, `body` 1–2000).
-- [x] T005 [P] Seed the store `apps/book/src/server/store.ts` with the demo tenant's full profile (bio, address, phone, cover, social), **two active specialists** (resources `res-ana` + a new one, each with `role`/`avatar`/`bio`) and **two `PortalPolicy` entries** (booking + cancellation). Rule: "only `active` resources are listed as specialists".
-- [x] T006 [P] Refactor `getOfferedSlots`/`fetchOfferedSlots` in `apps/book/src/features/public-booking/queries.ts` + `actions.ts` to accept an optional `resourceId` (default: the tenant's first resource) so slots are scoped per specialist (research R5).
-- [x] T007 [P] Extend `getPublicBusiness` in `apps/book/src/features/public-booking/queries.ts` to return `PublicBusinessProfile` (identity, about, contact, services with current `Rate`, active-only specialists, `weeklyHours`, `policies`) per `contracts/portal-profile.contract.md` (FR-016).
-- [x] T008 [P] Create client-field schemas in `apps/book/src/features/public-booking/schemas.ts` per `contracts/booking-flow.contract.md` (verbatim: `name` required 1–120; `email` required valid format; `phone` required 8–20 chars digits/spaces/+/-; `notes` optional max 2000).
-- [x] T009 [P] Write portal-profile tests in `apps/book/src/features/public-booking/queries.test.ts`: active tenant resolves the full profile; draft/suspended/unknown resolve `unavailable` with zero data; price is the current rate; only active specialists listed (contracts/portal-profile.contract.md).
-- [x] T010 [P] Write specialist-slot tests in `apps/book/src/features/public-booking/queries.test.ts`: `getOfferedSlots` with `resourceId` returns only that specialist's availability and excludes the other's blocks/appointments.
+- [x] T003 Extend `Resource` in `apps/book/src/shared/types/appointments.ts` with optional `role: string | null`, `avatar: string | null` and `bio: string | null` (per `data-model.md` §3, constraint: "bio optional, max 500 chars").
+- [x] T004 [P] Extend `Tenant` in `apps/book/src/shared/types/tenancy.ts` with `bio`, `address`, `phone`, `cover`, `social` (`{ instagram?: string; whatsapp?: string } | null`) and add `PortalPolicy { id, title, body }` (constraints from `data-model.md` §1–§2: `bio` max 2000, `address` max 200, `phone` max 30, all `null` by default; `PortalPolicy.title` 1–120 chars, `body` 1–2000).
+- [x] T005 [P] Seed the store `apps/book/src/shared/infra/store.ts` with the demo tenant's full profile (bio, address, phone, cover, social), **two active specialists** (resources `res-ana` + a new one, each with `role`/`avatar`/`bio`) and **two `PortalPolicy` entries** (booking + cancellation). Rule: "only `active` resources are listed as specialists".
+- [x] T006 [P] Refactor `getOfferedSlots`/`fetchOfferedSlots` in `apps/book/src/modules/public-booking/utils/queries.ts` + `actions.ts` to accept an optional `resourceId` (default: the tenant's first resource) so slots are scoped per specialist (research R5).
+- [x] T007 [P] Extend `getPublicBusiness` in `apps/book/src/modules/public-booking/utils/queries.ts` to return `PublicBusinessProfile` (identity, about, contact, services with current `Rate`, active-only specialists, `weeklyHours`, `policies`) per `contracts/portal-profile.contract.md` (FR-016).
+- [x] T008 [P] Create client-field schemas in `apps/book/src/modules/public-booking/utils/schemas.ts` per `contracts/booking-flow.contract.md` (verbatim: `name` required 1–120; `email` required valid format; `phone` required 8–20 chars digits/spaces/+/-; `notes` optional max 2000).
+- [x] T009 [P] Write portal-profile tests in `apps/book/src/modules/public-booking/tests/queries.test.ts`: active tenant resolves the full profile; draft/suspended/unknown resolve `unavailable` with zero data; price is the current rate; only active specialists listed (contracts/portal-profile.contract.md).
+- [x] T010 [P] Write specialist-slot tests in `apps/book/src/modules/public-booking/tests/queries.test.ts`: `getOfferedSlots` with `resourceId` returns only that specialist's availability and excludes the other's blocks/appointments.
 
 **Checkpoint**: Foundation ready — user story implementation can begin.
 
@@ -60,17 +60,17 @@ Single location: `apps/book/`. Portal code lives under `src/features/public-book
 
 ### Tests for User Story 1 (write FIRST, ensure they FAIL before implementation)
 
-- [x] T011 [P] [US1] `BrandHero` test `apps/book/src/features/public-booking/components/BrandHero.test.tsx`: cover, avatar/logo, name, category, badges, bio and contact render; fields omitted when `null`; `vitest-axe` clean.
-- [x] T012 [P] [US1] Portal tabs test `apps/book/src/features/public-booking/components/PublicPortal.test.tsx`: 'Servicios' is the default tab and `ServiceCard`s show name, duration and price with a pill "Reservar"; `vitest-axe` clean.
+- [x] T011 [P] [US1] `BrandHero` test `apps/book/src/modules/public-booking/tests/BrandHero.test.tsx`: cover, avatar/logo, name, category, badges, bio and contact render; fields omitted when `null`; `vitest-axe` clean.
+- [x] T012 [P] [US1] Portal tabs test `apps/book/src/modules/public-booking/tests/PublicPortal.test.tsx`: 'Servicios' is the default tab and `ServiceCard`s show name, duration and price with a pill "Reservar"; `vitest-axe` clean.
 
 ### Implementation for User Story 1
 
-- [x] T013 [P] [US1] Build `BrandHero.tsx` in `apps/book/src/features/public-booking/components/` (lavender cover band `primary.light`, avatar with initials-circle fallback, identity + badges, bio section, contact row: address/phone/Instagram/WhatsApp https anchors) per `contracts/portal-ui.contract.md` (FR-001…FR-004).
+- [x] T013 [P] [US1] Build `BrandHero.tsx` in `apps/book/src/modules/public-booking/components/` (lavender cover band `primary.light`, avatar with initials-circle fallback, identity + badges, bio section, contact row: address/phone/Instagram/WhatsApp https anchors) per `contracts/portal-ui.contract.md` (FR-001…FR-004).
 - [x] T014 [P] [US1] Build the accessible tab controller `PortalTabs.tsx` (`Button` pills, `role="tablist"/"tab"/"tabpanel"`, `aria-selected`, arrow-key navigation) per `contracts/portal-ui.contract.md` (FR-005).
-- [x] T015 [P] [US1] Build `ServiceCard.tsx` in `apps/book/src/features/public-booking/components/` (Card: name, description if present, `durationMinutes`, price via `formatPrice`, pill "Reservar" wired to open the booking flow) per FR-006/FR-017.
+- [x] T015 [P] [US1] Build `ServiceCard.tsx` in `apps/book/src/modules/public-booking/components/` (Card: name, description if present, `durationMinutes`, price via `formatPrice`, pill "Reservar" wired to open the booking flow) per FR-006/FR-017.
 - [x] T016 [US1] Rewrite `PublicPortal.tsx` composition: `BrandHero` + `PortalTabs` with 'Servicios' default rendering the `ServiceCard` list; keep `UnavailablePanel` for non-active tenants (depends on T013–T015).
 - [x] T017 [US1] Rewire `apps/book/src/app/[tenantSlug]/page.tsx` to pass the full `PublicBusinessProfile` to `PublicPortal`.
-- [x] T018 [US1] Remove the superseded components (`BookingPanel.tsx`, `BookingPanel.test.tsx`, `ServiceList.tsx`, `TenantPublicHeader.tsx`) from `apps/book/src/features/public-booking/components/`.
+- [x] T018 [US1] Remove the superseded components (`BookingPanel.tsx`, `BookingPanel.test.tsx`, `ServiceList.tsx`, `TenantPublicHeader.tsx`) from `apps/book/src/modules/public-booking/components/`.
 
 **Checkpoint**: User Story 1 functional (storefront mini-site) and independently testable (MVP).
 
@@ -84,9 +84,9 @@ Single location: `apps/book/`. Portal code lives under `src/features/public-book
 
 ### Tests for User Story 2 (write FIRST)
 
-- [x] T019 [P] [US2] Booking flow test `apps/book/src/features/public-booking/components/booking/BookingFlow.test.tsx`: 4 steps, specialist step skipped with a single specialist, slots from mocked `fetchOfferedSlots`, invalid email/phone block progression, `CONFLICT` keeps client data.
-- [x] T020 [P] [US2] Client schema tests `apps/book/src/features/public-booking/schemas.test.ts` per `contracts/booking-flow.contract.md` (name/email/phone/notes rules).
-- [x] T021 [P] [US2] Action tests in `apps/book/src/features/public-booking/actions.test.ts`: booking with `resourceId` creates `origin: 'online'` + `pending`; an overlapping booking returns `CONFLICT`.
+- [x] T019 [P] [US2] Booking flow test `apps/book/src/modules/public-booking/tests/BookingFlow.test.tsx`: 4 steps, specialist step skipped with a single specialist, slots from mocked `fetchOfferedSlots`, invalid email/phone block progression, `CONFLICT` keeps client data.
+- [x] T020 [P] [US2] Client schema tests `apps/book/src/modules/public-booking/tests/schemas.test.ts` per `contracts/booking-flow.contract.md` (name/email/phone/notes rules).
+- [x] T021 [P] [US2] Action tests in `apps/book/src/modules/public-booking/tests/actions.test.ts`: booking with `resourceId` creates `origin: 'online'` + `pending`; an overlapping booking returns `CONFLICT`.
 
 ### Implementation for User Story 2
 
@@ -114,7 +114,7 @@ Single location: `apps/book/`. Portal code lives under `src/features/public-book
 
 ### Implementation for User Story 3
 
-- [x] T030 [P] [US3] Build `SpecialistsTab.tsx` in `apps/book/src/features/public-booking/components/` (active specialists, initials avatar, name, role; empty state).
+- [x] T030 [P] [US3] Build `SpecialistsTab.tsx` in `apps/book/src/modules/public-booking/components/` (active specialists, initials avatar, name, role; empty state).
 - [x] T031 [P] [US3] Build `PoliciesTab.tsx` (weekly `businessHours` per weekday + `PortalPolicy` list with fallback copy "Consulta las condiciones con el negocio").
 - [x] T032 [US3] Register both tabs in `PortalTabs.tsx`/`PublicPortal.tsx` (accessibility per `contracts/portal-ui.contract.md`).
 - [x] T033 [US3] Extend/verify the seeded demo tenant so specialists and policies are present for the manual scenarios in `quickstart.md`.
@@ -131,7 +131,7 @@ Single location: `apps/book/`. Portal code lives under `src/features/public-book
 
 ### Tests for User Story 4 (write FIRST)
 
-- [x] T034 [P] [US4] Full-portal accessibility test in `apps/book/src/features/public-booking/components/PublicPortal.test.tsx`: tabs implement `tablist`/`tab`/`tabpanel` semantics, focus is visible and `vitest-axe` reports zero critical violations (FR-019, SC-005).
+- [x] T034 [P] [US4] Full-portal accessibility test in `apps/book/src/modules/public-booking/tests/PublicPortal.test.tsx`: tabs implement `tablist`/`tab`/`tabpanel` semantics, focus is visible and `vitest-axe` reports zero critical violations (FR-019, SC-005).
 - [x] T035 [P] [US4] Responsive-structure test (`PublicPortal.test.tsx`): grids collapse to one column on `xs` (`gridTemplateColumns: { xs: '1fr' }`) and rows use `flexWrap`; assert no `100vw`/fixed-width indicators remain (FR-020, SC-007).
 
 ### Implementation for User Story 4
@@ -206,16 +206,16 @@ Task: "T015 Build ServiceCard  (components/ServiceCard.tsx)"
 business. Supersedes the tab-based shell (BrandHero/PortalTabs/SpecialistsTab/PoliciesTab were removed).
 
 - [x] T040 [P] Extend tenancy types: `Tenant.gallery?: string[]` and the `Review` entity
-      (`apps/book/src/domain/tenancy/types.ts`).
-- [x] T041 [P] Seed the `rona-piercing` business in `apps/book/src/server/store.ts`: identity + gallery
+      (`apps/book/src/shared/types/tenancy.ts`).
+- [x] T041 [P] Seed the `rona-piercing` business in `apps/book/src/shared/infra/store.ts`: identity + gallery
       (Unsplash URLs), 6 services in 3 categories with rates, 3 specialists with avatar/bio, business
       hours, 3 policies and 5 reviews; the store gains a `reviews` collection (resetStore included).
 - [x] T042 [P] Extend the public profile: `PublicService.category`, `PublicReview` and
       `gallery`/`rating`/`reviewCount`/`reviews` on `PublicBusinessProfile`
-      (`apps/book/src/features/public-booking/types.ts`) and compute them in `queries.ts`
+      (`apps/book/src/modules/public-booking/utils/types.ts`) and compute them in `queries.ts`
       (rating = averaged/round-1; reviews newest first).
 - [x] T043 [P] Build the provider components under
-      `apps/book/src/features/public-booking/components/provider/`: `RatingStars`, `ProviderNav`
+      `apps/book/src/modules/public-booking/components/`: `RatingStars`, `ProviderNav`
       (anchor pills), `ProviderSidebar` (sticky: brand, rating, Reservar `#6C5CE7`, hours `<details>`,
       contact) and `ProviderSections` (banner, policies, catalog by category, team, about, gallery,
       reviews, direction).

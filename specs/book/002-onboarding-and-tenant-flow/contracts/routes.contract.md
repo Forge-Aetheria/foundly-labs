@@ -6,12 +6,12 @@ Fixes the module's four surfaces and the access boundary between public and priv
 
 ## Route map
 
-| Surface             | Public URL                 | Internal App Router path        | Access            | Shell                |
-| ------------------- | -------------------------- | ------------------------------- | ----------------- | -------------------- |
-| Product page        | `/book`                    | `/`                             | public            | marketing layout     |
-| Onboarding wizard   | `/book/onboarding`         | `/onboarding`                   | public            | wizard layout        |
-| Private dashboard   | `/book/admin/*`            | `/admin/*`                      | authenticated     | `AdminShell` (Drawer)|
-| Public booking      | `/book/<slug>`             | `/[tenantSlug]`                 | public            | portal layout        |
+| Surface           | Public URL         | Internal App Router path | Access        | Shell                 |
+| ----------------- | ------------------ | ------------------------ | ------------- | --------------------- |
+| Product page      | `/book`            | `/`                      | public        | marketing layout      |
+| Onboarding wizard | `/book/onboarding` | `/onboarding`            | public        | wizard layout         |
+| Private dashboard | `/book/admin/*`    | `/admin/*`               | authenticated | `AdminShell` (Drawer) |
+| Public booking    | `/book/<slug>`     | `/[tenantSlug]`          | public        | portal layout         |
 
 **Rules**:
 

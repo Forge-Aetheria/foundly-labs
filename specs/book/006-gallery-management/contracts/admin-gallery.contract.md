@@ -9,31 +9,31 @@ primary.main`). Mutations write to the same store seam read by `getPublicBusines
 
 ## Grid (photo cards)
 
-| Area     | Contract                                                                                                                                                           |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Header   | Title `Galería` + subtitle + right-aligned pill primary **"+ Añadir imagen"**.                                                                                      |
-| Cards    | Responsive grid of glassmorphism cards. Each shows the photo (4/3), optional title, optional category badge (`Local`/`Trabajos`/`Equipo`), a **"Ver"** preview action and a **"Quitar foto"** remove action. |
-| Empty    | "Todavía no has añadido fotos…" hint when the gallery is empty.                                                                                                    |
+| Area   | Contract                                                                                                                                                                                                     |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Header | Title `Galería` + subtitle + right-aligned pill primary **"+ Añadir imagen"**.                                                                                                                               |
+| Cards  | Responsive grid of glassmorphism cards. Each shows the photo (4/3), optional title, optional category badge (`Local`/`Trabajos`/`Equipo`), a **"Ver"** preview action and a **"Quitar foto"** remove action. |
+| Empty  | "Todavía no has añadido fotos…" hint when the gallery is empty.                                                                                                                                              |
 
 ## Add / edit photo modal
 
-| Area          | Contract                                                                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Title         | `Añadir imagen` (creation only; photos are immutable after creation except removal).                                                        |
-| Fields        | `URL de la imagen` (required, valid absolute URL, inline error otherwise) · `Título / Descripción` (optional, ≤ 120) · `Categoría` (optional, selectable `Chip` row: Local / Trabajos / Equipo; none by default). |
-| Actions       | Pill primary **"Añadir"** + pill secondary **"Cancelar"**.                                                                                   |
-| Duplicates    | Re-adding an existing URL is rejected with `CONFLICT` and an inline error.                                                                   |
+| Area       | Contract                                                                                                                                                                                                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Title      | `Añadir imagen` (creation only; photos are immutable after creation except removal).                                                                                                                              |
+| Fields     | `URL de la imagen` (required, valid absolute URL, inline error otherwise) · `Título / Descripción` (optional, ≤ 120) · `Categoría` (optional, selectable `Chip` row: Local / Trabajos / Equipo; none by default). |
+| Actions    | Pill primary **"Añadir"** + pill secondary **"Cancelar"**.                                                                                                                                                        |
+| Duplicates | Re-adding an existing URL is rejected with `CONFLICT` and an inline error.                                                                                                                                        |
 
 ## Preview (lightbox) & remove
 
-| Area     | Contract                                                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Lightbox | "Ver" opens an `@foundly/ui` `Modal` showing the photo large (glass surface, dismissible via ESC/close and backdrop).                  |
+| Area     | Contract                                                                                                                                        |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lightbox | "Ver" opens an `@foundly/ui` `Modal` showing the photo large (glass surface, dismissible via ESC/close and backdrop).                           |
 | Remove   | "Quitar foto" opens a destructive `AlertDialog` ("Sí, quitar"); confirm calls `removeGalleryPhoto({ id })` and updates the grid + public state. |
 
 ## Data & mutations
 
-- Feature module: `apps/book/src/features/storefront/` (`schemas.ts`, `actions.ts`, `components/GalleryManager.tsx`).
+- Feature module: `apps/book/src/modules/{staff,gallery,profile}/` (`schemas.ts`, `actions.ts`, `components/GalleryManager.tsx`).
 - `addGalleryPhoto({ url, title?, description?, category? })` → creates a `GalleryPhoto` (validates URL, rejects duplicates), returns the new tenant gallery.
 - `removeGalleryPhoto({ id })` → removes by id (`NOT_FOUND` if absent), returns the new tenant gallery.
 - Read: `listGallery(tenantId)` → `GalleryPhoto[]`; public read maps to `PublicGalleryPhoto` (title + category label) in `getPublicBusiness`.

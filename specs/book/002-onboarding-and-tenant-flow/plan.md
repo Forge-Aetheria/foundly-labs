@@ -18,7 +18,7 @@ The feature is a Next.js (App Router) module inside `apps/book`, rendered server
 
 **Primary Dependencies**: `@foundly/ui` (workspace, MUI v6) + `@mui/icons-material`; `@mui/material-nextjs` (`AppRouterCacheProvider`); Zod for input validation; Next.js routing (`next/navigation`, route groups, dynamic segments)
 
-**Storage**: In-memory store (mock) behind the existing `apps/book/src/server/store.ts` seam, extended with `tenants`/`users`/`sessions`. The ecosystem's persistence strategy is **not yet defined** — no storage technology is introduced (per `specs/architecture.md`).
+**Storage**: In-memory store (mock) behind the existing `apps/book/src/shared/infra/store.ts` seam, extended with `tenants`/`users`/`sessions`. The ecosystem's persistence strategy is **not yet defined** — no storage technology is introduced (per `specs/architecture.md`).
 
 **Testing**: Vitest for pure tenancy logic (slug rules, tenant resolution, provisioning); Vitest + React Testing Library + `vitest-axe` for the wizard steps, the admin guard and the public portal
 
@@ -38,18 +38,18 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 Authority hierarchy (Principle 1): `specs/business-model.md` > `constitution.md` > `specs/architecture.md` > `code-rules.md` > specs de dominio.
 
-| Gate                                                                                                                             | Source                              | Status               |
-| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | -------------------- |
-| I. Rule of Law — spec references `specs/business-model.md` (Book §2.3, Foundly Pass §3); monorepo boundaries respected            | constitution §1                     | PASS                 |
-| II. Spec-Driven Development — `spec.md` precedes this plan                                                                        | constitution §5.I                   | PASS                 |
-| III. Server-First & Zero-JS — server components by default; client JS only for the wizard and interactive portal                  | constitution §5.II                  | PASS (constraint C1) |
-| IV. Strict Typing — Zod schemas + strict TS; no `any`                                                                             | constitution §5.IV                  | PASS                 |
-| V. Performance & Core Web Vitals — server-rendered public surfaces, single-round-trip portal                                      | constitution §5.III                 | PASS                 |
+| Gate                                                                                                                                | Source                              | Status               |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | -------------------- |
+| I. Rule of Law — spec references `specs/business-model.md` (Book §2.3, Foundly Pass §3); monorepo boundaries respected              | constitution §1                     | PASS                 |
+| II. Spec-Driven Development — `spec.md` precedes this plan                                                                          | constitution §5.I                   | PASS                 |
+| III. Server-First & Zero-JS — server components by default; client JS only for the wizard and interactive portal                    | constitution §5.II                  | PASS (constraint C1) |
+| IV. Strict Typing — Zod schemas + strict TS; no `any`                                                                               | constitution §5.IV                  | PASS                 |
+| V. Performance & Core Web Vitals — server-rendered public surfaces, single-round-trip portal                                        | constitution §5.III                 | PASS                 |
 | VI. Clean Light UI — interface built exclusively from `@foundly/ui` tokens/components (admin shell uses token-styled MUI structure) | constitution §6, `code-rules.md` §4 | PASS                 |
-| Specs-by-domain — feature lives in `specs/book/` with a domain-bounded scope                                                      | constitution §2                     | PASS                 |
-| Deployment topology — public `/book/*` served through the multi-zone gateway defined in `specs/architecture.md` §2                | `specs/architecture.md`             | PASS                 |
-| Packages rules — no shared data package introduced; `@foundly/ui` unchanged                                                       | constitution §3.II                  | PASS                 |
-| Workflow gates — ESLint + type check + build                                                                                      | constitution §8                     | PASS                 |
+| Specs-by-domain — feature lives in `specs/book/` with a domain-bounded scope                                                        | constitution §2                     | PASS                 |
+| Deployment topology — public `/book/*` served through the multi-zone gateway defined in `specs/architecture.md` §2                  | `specs/architecture.md`             | PASS                 |
+| Packages rules — no shared data package introduced; `@foundly/ui` unchanged                                                         | constitution §3.II                  | PASS                 |
+| Workflow gates — ESLint + type check + build                                                                                        | constitution §8                     | PASS                 |
 
 **Constraints introduced by gates**:
 
@@ -99,30 +99,15 @@ apps/book/
 │   │   └── [tenantSlug]/
 │   │       ├── page.tsx             # public booking portal              → public /book/<slug>
 │   │       └── components/          # TenantPublicHeader, ServiceList, BookingPanel
-│   ├── domain/
-│   │   ├── appointments/            # existing (001)
-│   │   ├── availability/            # existing engine (001), reused by the portal
-│   │   └── tenancy/
-│   │       ├── types.ts             # Tenant, User, BusinessHours, TenantStatus, UserRole
-│   │       ├── slug.ts              # normalize/validate slug + reserved words (pure)
-│   │       └── provision.ts         # pure provisioning defaults (hours → availability rules)
-│   ├── features/
-│   │   ├── appointments/            # existing (001)
-│   │   ├── services/               # existing (001)
-│   │   ├── availability/           # existing (001)
-│   │   ├── onboarding/
-│   │   │   ├── schemas.ts           # Zod: account, business, setup
-│   │   │   ├── actions.ts           # validateSlug, createBusiness (Server Actions)
-│   │   │   └── draft.ts             # local-first wizard draft persistence
-│   │   ├── tenants/
-│   │   │   └── queries.ts           # getTenantBySlug, getCurrentTenant
-│   │   └── public-booking/
-│   │       ├── queries.ts           # public services + availability for a tenant
-│   │       └── components/          # portal UI
-│   └── server/
-│       ├── store.ts                 # seam extended with tenants, users, sessions
-│       ├── auth.ts                  # session/tenant guard (requireTenant)
-│       └── result.ts                # ActionResult (existing)
+│   ├── modules/<modulo>/            # domain modules per surface
+│   │   ├── onboarding/              # components/ (WizardShell, AccountStep, BusinessStep, SetupStep), utils/ (schemas, actions, draft), tests/
+│   │   └── public-booking/          # components/, dialogs/, utils/ (queries, actions, schemas, types)
+│   └── shared/
+│       ├── components/              # AdminShell, AdminNavigation, PlaceholderPanel
+│       ├── infra/                   # store.ts (seam extended with tenants, users, sessions), auth.ts, result.ts
+│       ├── types/                   # appointments, availability, tenancy (Tenant, User, BusinessHours, TenantStatus, UserRole)
+│       ├── utils/                   # slug.ts, provision.ts, computeAvailability, format
+│       └── tenancy/                 # queries.ts (getTenantBySlug, getCurrentTenant)
 ├── public/
 │   ├── branding-logo.png
 │   └── icon.png
@@ -131,7 +116,7 @@ apps/book/
 └── package.json
 ```
 
-**Structure Decision**: The feature lives entirely in `apps/book`. The private dashboard moves from the route group `(admin)` to a real `/admin` segment so that `/admin/*` is the authenticated surface while `/`, `/onboarding` and `/[tenantSlug]` remain public. Tenancy logic is isolated under `apps/book/src/domain/tenancy` (framework-free, C2) and all data access goes through the single store seam (C3). The existing 001 domain and views are reused unchanged except for tenant scoping. No shared data package is created.
+**Structure Decision**: The feature lives entirely in `apps/book`. The private dashboard moves from the route group `(admin)` to a real `/admin` segment so that `/admin/*` is the authenticated surface while `/`, `/onboarding` and `/[tenantSlug]` remain public. Tenancy logic is isolated under `apps/book/src/shared` (framework-free, C2) and all data access goes through the single store seam (C3). The existing 001 domain and views are reused unchanged except for tenant scoping. No shared data package is created.
 
 ## Complexity Tracking
 

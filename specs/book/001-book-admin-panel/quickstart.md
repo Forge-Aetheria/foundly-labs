@@ -20,7 +20,7 @@ Expected: workspace dependencies install with no errors, including `@foundly/ui`
 
 ## Data preparation
 
-The panel runs on an **in-memory store seeded with mock data** (`apps/book/src/server/store.ts`). There is no database to create or migrate — no persistence technology is defined for this version.
+The panel runs on an **in-memory store seeded with mock data** (`apps/book/src/shared/infra/store.ts`). There is no database to create or migrate — no persistence technology is defined for this version.
 
 ## Run locally
 
@@ -82,8 +82,8 @@ Expected: views are built exclusively from `@foundly/ui` components; every scree
 6. Add a block over an existing appointment; confirm the conflict is surfaced and requires resolution.
 7. Open `/admin/services`: confirm the quick search filters by name, the tariff renders as a badge, and "Editar"/"Eliminar" show explicit "próximamente" feedback.
 8. Open `/admin/agenda`: confirm the day ("Hoy") and status chips filter the table, "Detalles" opens the read-only modal, and "+ Nueva cita" opens the mock creation modal.
-7. Confirm every screen renders inside the sidebar shell with the Foundly Book logo, the module navigation (active section highlighted) and the user profile (avatar + name) at the bottom.
-8. Resize to a small viewport; confirm the sidebar collapses into a temporary drawer opened from the menu button and dismissible by keyboard.
+9. Confirm every screen renders inside the sidebar shell with the Foundly Book logo, the module navigation (active section highlighted) and the user profile (avatar + name) at the bottom.
+10. Resize to a small viewport; confirm the sidebar collapses into a temporary drawer opened from the menu button and dismissible by keyboard.
 
 ## End-to-end acceptance
 

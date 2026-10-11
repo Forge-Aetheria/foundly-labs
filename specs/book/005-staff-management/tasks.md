@@ -1,5 +1,5 @@
 ---
-description: "Task list for the Foundly Book staff management feature"
+description: 'Task list for the Foundly Book staff management feature'
 ---
 
 # Tasks: Foundly Book — Staff Management (Equipo y Especialistas)
@@ -33,8 +33,8 @@ Single location: `apps/book/` (+ `packages/ui/` for shared primitives).
 - [x] T001 [P] Add `Switch` primitive to `packages/ui/src/components/Switch/` (`@foundly/ui` wrapper of MUI `Switch`; token-consistent, `checked`/`onChange(checked)` API) and export it from `packages/ui/src/components/index.ts`.
 - [x] T002 [P] Add `Checkbox` primitive to `packages/ui/src/components/Checkbox/` (thin MUI wrapper with optional `label` and `checked`/`onChange(checked)`) and export it.
 - [x] T003 [P] Extend `packages/ui/src/components/TextField/TextField.tsx` with `multiline`, `rows` and `maxLength` (inputProps) for the bio field.
-- [x] T004 [P] Extend `Resource` in `apps/book/src/domain/appointments/types.ts` with optional `serviceIds?: string[]` and seed assignments in `apps/book/src/server/store.ts`.
-- [x] T005 [P] Extend `PublicSpecialist` (`apps/book/src/features/public-booking/types.ts`) with `services?: string[]` and resolve names in `getPublicBusiness`.
+- [x] T004 [P] Extend `Resource` in `apps/book/src/shared/types/appointments.ts` with optional `serviceIds?: string[]` and seed assignments in `apps/book/src/shared/infra/store.ts`.
+- [x] T005 [P] Extend `PublicSpecialist` (`apps/book/src/modules/public-booking/utils/types.ts`) with `services?: string[]` and resolve names in `getPublicBusiness`.
 
 **Checkpoint**: primitives + model ready; no feature behavior yet.
 
@@ -44,8 +44,8 @@ Single location: `apps/book/` (+ `packages/ui/` for shared primitives).
 
 **Goal**: Glassmorphism card grid + add modal with validation and state sync.
 
-- [x] T006 [US1] Extend `apps/book/src/features/storefront/schemas.ts` and `actions.ts` so `createStaff`/`updateStaff` accept and validate `serviceIds` (same tenant catalog).
-- [x] T007 [US1] Rewrite `apps/book/src/features/storefront/components/StaffManager.tsx`: header "Equipo y Especialistas" + pill "+ Añadir Profesional", glass card grid (avatar/initials, name + role, service badges, status badge, per-card actions) and the create modal (nombre/cargo required, bio ≤250, avatar URL + preview, services checkboxes, active switch, "Guardar profesional"/"Cancelar").
+- [x] T006 [US1] Extend `apps/book/src/modules/{staff,gallery,profile}/utils/schemas.ts` and `actions.ts` so `createStaff`/`updateStaff` accept and validate `serviceIds` (same tenant catalog).
+- [x] T007 [US1] Rewrite `apps/book/src/modules/staff/components/StaffManager.tsx`: header "Equipo y Especialistas" + pill "+ Añadir Profesional", glass card grid (avatar/initials, name + role, service badges, status badge, per-card actions) and the create modal (nombre/cargo required, bio ≤250, avatar URL + preview, services checkboxes, active switch, "Guardar profesional"/"Cancelar").
 - [x] T008 [US1] Wire `/admin/staff/page.tsx` to pass the tenant services to `StaffManager`.
 - [x] T009 [P] [US1] Component tests `StaffManager.test.tsx`: render grid, add member (with services), required-field errors, zero-services warning; `vitest-axe` clean.
 - [x] T010 [P] [US1] Action tests `storefront/actions.test.ts`: serviceIds assignment + public-portal reflection.
@@ -79,7 +79,7 @@ Single location: `apps/book/` (+ `packages/ui/` for shared primitives).
 
 ## Notes
 
-- Domain logic (`apps/book/src/domain`) stays free of React/Next/MUI/storage imports (C2).
+- Domain logic (`apps/book/src/shared`) stays free of React/Next/MUI/storage imports (C2).
 - All views use `@foundly/ui` exclusively (C1); pill accent `#6C5CE7` is expressed as `primary.main`.
 - Persistence not defined (C3): only the store seam may be swapped.
 - Commit after each task or logical group.

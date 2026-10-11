@@ -18,7 +18,7 @@ The panel is a Next.js (App Router) application rendered server-first, reusing t
 
 **Primary Dependencies**: Next.js (App Router, current stable); `@foundly/ui` (workspace, MUI v6); Zod for input validation.
 
-**Storage**: In-memory store (mock) behind `apps/book/src/server/store.ts`. The ecosystem's persistence strategy is **not yet defined** — no storage technology is chosen or implied.
+**Storage**: In-memory store (mock) behind `apps/book/src/shared/infra/store.ts`. The ecosystem's persistence strategy is **not yet defined** — no storage technology is chosen or implied.
 
 **Testing**: Vitest for the availability engine and panel logic (pure domain); Vitest + React Testing Library + `vitest-axe` for panel components.
 
@@ -76,31 +76,26 @@ specs/book/001-book-admin-panel/
 ```text
 apps/book/                           # Next.js admin panel
 ├── src/
-│   ├── app/
+│   ├── app/                         # thin App Router routes → render <Modulo>View
 │   │   ├── layout.tsx               # tokens.css + FoundlyThemeProvider + AppRouterCacheProvider
-│   │   └── (admin)/
-│   │       ├── layout.tsx           # admin shell (sidebar nav, auth guard)
-│   │       ├── components/
-│   │       │   ├── AdminShell.tsx   # persistent sidebar (brand, nav, user profile)
-│   │       │   ├── navigation.ts    # primary/secondary nav model + icons
-│   │       │   └── PlaceholderPanel.tsx
-│   │       ├── agenda/page.tsx
-│   │       ├── services/page.tsx
-│   │       ├── availability/page.tsx
-│   │       ├── configuracion/page.tsx
-│   │       ├── soporte/page.tsx
-│   │       └── acerca/page.tsx
-│   ├── domain/
-│   │   ├── appointments/types.ts    # domain interfaces (no persistence)
-│   │   └── availability/            # pure engine (C2)
-│   ├── features/
-│   │   ├── appointments/            # schemas, queries, actions, lifecycle, components
-│   │   ├── services/                # components
-│   │   └── availability/            # components
-│   └── server/
-│       ├── store.ts                 # in-memory store seam (no storage technology)
-│       ├── auth.ts                  # Foundly Pass session guard
-│       └── result.ts                # ActionResult
+│   │   ├── page.tsx                 # → modules/landing/LandingView
+│   │   ├── onboarding/              # → modules/onboarding/OnboardingView
+│   │   ├── admin/                   # → each modules/<modulo>/<Modulo>View
+│   │   │   ├── layout.tsx           # AdminShell (shared/components)
+│   │   │   ├── agenda/page.tsx
+│   │   │   ├── services/page.tsx
+│   │   │   ├── availability/page.tsx
+│   │   │   ├── configuracion/page.tsx
+│   │   │   ├── soporte/page.tsx
+│   │   │   └── acerca/page.tsx
+│   │   └── [tenantSlug]/            # → modules/public-booking/PublicBookingView
+│   ├── modules/<modulo>/            # domain modules (agenda, services, availability, staff, gallery, profile, onboarding, public-booking, landing)
+│   │   └── <Modulo>View.tsx         # + components/, dialogs/, utils/, tests/
+│   └── shared/
+│       ├── components/              # AdminShell, AdminNavigation, PlaceholderPanel
+│       ├── infra/                   # store.ts (seam), auth.ts, result.ts
+│       ├── types/                   # appointments, availability, tenancy
+│       └── utils/                   # computeAvailability, slug, provision, format, landingCanon
 ├── public/
 │   ├── branding-logo.png            # Foundly Book full logo (sidebar header)
 │   └── icon.png                     # Foundly Book isotipo (mobile header / favicon)
@@ -109,7 +104,7 @@ apps/book/                           # Next.js admin panel
 └── package.json
 ```
 
-**Structure Decision**: The feature lives entirely in `apps/book`. Domain logic is isolated under `apps/book/src/domain` to keep it framework-free and unit-testable, and all data access goes through the single in-memory seam `apps/book/src/server/store.ts`. The admin shell (sidebar navigation, brand header and user profile) lives under `apps/book/src/app/(admin)/components/`; branding assets are served from `apps/book/public/`. No shared data package is created.
+**Structure Decision**: The feature lives entirely in `apps/book`. Domain logic is isolated under `apps/book/src/shared` to keep it framework-free and unit-testable, and all data access goes through the single in-memory seam `apps/book/src/shared/infra/store.ts`. The admin shell (sidebar navigation, brand header and user profile) lives under `apps/book/src/shared/components/`; branding assets are served from `apps/book/public/`. No shared data package is created.
 
 ## Complexity Tracking
 

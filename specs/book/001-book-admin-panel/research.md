@@ -12,14 +12,14 @@ Resolves the technical unknowns from the plan's Technical Context. Each item rec
 
 ## R2. Persistence strategy — deferred (not defined)
 
-- **Decision**: Do **not** introduce any persistence technology or shared data package in this feature. The panel uses an **in-memory store (mock)** exposed only through a single seam (`apps/book/src/server/store.ts`) and typed exclusively with TypeScript interfaces. The ecosystem's persistence strategy is **not yet defined** and must be decided and documented in `specs/architecture.md` before any storage is adopted.
+- **Decision**: Do **not** introduce any persistence technology or shared data package in this feature. The panel uses an **in-memory store (mock)** exposed only through a single seam (`apps/book/src/shared/infra/store.ts`) and typed exclusively with TypeScript interfaces. The ecosystem's persistence strategy is **not yet defined** and must be decided and documented in `specs/architecture.md` before any storage is adopted.
 - **Rationale**: The ecosystem's storage strategy was never ratified. Introducing a database package now would be an unauthorized architectural decision and would leak storage concerns into domain and UI code. A decoupled seam keeps the feature testable and reversible.
 - **Alternatives considered**: introducing a shared data package (rejected — unauthorized); coupling domain/UI directly to a storage client (rejected — violates decoupling and C3).
 - **Consequence**: When persistence is ratified, only the store seam is replaced; the domain engine, actions and views stay unchanged.
 
 ## R3. Availability computation (the core domain engine)
 
-- **Decision**: Implement availability as a **pure TypeScript module** in `apps/book/src/domain/availability` with no framework imports. It takes a resource, a service (duration + buffer), the applicable rules and blocks, and the existing appointments, and returns the ordered set of bookable slots for a date range.
+- **Decision**: Implement availability as a **pure TypeScript module** in `apps/book/src/shared/utils` with no framework imports. It takes a resource, a service (duration + buffer), the applicable rules and blocks, and the existing appointments, and returns the ordered set of bookable slots for a date range.
 - **Rationale**: Availability is the highest-risk logic (overlaps, buffers, blocks, lead time, horizon). Isolating it makes it exhaustively unit-testable, satisfies constraint C2, and keeps the UI dumb.
 - **Algorithm sketch**: per day → resolve working intervals from weekly rules → subtract breaks and time blocks → expand into slots by granularity → drop slots that violate minimum lead time / booking horizon → drop slots that overlap existing appointments (including their buffers) → drop slots whose service duration + buffer does not fit inside a working interval.
 - **Alternatives considered**: computing availability in the components (rejected by C2); delegating slot generation to the storage layer (rejected — storage is undefined and would make the logic untestable).

@@ -19,7 +19,7 @@ existing storefront feature module and the `@foundly/ui` primitives.
 
 **Primary Dependencies**: `@foundly/ui` (design system) · MUI v6 (engine of `@foundly/ui`) · Zod 4
 
-**Storage**: None — in-memory seam `apps/book/src/server/store.ts`
+**Storage**: None — in-memory seam `apps/book/src/shared/infra/store.ts`
 
 **Testing**: Vitest + RTL + vitest-axe (`npm run test -w @foundly/book`); `@foundly/ui` suite for shared primitives (`npm run test -w @foundly/ui`)
 
@@ -29,20 +29,20 @@ existing storefront feature module and the `@foundly/ui` primitives.
 
 **Performance Goals**: N/A (small admin surfaces; static photo URLs)
 
-**Constraints**: C1 — views use `@foundly/ui` only; C2 — `apps/book/src/domain` stays free of React/Next/MUI/storage imports; C3 — persistence only through the store seam.
+**Constraints**: C1 — views use `@foundly/ui` only; C2 — `apps/book/src/shared` stays free of React/Next/MUI/storage imports; C3 — persistence only through the store seam.
 
 **Scale/Scope**: single-screen admin feature + model enrichment; ~1 grid view + 1 form modal + 1 lightbox.
 
 ## Constitution Check
 
-*GATE: must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: must pass before Phase 0 research. Re-check after Phase 1 design._
 
 - Specs live under `/specs/<dominio>/<nnn>-<feature>/` → **OK** (`book/006-gallery-management`).
 - Views consume `@foundly/ui` + tokens, no hex literals → **OK** (glass cards and pills via `GLASS_CARD_SX` / tokens).
 - Domain logic pure → **OK** (`GalleryPhoto` is a plain model; URL/category rules validated in actions and shared UI).
 - Persistence not defined → **OK** (mutations go through the store seam only; uploads out of scope, URL-based).
 
-*Re-check after Phase 1 design:* **PASS** — no new `@foundly/ui` primitives required (Modal/TextField/Badge/Chip/Checkbox cover the surface); the model change stays in `apps/book/src/domain` (pure types); all mutations remain behind the store seam.
+_Re-check after Phase 1 design:_ **PASS** — no new `@foundly/ui` primitives required (Modal/TextField/Badge/Chip/Checkbox cover the surface); the model change stays in `apps/book/src/shared` (pure types); all mutations remain behind the store seam.
 
 ## Project Structure
 
@@ -62,27 +62,27 @@ specs/book/006-gallery-management/
 ### Source Code (repository root)
 
 ```text
-apps/book/src/domain/tenancy/types.ts                      # EXTEND: GalleryPhoto + Tenant.gallery
-apps/book/src/server/store.ts                              # EXTEND: seed gallery items (Ana, Rona)
-apps/book/src/features/storefront/schemas.ts               # EXTEND: gallery photo schema (url/title/description/category)
-apps/book/src/features/storefront/actions.ts               # EXTEND: add/update/remove gallery photo by id
-apps/book/src/features/storefront/queries.ts               # EXTEND: listGallery returns GalleryPhoto[]
-apps/book/src/features/storefront/components/GalleryManager.tsx     # REWRITE: grid + form + lightbox + remove
-apps/book/src/features/storefront/components/GalleryManager.test.tsx # UPDATE tests
-apps/book/src/features/storefront/actions.test.ts          # UPDATE gallery action tests
-apps/book/src/features/public-booking/types.ts             # EXTEND: PublicGalleryPhoto
-apps/book/src/features/public-booking/queries.ts           # EXTEND: map gallery items
-apps/book/src/features/public-booking/components/provider/ProviderSections.tsx  # GallerySection items + empty state
+apps/book/src/shared/types/tenancy.ts                      # EXTEND: GalleryPhoto + Tenant.gallery
+apps/book/src/shared/infra/store.ts                              # EXTEND: seed gallery items (Ana, Rona)
+apps/book/src/modules/{staff,gallery,profile}/utils/schemas.ts               # EXTEND: gallery photo schema (url/title/description/category)
+apps/book/src/modules/{staff,gallery,profile}/utils/actions.ts               # EXTEND: add/update/remove gallery photo by id
+apps/book/src/modules/{staff,gallery,profile}/utils/queries.ts               # EXTEND: listGallery returns GalleryPhoto[]
+apps/book/src/modules/gallery/components/GalleryManager.tsx     # REWRITE: grid + form + lightbox + remove
+apps/book/src/modules/gallery/tests/GalleryManager.test.tsx # UPDATE tests
+apps/book/src/modules/{staff,gallery,profile}/tests/actions.test.ts          # UPDATE gallery action tests
+apps/book/src/modules/public-booking/utils/types.ts             # EXTEND: PublicGalleryPhoto
+apps/book/src/modules/public-booking/utils/queries.ts           # EXTEND: map gallery items
+apps/book/src/modules/public-booking/components/ProviderSections.tsx  # GallerySection items + empty state
 specs/book/006-gallery-management/                         # feature docs (this feature)
 ```
 
 **Structure Decision**: Feature docs in the domain spec folder; implementation reuses the existing
-`storefront` feature module under `apps/book/src/features/` (no new app/package, no new `@foundly/ui`
+`storefront` feature module under `apps/book/src/modules/` (no new app/package, no new `@foundly/ui`
 primitives required — `Modal`, `TextField` (multiline/maxLength), `Badge`, `Chip`, `Checkbox` cover the surface).
 
 ## Complexity Tracking
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
+| Violation                                                 | Why Needed                                                                                         | Simpler Alternative Rejected Because                                           |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | Gallery model changes from `string[]` to `GalleryPhoto[]` | Photos need title, category and a stable identity for precise removal/preview (spec FR-002/FR-008) | Keeping `string[]` would drop metadata and make removal ambiguous (duplicates) |
-| Two seed tenants migrate their gallery seeds | Mock store must render the enriched cards out of the box | Leaving raw strings would break the type contract after the model change |
+| Two seed tenants migrate their gallery seeds              | Mock store must render the enriched cards out of the box                                           | Leaving raw strings would break the type contract after the model change       |

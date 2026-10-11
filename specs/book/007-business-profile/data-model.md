@@ -3,24 +3,24 @@
 **Feature**: `specs/book/007-business-profile/` | **Date**: 2026-10-10
 
 No new entities are introduced: the feature exposes and updates fields already modeled on **Tenant**,
-**PortalPolicy** and **BusinessHours** (all in `apps/book/src/domain/tenancy/types.ts`).
+**PortalPolicy** and **BusinessHours** (all in `apps/book/src/shared/types/tenancy.ts`).
 
 ## Editing surface (writes)
 
 ### Tenant — identity & contact (`profileSchema`)
 
-| Field       | Type     | Rules                                                                          |
-| ----------- | -------- | ------------------------------------------------------------------------------ |
-| `name`      | string   | required, trimmed, ≤ 120                                                       |
-| `category`  | string   | required, trimmed, ≤ 80                                                        |
-| `slug`      | string   | 3–40 chars `[a-z0-9-]`, normalized (`normalizeSlug`), format + reserved allowed, unique (excluding self) |
-| `bio`       | ?string  | "About", trimmed, ≤ 1000                                                       |
-| `address`   | ?string  | trimmed, ≤ 200                                                                 |
-| `phone`     | ?string  | trimmed, ≤ 40                                                                  |
-| `avatar`    | ?string  | logo/isotipo URL, ≤ 500                                                        |
-| `cover`     | ?string  | banner/portada URL, ≤ 500                                                      |
-| `instagram` | ?string  | URL, ≤ 300                                                                     |
-| `whatsapp`  | ?string  | URL/`wa.me` link or phone, ≤ 300                                               |
+| Field       | Type    | Rules                                                                                                    |
+| ----------- | ------- | -------------------------------------------------------------------------------------------------------- |
+| `name`      | string  | required, trimmed, ≤ 120                                                                                 |
+| `category`  | string  | required, trimmed, ≤ 80                                                                                  |
+| `slug`      | string  | 3–40 chars `[a-z0-9-]`, normalized (`normalizeSlug`), format + reserved allowed, unique (excluding self) |
+| `bio`       | ?string | "About", trimmed, ≤ 1000                                                                                 |
+| `address`   | ?string | trimmed, ≤ 200                                                                                           |
+| `phone`     | ?string | trimmed, ≤ 40                                                                                            |
+| `avatar`    | ?string | logo/isotipo URL, ≤ 500                                                                                  |
+| `cover`     | ?string | banner/portada URL, ≤ 500                                                                                |
+| `instagram` | ?string | URL, ≤ 300                                                                                               |
+| `whatsapp`  | ?string | URL/`wa.me` link or phone, ≤ 300                                                                         |
 
 Optional fields store `null` when empty (public blocks render placeholders).
 
@@ -29,7 +29,9 @@ Optional fields store `null` when empty (public blocks render placeholders).
 Replaces the tenant's `portalPolicies` set with an ordered list of entries:
 
 ```ts
-{ id, tenantId, title, body }   // title ≤ 120, body ≤ 1000; at least a title per entry
+{
+  (id, tenantId, title, body);
+} // title ≤ 120, body ≤ 1000; at least a title per entry
 ```
 
 ### BusinessHours — hours summary (read-only here)

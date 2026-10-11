@@ -2,7 +2,7 @@
 
 **Feature**: `specs/book/001-book-admin-panel/` | **Date**: 2026-10-08
 
-The availability engine is a pure, framework-agnostic module (`apps/book/src/domain/availability`). It is the single source of truth for which slots can be booked, used by both the agenda UI (via server reads) and server-side mutation checks.
+The availability engine is a pure, framework-agnostic module (`apps/book/src/shared/utils`). It is the single source of truth for which slots can be booked, used by both the agenda UI (via server reads) and server-side mutation checks.
 
 ## Interface
 

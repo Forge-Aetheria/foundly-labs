@@ -18,19 +18,19 @@ Resolves the technical unknowns from the plan's Technical Context. Each item rec
 
 ## R3. Tenant and account model (Foundly Pass deferred)
 
-- **Decision**: Model `Tenant` (business) and `User` (account) as plain TypeScript interfaces. A `User` has a role (`owner` in v1, extensible to `professional`) and references its tenant; a `Tenant` has one owner and a lifecycle status (`draft | active | suspended`). Foundly Pass SSO is treated as the future central identity: the wizard captures the owner identity/credentials into the local mock store, and the seam (`apps/book/src/server/auth.ts`) exposes a session with `userId` + `tenantId` so swapping to Foundly Pass later changes only that seam.
+- **Decision**: Model `Tenant` (business) and `User` (account) as plain TypeScript interfaces. A `User` has a role (`owner` in v1, extensible to `professional`) and references its tenant; a `Tenant` has one owner and a lifecycle status (`draft | active | suspended`). Foundly Pass SSO is treated as the future central identity: the wizard captures the owner identity/credentials into the local mock store, and the seam (`apps/book/src/shared/infra/auth.ts`) exposes a session with `userId` + `tenantId` so swapping to Foundly Pass later changes only that seam.
 - **Rationale**: `specs/business-model.md` §3.3 makes Foundly Pass the single identity provider; building real auth now would be an unauthorized decision. Modelling the session seam keeps the module ready for SSO without coupling to it.
 - **Alternatives considered**: integrating Foundly Pass now (rejected — external dependency not ratified for implementation); no account concept, tenant-only (rejected — FR-015/FR-016 need an owner identity and role).
 
 ## R4. Public URL (slug): generation, validation and reserved words
 
-- **Decision**: Slug rules are a pure module (`domain/tenancy/slug.ts`): normalize to lowercase kebab-case (strip accents, collapse separators), validate against `^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$` (3–40 chars), reject a fixed **reserved list** (`admin`, `onboarding`, `api`, `www`, `app`, `public`, `static`, `assets`), and check uniqueness against the store. The wizard suggests a slug derived from the commercial name while allowing edits.
+- **Decision**: Slug rules are a pure module (`shared/utils/slug.ts`): normalize to lowercase kebab-case (strip accents, collapse separators), validate against `^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$` (3–40 chars), reject a fixed **reserved list** (`admin`, `onboarding`, `api`, `www`, `app`, `public`, `static`, `assets`), and check uniqueness against the store. The wizard suggests a slug derived from the commercial name while allowing edits.
 - **Rationale**: A unique, human-readable, collision-free public address is the core invariant of the portal (FR-008, FR-014, SC-003). A pure function is trivially unit-testable and shared by the wizard (live validation) and the provisioning action (authoritative check).
 - **Alternatives considered**: UUIDs as addresses (rejected — poor UX and SEO); DB-level unique constraints only (rejected — no persistence yet, and the UI needs live feedback); no reserved words (rejected — allows shadowing system routes).
 
 ## R5. Public booking portal and reuse of the availability engine
 
-- **Decision**: The portal's page is a **Server Component** that resolves the tenant by slug (404/unavailable state for unknown, suspended or unlicensed tenants) and loads its public services; the interactive slot picker and booking panel are a small client component that calls the existing availability engine (`domain/availability`) — reused unchanged — and a server action to create the appointment with `origin: 'online'`.
+- **Decision**: The portal's page is a **Server Component** that resolves the tenant by slug (404/unavailable state for unknown, suspended or unlicensed tenants) and loads its public services; the interactive slot picker and booking panel are a small client component that calls the existing availability engine (`shared/utils/computeAvailability.ts`) — reused unchanged — and a server action to create the appointment with `origin: 'online'`.
 - **Rationale**: Availability/overlap rules already exist and are the single source of truth (001 §R3/R5); reusing them guarantees the portal offers exactly the slots the agenda can accept. Server-first rendering keeps the public page fast and SEO-visible.
 - **Alternatives considered**: reimplementing availability for the portal (rejected — duplicate logic, inconsistent results); a fully client-rendered portal (rejected — worse first paint/SEO and more exposed data).
 
@@ -48,7 +48,7 @@ Resolves the technical unknowns from the plan's Technical Context. Each item rec
 
 ## R8. Persistence strategy — still deferred (not defined)
 
-- **Decision**: Do **not** introduce any persistence technology. The store seam (`apps/book/src/server/store.ts`) is extended with `tenants`, `users` and `sessions` collections typed with the new interfaces, and remains the only module that reads/writes them. When `specs/architecture.md` ratifies storage, only this seam is replaced.
+- **Decision**: Do **not** introduce any persistence technology. The store seam (`apps/book/src/shared/infra/store.ts`) is extended with `tenants`, `users` and `sessions` collections typed with the new interfaces, and remains the only module that reads/writes them. When `specs/architecture.md` ratifies storage, only this seam is replaced.
 - **Rationale**: Same as 001 §R2 — storage was never ratified; introducing it now would be an unauthorized architectural decision and would leak storage concerns into domain/UI code.
 - **Alternatives considered**: adding a database client (rejected — unauthorized); coupling the tenancy logic to storage (rejected — violates C2/C3).
 

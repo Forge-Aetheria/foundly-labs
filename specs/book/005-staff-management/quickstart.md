@@ -25,8 +25,8 @@
 
 ## Test commands
 
-| Command                              | Scope                                        |
-| ------------------------------------ | -------------------------------------------- |
-| `npm run test -w @foundly/book`      | Vitest + RTL + vitest-axe (book app)         |
-| `npm run test -w @foundly/ui`        | Shared UI primitives (Switch/Checkbox)       |
-| `npm run build -w @foundly/book`     | Production build + type check                |
+| Command                          | Scope                                  |
+| -------------------------------- | -------------------------------------- |
+| `npm run test -w @foundly/book`  | Vitest + RTL + vitest-axe (book app)   |
+| `npm run test -w @foundly/ui`    | Shared UI primitives (Switch/Checkbox) |
+| `npm run build -w @foundly/book` | Production build + type check          |

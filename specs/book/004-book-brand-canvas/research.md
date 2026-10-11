@@ -14,12 +14,12 @@ over `--color-app-body`), with the gradient stops declared as a **local** extens
 
 `apps/book` did not mirror that identity:
 
-| Surface                     | Defect before the fix                                                                                        |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Product page (`/`)          | `ProductLanding` painted an opaque `background.paper` header bar + a hero gradient that died into white with a `borderBottom` → hard cut between hero and cards (FR-003). |
-| Onboarding (`/onboarding`)  | Rendered on the plain `background.default` canvas; no continuous gradient behind the split layout.          |
-| Admin (`/admin/*`)          | `AdminShell` painted an opaque `background.default` full-screen layer → the onboarding identity did not reach `/admin` (US4/FR-005). |
-| Public portal (`/[tenantSlug]`) | Rendered on the plain canvas; no shared gradient.                                                          |
+| Surface                         | Defect before the fix                                                                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product page (`/`)              | `ProductLanding` painted an opaque `background.paper` header bar + a hero gradient that died into white with a `borderBottom` → hard cut between hero and cards (FR-003). |
+| Onboarding (`/onboarding`)      | Rendered on the plain `background.default` canvas; no continuous gradient behind the split layout.                                                                        |
+| Admin (`/admin/*`)              | `AdminShell` painted an opaque `background.default` full-screen layer → the onboarding identity did not reach `/admin` (US4/FR-005).                                      |
+| Public portal (`/[tenantSlug]`) | Rendered on the plain canvas; no shared gradient.                                                                                                                         |
 
 Not only was there no root-level canvas, but the first attempt introduced a **softer** book-only gradient
 (`#E3DAFC → #EFEAFE → #F7F5FF`) that did not match the landing's `#C8B6FF → #D8B4FE` identity.
@@ -51,12 +51,12 @@ Not only was there no root-level canvas, but the first attempt introduced a **so
   surfaces inherit the canvas from the root.
 - **D3**: `packages/ui` `Card` and `Button` accept an optional `sx` prop (additive, non-breaking) so the
   landing view can apply glassmorphism and exact pill/button styles without changing workspace defaults.
-- **D4**: Product page (`apps/book/src/app/components/ProductLanding.tsx`): remove the opaque wrapper
+- **D4**: Product page (`apps/book/src/modules/landing/LandingView.tsx`): remove the opaque wrapper
   background; header becomes glass at 70% (`--book-glass` + blur(12px) + subtle border); hero without
   background/border; hero pill and category pills use `badgePill` + `primary.main`; primary buttons use
   `primary.main` + `shadow.card` + 90% hover; secondary buttons use `--book-glass-card` + blur + subtle
   border + `badgePill` hover; showcase/benefits cards use `--book-glass-card` + blur (FR-006/FR-008).
-- **D5**: Admin shell (`apps/book/src/app/admin/components/AdminShell.tsx`): remove the opaque
+- **D5**: Admin shell (`apps/book/src/shared/components/AdminShell.tsx`): remove the opaque
   `background.default` full-screen layer so the root canvas shows behind the white sidebar (US4).
 - **D6**: Cover the full viewport with `background-attachment: fixed`; where unsupported (mobile iOS
   scrolls the attachment), the `--bg-app-body` fallback keeps the identity within token values.
@@ -68,8 +68,8 @@ Not only was there no root-level canvas, but the first attempt introduced a **so
   - `packages/ui/src/components/Button/Button.tsx` + test — additive `sx` prop.
   - `apps/book/src/app/globals.css` — gradient + glass tokens synced to the landing.
   - `apps/book/src/app/layout.tsx` — `className="book-app-canvas"` on `<body>`.
-  - `apps/book/src/app/components/ProductLanding.tsx` — exact landing replica (header, pills, buttons, glass cards).
-  - `apps/book/src/app/admin/components/AdminShell.tsx` — no opaque full-screen background.
+  - `apps/book/src/modules/landing/LandingView.tsx` — exact landing replica (header, pills, buttons, glass cards).
+  - `apps/book/src/shared/components/AdminShell.tsx` — no opaque full-screen background.
 - **No shared value change**: `@foundly/ui` token values and `specs/system-design.md` untouched; only
   additive `sx` props on `Card`/`Button`.
 - **No data/route change**: no entity, store, action or route was modified.

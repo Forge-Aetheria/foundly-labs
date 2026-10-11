@@ -20,7 +20,7 @@ Expected: workspace dependencies install with no errors, including `@foundly/ui`
 
 ## Data preparation
 
-The module runs on the **in-memory store seam** extended with `tenants`, `users` and `sessions` (`apps/book/src/server/store.ts`). There is no database to create or migrate — the persistence strategy is still undefined.
+The module runs on the **in-memory store seam** extended with `tenants`, `users` and `sessions` (`apps/book/src/shared/infra/store.ts`). There is no database to create or migrate — the persistence strategy is still undefined.
 
 ## Run locally
 

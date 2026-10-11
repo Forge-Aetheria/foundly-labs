@@ -97,7 +97,7 @@ As an operator, I want every screen in the staff module to reuse the shared desi
 ## Assumptions
 
 - Governed by `constitution.md` v5.0.1 and `specs/business-model.md` (Foundly Book module).
-- Data stays in the in-memory store seam (`apps/book/src/server/store.ts`); persistence is undefined until `specs/architecture.md` ratifies storage.
+- Data stays in the in-memory store seam (`apps/book/src/shared/infra/store.ts`); persistence is undefined until `specs/architecture.md` ratifies storage.
 - Service assignment is expressed as `serviceIds` on `Resource`; a member can provide zero or more services (warning only when zero).
 - File upload is out of scope; the avatar and gallery images are URL-based, consistent with the current mock.
-- Reuses the existing storefront feature module (`apps/book/src/features/storefront/`) for actions, queries and the `StaffManager` view.
+- Reuses the existing storefront feature module (`apps/book/src/modules/{staff,gallery,profile}/`) for actions, queries and the `StaffManager` view.

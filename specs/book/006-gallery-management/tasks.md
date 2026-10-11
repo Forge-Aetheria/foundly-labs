@@ -1,5 +1,5 @@
 ---
-description: "Task list for the Foundly Book gallery management feature"
+description: 'Task list for the Foundly Book gallery management feature'
 ---
 
 # Tasks: Foundly Book — Gallery Management (Galería)
@@ -38,10 +38,10 @@ Single location: `apps/book/` (+ `packages/ui/` suite verification).
 
 **Purpose**: The `GalleryPhoto` model, its seeds, public read shape and the photo schema — everything the user stories depend on.
 
-- [x] T002 [P] Add `GalleryCategory = 'local' | 'trabajos' | 'equipo'` and the `GalleryPhoto { id; url; title?; description?; category? }` entity in `apps/book/src/domain/tenancy/types.ts` (pure types, per `data-model.md`).
-- [x] T003 [P] Migrate `Tenant.gallery` seeds from `string[]` to `GalleryPhoto[]` (with inferred categories) for `estudio-ana` and `rona-piercing` in `apps/book/src/server/store.ts`.
-- [x] T004 [P] Add `PublicGalleryPhoto` in `apps/book/src/features/public-booking/types.ts` and map `Tenant.gallery` → public photos (title + display category label) in `apps/book/src/features/public-booking/queries.ts`.
-- [x] T005 [P] Add `galleryPhotoSchema` (url required `z.url()`, title ≤120, description ≤250, category enum optional) in `apps/book/src/features/storefront/schemas.ts`.
+- [x] T002 [P] Add `GalleryCategory = 'local' | 'trabajos' | 'equipo'` and the `GalleryPhoto { id; url; title?; description?; category? }` entity in `apps/book/src/shared/types/tenancy.ts` (pure types, per `data-model.md`).
+- [x] T003 [P] Migrate `Tenant.gallery` seeds from `string[]` to `GalleryPhoto[]` (with inferred categories) for `estudio-ana` and `rona-piercing` in `apps/book/src/shared/infra/store.ts`.
+- [x] T004 [P] Add `PublicGalleryPhoto` in `apps/book/src/modules/public-booking/utils/types.ts` and map `Tenant.gallery` → public photos (title + display category label) in `apps/book/src/modules/public-booking/utils/queries.ts`.
+- [x] T005 [P] Add `galleryPhotoSchema` (url required `z.url()`, title ≤120, description ≤250, category enum optional) in `apps/book/src/modules/{staff,gallery,profile}/utils/schemas.ts`.
 
 **Checkpoint**: model + schema ready; no feature behavior yet.
 
@@ -55,15 +55,15 @@ Single location: `apps/book/` (+ `packages/ui/` suite verification).
 
 ### Tests for User Story 1 (TDD — write FIRST, confirm they fail before implementation) ⚠️
 
-- [x] T006 [P] [US1] Action tests for `addGalleryPhoto` in `apps/book/src/features/storefront/actions.test.ts`: valid URL adds a `GalleryPhoto`, empty/invalid URL → `VALIDATION_ERROR`, duplicate URL → `CONFLICT`, optional title/description/category accepted, public `gallery` reflects the new photo.
-- [x] T007 [P] [US1] Component tests in `apps/book/src/features/storefront/components/GalleryManager.test.tsx`: grid renders photo cards with title + category badge; add-modal blocks invalid/empty URL with inline error; successful add refreshes the grid (count +1) and the public gallery.
+- [x] T006 [P] [US1] Action tests for `addGalleryPhoto` in `apps/book/src/modules/{staff,gallery,profile}/tests/actions.test.ts`: valid URL adds a `GalleryPhoto`, empty/invalid URL → `VALIDATION_ERROR`, duplicate URL → `CONFLICT`, optional title/description/category accepted, public `gallery` reflects the new photo.
+- [x] T007 [P] [US1] Component tests in `apps/book/src/modules/gallery/tests/GalleryManager.test.tsx`: grid renders photo cards with title + category badge; add-modal blocks invalid/empty URL with inline error; successful add refreshes the grid (count +1) and the public gallery.
 
 ### Implementation for User Story 1
 
-- [x] T008 [P] [US1] Implement `addGalleryPhoto` in `apps/book/src/features/storefront/actions.ts` (generate `id`, validate schema, reject duplicates with `CONFLICT`, return the tenant gallery).
-- [x] T009 [US1] Update `listGallery` to return `GalleryPhoto[]` in `apps/book/src/features/storefront/queries.ts`.
-- [x] T010 [US1] Rewrite the gallery grid + add modal in `apps/book/src/features/storefront/components/GalleryManager.tsx`: glassmorphism cards (image, title, category `Badge`), add modal with URL `TextField` (error helperText), title/description fields, category via selectable `Chip` row, pill actions.
-- [x] T011 [US1] Update public `ProviderSections#GallerySection` in `apps/book/src/features/public-booking/components/provider/ProviderSections.tsx` to render title + category badges and an empty state.
+- [x] T008 [P] [US1] Implement `addGalleryPhoto` in `apps/book/src/modules/{staff,gallery,profile}/utils/actions.ts` (generate `id`, validate schema, reject duplicates with `CONFLICT`, return the tenant gallery).
+- [x] T009 [US1] Update `listGallery` to return `GalleryPhoto[]` in `apps/book/src/modules/{staff,gallery,profile}/utils/queries.ts`.
+- [x] T010 [US1] Rewrite the gallery grid + add modal in `apps/book/src/modules/gallery/components/GalleryManager.tsx`: glassmorphism cards (image, title, category `Badge`), add modal with URL `TextField` (error helperText), title/description fields, category via selectable `Chip` row, pill actions.
+- [x] T011 [US1] Update public `ProviderSections#GallerySection` in `apps/book/src/modules/public-booking/components/ProviderSections.tsx` to render title + category badges and an empty state.
 
 **Checkpoint**: US1 fully functional and independently testable (MVP).
 
@@ -77,13 +77,13 @@ Single location: `apps/book/` (+ `packages/ui/` suite verification).
 
 ### Tests for User Story 2 (TDD — write FIRST) ⚠️
 
-- [x] T012 [P] [US2] Action tests for `removeGalleryPhoto` in `apps/book/src/features/storefront/actions.test.ts`: removes by `id`, unknown id → `NOT_FOUND`, public `gallery` reflects the removal.
-- [x] T013 [P] [US2] Component tests in `apps/book/src/features/storefront/components/GalleryManager.test.tsx`: lightbox opens/dismisses; "Quitar foto" requires the `AlertDialog` confirmation and then removes the card + public entry.
+- [x] T012 [P] [US2] Action tests for `removeGalleryPhoto` in `apps/book/src/modules/{staff,gallery,profile}/tests/actions.test.ts`: removes by `id`, unknown id → `NOT_FOUND`, public `gallery` reflects the removal.
+- [x] T013 [P] [US2] Component tests in `apps/book/src/modules/gallery/tests/GalleryManager.test.tsx`: lightbox opens/dismisses; "Quitar foto" requires the `AlertDialog` confirmation and then removes the card + public entry.
 
 ### Implementation for User Story 2
 
-- [x] T014 [US2] Implement `removeGalleryPhoto` in `apps/book/src/features/storefront/actions.ts` (remove by `id`, `NOT_FOUND` if absent, return the tenant gallery).
-- [x] T015 [US2] Add the lightbox preview (`@foundly/ui` `Modal`) and per-card actions "Ver" / "Quitar foto" with the destructive `AlertDialog` in `apps/book/src/features/storefront/components/GalleryManager.tsx`.
+- [x] T014 [US2] Implement `removeGalleryPhoto` in `apps/book/src/modules/{staff,gallery,profile}/utils/actions.ts` (remove by `id`, `NOT_FOUND` if absent, return the tenant gallery).
+- [x] T015 [US2] Add the lightbox preview (`@foundly/ui` `Modal`) and per-card actions "Ver" / "Quitar foto" with the destructive `AlertDialog` in `apps/book/src/modules/gallery/components/GalleryManager.tsx`.
 
 **Checkpoint**: US1 AND US2 work independently.
 
@@ -173,7 +173,7 @@ Task: "Public GallerySection title/category + empty state"            (T011)
 ## Notes
 
 - [P] tasks = different files, no incomplete dependencies.
-- Domain logic (`apps/book/src/domain`) stays free of React/Next/MUI/storage imports (C2).
+- Domain logic (`apps/book/src/shared`) stays free of React/Next/MUI/storage imports (C2).
 - All views use `@foundly/ui` exclusively (C1); raw `<img>` media use the MUI `Box` primitive (same convention as `ProviderSections`).
 - Persistence not defined (C3): only the store seam may be swapped.
 - Commit after each task or logical group.

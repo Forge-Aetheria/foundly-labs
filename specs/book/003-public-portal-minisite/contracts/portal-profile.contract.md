@@ -3,38 +3,38 @@
 **Feature**: `specs/book/003-public-portal-minisite/` | **Date**: 2026-10-09 | **Amended**: 2026-10-10 (provider landing)
 
 Defines the read surface of the public provider landing. All data flows through
-`apps/book/src/features/public-booking/queries.ts` and MUST respect tenant status (FR-016).
+`apps/book/src/modules/public-booking/utils/queries.ts` and MUST respect tenant status (FR-016).
 
 ## Resolve result
 
 `getPublicBusiness(slug)` returns:
 
-| Outcome   | Shape                                                                                             |
-| --------- | ------------------------------------------------------------------------------------------------- |
-| available | `PublicBusinessProfile` (below)                                                                    |
-| unavailable | `{ status: 'unavailable'; reason: 'not-found' \| 'draft' \| 'suspended' }`                    |
+| Outcome     | Shape                                                                      |
+| ----------- | -------------------------------------------------------------------------- |
+| available   | `PublicBusinessProfile` (below)                                            |
+| unavailable | `{ status: 'unavailable'; reason: 'not-found' \| 'draft' \| 'suspended' }` |
 
 ## PublicBusinessProfile
 
-| Field          | Type                                                                     | Source                          |
-| -------------- | ------------------------------------------------------------------------ | ------------------------------- |
-| `slug`         | string                                                                   | `Tenant.slug`                   |
-| `name`         | string                                                                   | `Tenant.name`                   |
-| `category`     | string                                                                   | `Tenant.category`               |
-| `cover`        | string \| null                                                           | `Tenant.cover`                  |
-| `avatar`       | string \| null                                                           | explicit `Tenant.avatar`        |
-| `bio`          | string \| null                                                           | `Tenant.bio`                    |
-| `address`      | string \| null                                                           | `Tenant.address`                |
-| `phone`        | string \| null                                                           | `Tenant.phone`                  |
-| `social`       | `{ instagram?: string; whatsapp?: string } \| null`                      | `Tenant.social`                 |
-| `services`     | `{ id, name, description, durationMinutes, priceCents, currency, category }[]` | `Service` + current `Rate` + `Service.category` |
-| `specialists`  | `{ id, name, role, avatar, bio }[]` (active only)                        | `Resource` (+ metadata)         |
-| `weeklyHours`  | `{ weekday, isOpen, startTime, endTime }[7]`                             | `Tenant.businessHours`          |
-| `policies`     | `{ title, body }[]`                                                      | `PortalPolicy`                  |
-| `gallery`      | `string[]` (Unsplash URLs)                                               | `Tenant.gallery`                |
-| `rating`       | `number \| null` (average, 1 decimal)                                    | averaged from `Review`          |
-| `reviewCount`  | `number`                                                                 | count of `Review`               |
-| `reviews`      | `{ id, author, rating, comment, date }[]` (newest first)                 | `Review` store collection       |
+| Field         | Type                                                                           | Source                                          |
+| ------------- | ------------------------------------------------------------------------------ | ----------------------------------------------- |
+| `slug`        | string                                                                         | `Tenant.slug`                                   |
+| `name`        | string                                                                         | `Tenant.name`                                   |
+| `category`    | string                                                                         | `Tenant.category`                               |
+| `cover`       | string \| null                                                                 | `Tenant.cover`                                  |
+| `avatar`      | string \| null                                                                 | explicit `Tenant.avatar`                        |
+| `bio`         | string \| null                                                                 | `Tenant.bio`                                    |
+| `address`     | string \| null                                                                 | `Tenant.address`                                |
+| `phone`       | string \| null                                                                 | `Tenant.phone`                                  |
+| `social`      | `{ instagram?: string; whatsapp?: string } \| null`                            | `Tenant.social`                                 |
+| `services`    | `{ id, name, description, durationMinutes, priceCents, currency, category }[]` | `Service` + current `Rate` + `Service.category` |
+| `specialists` | `{ id, name, role, avatar, bio }[]` (active only)                              | `Resource` (+ metadata)                         |
+| `weeklyHours` | `{ weekday, isOpen, startTime, endTime }[7]`                                   | `Tenant.businessHours`                          |
+| `policies`    | `{ title, body }[]`                                                            | `PortalPolicy`                                  |
+| `gallery`     | `string[]` (Unsplash URLs)                                                     | `Tenant.gallery`                                |
+| `rating`      | `number \| null` (average, 1 decimal)                                          | averaged from `Review`                          |
+| `reviewCount` | `number`                                                                       | count of `Review`                               |
+| `reviews`     | `{ id, author, rating, comment, date }[]` (newest first)                       | `Review` store collection                       |
 
 ## Review (mock content)
 
@@ -45,7 +45,7 @@ interface Review {
   author: string;
   rating: number; // 1–5
   comment: string;
-  date: string;   // ISO-8601
+  date: string; // ISO-8601
 }
 ```
 
@@ -56,9 +56,9 @@ Rating rule: `rating = round10(reviewCount === 0 ? null : sum(reviews.rating) / 
 
 The store seeds a full provider test business:
 
-| Tenant | slug               | Highlights                                                              |
-| ------ | ------------------ | ----------------------------------------------------------------------- |
-| `estudio-ana` | `estudio-ana` | Admin/onboarding seed (services, specialists, policies, no gallery/reviews). |
+| Tenant          | slug            | Highlights                                                                                                                          |
+| --------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `estudio-ana`   | `estudio-ana`   | Admin/onboarding seed (services, specialists, policies, no gallery/reviews).                                                        |
 | `rona-piercing` | `rona-piercing` | Provider landing: gallery, 3 categories/services with rates, 3 specialists, business hours, 3 policies and 5 reviews (average 4.6). |
 
 ## Rules

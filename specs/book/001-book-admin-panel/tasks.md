@@ -34,7 +34,7 @@ Single location: `apps/book/`.
 - [x] T002 Create `apps/book/tsconfig.json` and `apps/book/next.config.mjs` with `transpilePackages: ['@foundly/ui']`.
 - [x] T003 [P] Configure Vitest for `apps/book` in `apps/book/vitest.config.ts` and `apps/book/vitest.setup.ts`.
 - [x] T004 Create the app root layout `apps/book/src/app/layout.tsx` (`AppRouterCacheProvider` + `FoundlyThemeProvider`).
-- [x] T005 Create the admin shell `apps/book/src/app/(admin)/layout.tsx` (persistent sidebar + auth guard) and redirect `apps/book/src/app/page.tsx` → `/agenda`.
+- [x] T005 Create the admin shell `apps/book/src/app/admin/layout.tsx` (persistent sidebar + auth guard) and redirect `apps/book/src/app/page.tsx` → `/agenda`.
 - [x] T006 Run `npm install` at the repository root to wire the workspace.
 
 ---
@@ -43,13 +43,13 @@ Single location: `apps/book/`.
 
 **Purpose**: Domain types, in-memory store, validation and the pure availability engine.
 
-- [x] T007 Define domain interfaces in `apps/book/src/domain/appointments/types.ts` (`Resource`, `Service`, `Rate`, `AvailabilityRule`, `TimeBlock`, `Appointment`, `AppointmentAuditEntry`, `AppointmentStatus`).
-- [x] T008 Implement the in-memory store seam in `apps/book/src/server/store.ts` (seeded mock collections + `getStore`/`resetStore`).
-- [x] T009 [P] Create Zod input schemas in `apps/book/src/features/appointments/schemas.ts` (quote constraints: `durationMinutes > 0`, `bufferMinutes >= 0`, `endAt > startAt`).
-- [x] T010 [P] Define availability engine types in `apps/book/src/domain/availability/types.ts` per `contracts/availability.contract.md`.
-- [x] T011 Implement `computeAvailability` in `apps/book/src/domain/availability/computeAvailability.ts` (pure; working hours, granularity, breaks/blocks, active appointments, service fit, lead time, horizon, timezone/DST).
-- [x] T012 [P] Write availability engine tests in `apps/book/src/domain/availability/computeAvailability.test.ts`.
-- [x] T013 [P] Implement `apps/book/src/server/result.ts` (`ActionResult`, error codes) and `apps/book/src/server/auth.ts` (`requireRole`).
+- [x] T007 Define domain interfaces in `apps/book/src/shared/types/appointments.ts` (`Resource`, `Service`, `Rate`, `AvailabilityRule`, `TimeBlock`, `Appointment`, `AppointmentAuditEntry`, `AppointmentStatus`).
+- [x] T008 Implement the in-memory store seam in `apps/book/src/shared/infra/store.ts` (seeded mock collections + `getStore`/`resetStore`).
+- [x] T009 [P] Create Zod input schemas in `apps/book/src/modules/agenda/utils/schemas.ts` (quote constraints: `durationMinutes > 0`, `bufferMinutes >= 0`, `endAt > startAt`).
+- [x] T010 [P] Define availability engine types in `apps/book/src/shared/types/availability.ts` per `contracts/availability.contract.md`.
+- [x] T011 Implement `computeAvailability` in `apps/book/src/shared/utils/computeAvailability.ts` (pure; working hours, granularity, breaks/blocks, active appointments, service fit, lead time, horizon, timezone/DST).
+- [x] T012 [P] Write availability engine tests in `apps/book/src/shared/utils/computeAvailability.test.ts`.
+- [x] T013 [P] Implement `apps/book/src/shared/infra/result.ts` (`ActionResult`, error codes) and `apps/book/src/shared/infra/auth.ts` (`requireRole`).
 
 **Checkpoint**: Foundation ready.
 
@@ -59,13 +59,13 @@ Single location: `apps/book/`.
 
 **Goal**: Create, reschedule, cancel and advance appointments without double-booking.
 
-- [x] T014 [P] [US1] Lifecycle tests in `apps/book/src/features/appointments/lifecycle.test.ts` (data-model §7 transitions; atomic terminal states; cancel requires a reason).
-- [x] T015 [P] [US1] Action tests in `apps/book/src/features/appointments/actions.test.ts` (overlap → `CONFLICT`; snapshot unchanged after catalog change; reschedule frees the old slot).
-- [x] T016 [US1] Implement `listAgenda` in `apps/book/src/features/appointments/queries.ts` (date range + resource filter).
-- [x] T017 [US1] Implement `createAppointment` / `rescheduleAppointment` / `cancelAppointment` / `changeAppointmentStatus` in `apps/book/src/features/appointments/actions.ts` (re-check conflicts, snapshot, audit).
-- [x] T018 [US1] Implement the `Agenda` view (`Card` + `DataTable` + `Badge`) in `apps/book/src/features/appointments/components/Agenda.tsx` using `@foundly/ui` only.
-- [x] T019 [P] [US1] Agenda component test `apps/book/src/features/appointments/components/Agenda.test.tsx` (renders appointments; `vitest-axe` clean).
-- [x] T020 [US1] Build the Agenda page `apps/book/src/app/(admin)/agenda/page.tsx`.
+- [x] T014 [P] [US1] Lifecycle tests in `apps/book/src/modules/agenda/tests/lifecycle.test.ts` (data-model §7 transitions; atomic terminal states; cancel requires a reason).
+- [x] T015 [P] [US1] Action tests in `apps/book/src/modules/agenda/tests/actions.test.ts` (overlap → `CONFLICT`; snapshot unchanged after catalog change; reschedule frees the old slot).
+- [x] T016 [US1] Implement `listAgenda` in `apps/book/src/modules/agenda/utils/queries.ts` (date range + resource filter).
+- [x] T017 [US1] Implement `createAppointment` / `rescheduleAppointment` / `cancelAppointment` / `changeAppointmentStatus` in `apps/book/src/modules/agenda/utils/actions.ts` (re-check conflicts, snapshot, audit).
+- [x] T018 [US1] Implement the `Agenda` view (`Card` + `DataTable` + `Badge`) in `apps/book/src/modules/agenda/components/Agenda.tsx` using `@foundly/ui` only.
+- [x] T019 [P] [US1] Agenda component test `apps/book/src/modules/agenda/tests/Agenda.test.tsx` (renders appointments; `vitest-axe` clean).
+- [x] T020 [US1] Build the Agenda page `apps/book/src/app/admin/agenda/page.tsx`.
 
 **Checkpoint**: US1 functional and independently testable (MVP).
 
@@ -75,10 +75,10 @@ Single location: `apps/book/`.
 
 **Goal**: Catalog of services and rates.
 
-- [x] T021 [P] [US2] Implement the `ServiceCatalog` view (`Card` + `DataTable` + `Badge`) in `apps/book/src/features/services/components/ServiceCatalog.tsx`.
-- [x] T022 [P] [US2] Catalog component test `apps/book/src/features/services/components/ServiceCatalog.test.tsx`.
-- [x] T023 [US2] Build the Services page `apps/book/src/app/(admin)/services/page.tsx`.
-- [ ] T024 [US2] Implement `createService` / `updateService` in `apps/book/src/features/services/actions.ts` (validate `durationMinutes > 0`, `bufferMinutes >= 0`).
+- [x] T021 [P] [US2] Implement the `ServiceCatalog` view (`Card` + `DataTable` + `Badge`) in `apps/book/src/modules/services/components/ServiceCatalog.tsx`.
+- [x] T022 [P] [US2] Catalog component test `apps/book/src/modules/services/tests/ServiceCatalog.test.tsx`.
+- [x] T023 [US2] Build the Services page `apps/book/src/app/admin/services/page.tsx`.
+- [ ] T024 [US2] Implement `createService` / `updateService` in `apps/book/src/modules/services/utils/actions.ts` (validate `durationMinutes > 0`, `bufferMinutes >= 0`).
 - [ ] T025 [US2] Implement `setServiceActive` (deactivation must not alter existing appointments).
 - [ ] T026 [US2] Implement `setRate` (reject overlapping periods for the same service).
 
@@ -90,10 +90,10 @@ Single location: `apps/book/`.
 
 **Goal**: Working hours, breaks and blocks that drive bookable slots.
 
-- [x] T027 [P] [US3] Implement the `AvailabilityEditor` view (`Card` + `DataTable` + `Chip`) in `apps/book/src/features/availability/components/AvailabilityEditor.tsx`.
-- [x] T028 [P] [US3] Availability component test `apps/book/src/features/availability/components/AvailabilityEditor.test.tsx`.
-- [x] T029 [US3] Implement `listAvailabilityRules` / `listTimeBlocks` in `apps/book/src/features/appointments/queries.ts`.
-- [x] T030 [US3] Build the Availability page `apps/book/src/app/(admin)/availability/page.tsx`.
+- [x] T027 [P] [US3] Implement the `AvailabilityEditor` view (`Card` + `DataTable` + `Chip`) in `apps/book/src/modules/availability/components/AvailabilityEditor.tsx`.
+- [x] T028 [P] [US3] Availability component test `apps/book/src/modules/availability/tests/AvailabilityEditor.test.tsx`.
+- [x] T029 [US3] Implement `listAvailabilityRules` / `listTimeBlocks` in `apps/book/src/modules/agenda/utils/queries.ts`.
+- [x] T030 [US3] Build the Availability page `apps/book/src/app/admin/availability/page.tsx`.
 - [ ] T031 [US3] Implement `upsertAvailabilityRule` / `deleteAvailabilityRule` (validate `endTime > startTime`, `slotGranularityMinutes > 0`).
 - [ ] T032 [US3] Implement `createTimeBlock` / `deleteTimeBlock` (surface `CONFLICT` on overlap with active appointments).
 - [ ] T033 [US3] Implement `resolveBlockConflict` (`keep` | `move` | `cancel`).
@@ -114,9 +114,9 @@ Single location: `apps/book/`.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [x] T037 [P] Seed mock data for the store (`apps/book/src/server/store.ts`).
+- [x] T037 [P] Seed mock data for the store (`apps/book/src/shared/infra/store.ts`).
 - [ ] T038 [P] Document the module in `apps/book/README.md` (roles, screens, commands, persistence deferred).
-- [ ] T039 [P] Add agenda pagination/windowing in `apps/book/src/features/appointments/queries.ts`.
+- [ ] T039 [P] Add agenda pagination/windowing in `apps/book/src/modules/agenda/utils/queries.ts`.
 - [x] T040 Run the `quickstart.md` validation: `npm run test -w @foundly/book`, `npm run lint`, `npm run build -w @foundly/book`.
 - [ ] T041 [P] (Optional) Add a Playwright E2E spec `apps/book/e2e/agenda.spec.ts`.
 
@@ -126,8 +126,8 @@ Single location: `apps/book/`.
 
 **Goal**: Replace the flat top bar with a persistent left sidebar that carries the brand, module navigation and the active user profile.
 
-- [x] T042 [US4] Refactor `apps/book/src/app/(admin)/components/AdminShell.tsx` into a persistent left `Drawer` (temporary on small viewports) with the brand logo header, primary/secondary navigation and the user profile footer.
-- [x] T043 [US4] Add the navigation model `apps/book/src/app/(admin)/components/navigation.ts` (Agenda, Servicios, Disponibilidad + Configuración, Ayuda/Soporte, Acerca de Foundly) using `@mui/icons-material` icons.
+- [x] T042 [US4] Refactor `apps/book/src/shared/components/AdminShell.tsx` into a persistent left `Drawer` (temporary on small viewports) with the brand logo header, primary/secondary navigation and the user profile footer.
+- [x] T043 [US4] Add the navigation model `apps/book/src/shared/components/AdminNavigation.ts` (Agenda, Servicios, Disponibilidad + Configuración, Ayuda/Soporte, Acerca de Foundly) using `@mui/icons-material` icons.
 - [x] T044 [US4] Add the Foundly Book branding assets (`apps/book/public/branding-logo.png`, `apps/book/public/icon.png`) and wire them with `next/image`.
 - [x] T045 [US4] Add the placeholder pages `configuracion`, `soporte` and `acerca` using `@foundly/ui` (`Card`, `Typography`).
 - [x] T046 [US4] Document the sidebar shell, iconography and branding in `spec.md`, `plan.md` and `research.md`.
@@ -138,8 +138,8 @@ Single location: `apps/book/`.
 
 **Goal**: Surgically upgrade the Services catalog and the Appointments agenda views inside the existing shell, keeping the shared Clean Light UI identity. Mutations for services and appointments remain pending (T024–T026); the views expose their entry points with explicit "próximamente" feedback.
 
-- [x] T047 [US4] Add the services-catalog header (right-aligned pill "+ Crear servicio" in primary `#6C5CE7`), a quick name-search bar over the table and a right-aligned 'Acciones' column (Editar/Eliminar pill buttons with Modal/AlertDialog feedback while the mutations are pending) to `apps/book/src/features/services/components/ServiceCatalog.tsx`; render the tariff as a `Badge` and use dense rows.
-- [x] T048 [US4] Add the agenda header (pill "+ Nueva cita"), a day selector ("Hoy" + 6 days) and a status filter (Todas/Pendientes/Confirmadas/Completadas/Canceladas), token-mapped semantic status badges, an 'Acciones' column ("Detalles") and new-appointment/detail mock modals to `apps/book/src/features/appointments/components/Agenda.tsx`; enrich `apps/book/src/app/admin/agenda/page.tsx` to resolve service/resource names and client contact per appointment.
+- [x] T047 [US4] Add the services-catalog header (right-aligned pill "+ Crear servicio" in primary `#6C5CE7`), a quick name-search bar over the table and a right-aligned 'Acciones' column (Editar/Eliminar pill buttons with Modal/AlertDialog feedback while the mutations are pending) to `apps/book/src/modules/services/components/ServiceCatalog.tsx`; render the tariff as a `Badge` and use dense rows.
+- [x] T048 [US4] Add the agenda header (pill "+ Nueva cita"), a day selector ("Hoy" + 6 days) and a status filter (Todas/Pendientes/Confirmadas/Completadas/Canceladas), token-mapped semantic status badges, an 'Acciones' column ("Detalles") and new-appointment/detail mock modals to `apps/book/src/modules/agenda/components/Agenda.tsx`; enrich `apps/book/src/app/admin/agenda/page.tsx` to resolve service/resource names and client contact per appointment.
 - [x] T049 [P] [US4] Extend `ServiceCatalog.test.tsx` and `Agenda.test.tsx` (search, status filters, modals, `vitest-axe`) and document the view experience in `spec.md`, `tasks.md` and `contracts/admin-views.contract.md`.
 
 ---
@@ -151,10 +151,10 @@ mini-sitio (`003-public-portal-minisite`): the professionals, the photo gallery 
 profile/contact. All views consume the same in-memory seam as `getPublicBusiness`, so edits reflect
 in `/book/<slug>`.
 
-- [x] T050 [US4] Add the Equipo/Galería/Perfil options to `apps/book/src/app/admin/components/navigation.ts` (icons `Groups`, `PhotoLibrary`, `Storefront`) and the placeholder-free pages `apps/book/src/app/admin/staff/page.tsx`, `gallery/page.tsx`, `profile/page.tsx`.
-- [x] T051 [US4] Implement the storefront feature (`apps/book/src/features/storefront/`): Zod schemas, tenant-scoped mutations (`createStaff`/`updateStaff`/`setStaffActive`/`removeStaff`, `updateProfile`, `addGalleryImage`/`removeGalleryImage`) and read helpers, all authorizing the admin session from the Foundly Pass seam.
-- [x] T052 [P] [US4] Implement the `StaffManager` view (`Card` + `DataTable` + `Badge` + `Modal` + `AlertDialog`) in `apps/book/src/features/storefront/components/StaffManager.tsx` using `@foundly/ui`.
-- [x] T053 [P] [US4] Implement the `GalleryManager` and `ProfileEditor` views in `apps/book/src/features/storefront/components/` using `@foundly/ui`.
+- [x] T050 [US4] Add the Equipo/Galería/Perfil options to `apps/book/src/shared/components/AdminNavigation.ts` (icons `Groups`, `PhotoLibrary`, `Storefront`) and the placeholder-free pages `apps/book/src/app/admin/staff/page.tsx`, `gallery/page.tsx`, `profile/page.tsx`.
+- [x] T051 [US4] Implement the storefront feature (`apps/book/src/modules/{staff,gallery,profile}/`): Zod schemas, tenant-scoped mutations (`createStaff`/`updateStaff`/`setStaffActive`/`removeStaff`, `updateProfile`, `addGalleryImage`/`removeGalleryImage`) and read helpers, all authorizing the admin session from the Foundly Pass seam.
+- [x] T052 [P] [US4] Implement the `StaffManager` view (`Card` + `DataTable` + `Badge` + `Modal` + `AlertDialog`) in `apps/book/src/modules/staff/components/StaffManager.tsx` using `@foundly/ui`.
+- [x] T053 [P] [US4] Implement the `GalleryManager` and `ProfileEditor` views in `apps/book/src/modules/{staff,gallery,profile}/components/` using `@foundly/ui`.
 - [x] T054 [P] [US4] Write component + action tests (`actions.test.ts`, `StaffManager.test.tsx`, `GalleryManager.test.tsx`, `ProfileEditor.test.tsx`): CRUD, duplicate/validation rejection and public-portal reflection.
 - [x] T055 [US4] Document the storefront admin surface in `contracts/admin-views.contract.md`, `contracts/storefront.contract.md`, `spec.md`, `tasks.md` and `apps/book/README.md`.
 
@@ -186,7 +186,7 @@ in `/book/<slug>`.
 ## Notes
 
 - [P] tasks touch different files and have no incomplete dependencies.
-- Domain logic (`apps/book/src/domain`) stays free of React/Next/MUI/storage imports (constraint C2).
+- Domain logic (`apps/book/src/shared`) stays free of React/Next/MUI/storage imports (constraint C2).
 - All views use `@foundly/ui` exclusively (constraint C1).
 - Persistence is **not defined** (constraint C3): only the store seam may be swapped.
 - This feature lives in the `book` domain: `specs/book/001-book-admin-panel/`.

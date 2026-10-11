@@ -100,12 +100,12 @@ As a prospective customer, I want an informative page that explains what Foundly
 
 The module MUST expose four distinct surfaces, mapped onto the ecosystem's single-domain multi-zone deployment:
 
-| Surface                | Public path (through the gateway) | Purpose                                                                 |
-| ---------------------- | --------------------------------- | ----------------------------------------------------------------------- |
-| Product page           | `/book`                           | Informative page about Foundly Book, its capabilities and the register CTA |
-| Onboarding wizard      | `/book/onboarding`                | Step-by-step creation of a business and its owner account               |
-| Private dashboard      | `/book/admin/*`                   | Authenticated workspace (agenda, services, availability) inside the Drawer shell |
-| Public booking portal  | `/book/[tenantSlug]`              | Client-facing page where final clients book appointments                |
+| Surface               | Public path (through the gateway) | Purpose                                                                          |
+| --------------------- | --------------------------------- | -------------------------------------------------------------------------------- |
+| Product page          | `/book`                           | Informative page about Foundly Book, its capabilities and the register CTA       |
+| Onboarding wizard     | `/book/onboarding`                | Step-by-step creation of a business and its owner account                        |
+| Private dashboard     | `/book/admin/*`                   | Authenticated workspace (agenda, services, availability) inside the Drawer shell |
+| Public booking portal | `/book/[tenantSlug]`              | Client-facing page where final clients book appointments                         |
 
 All four surfaces MUST render over the module's continuous brand canvas (`004-book-brand-canvas`): the root layout applies the shared lavender-to-white gradient, and no surface wrapper (product page, wizard, admin shell, portal) MAY paint an opaque full-screen background that hides it.
 
