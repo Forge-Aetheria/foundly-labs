@@ -6,6 +6,10 @@
   "types": "./src/index.ts",
   "scripts": {
     "generate": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

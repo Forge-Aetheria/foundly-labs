@@ -104,3 +104,42 @@ npm run test -w @foundly/api    # test gate
 npm run dev -w @foundly/api     # dev server (puerto 3002 / PORT; GraphQL en /graphql)
 npm run generate -w @foundly/database  # prisma generate (cliente DB-First)
 ```
+
+## Database Operations
+
+The database layer (`@foundly/database`) is Prisma + PostgreSQL (Supabase). From the repo root,
+use the delegated workspaces scripts — no need to `cd` into the package or pass `--schema`:
+
+| Command              | Description                                          |
+| -------------------- | ---------------------------------------------------- |
+| `npm run db:generate` | Regenerate the Prisma Client from the schema         |
+| `npm run db:migrate`  | Create and apply a migration (dev)                   |
+| `npm run db:push`     | Push the schema to the DB (no migration history)     |
+| `npm run db:studio`   | Open Prisma Studio to browse/explore the DB          |
+
+### Examples
+
+Run a new migration:
+
+```bash
+npm run db:migrate -- --name <migration_name>
+```
+
+Generate the Prisma Client:
+
+```bash
+npm run db:generate
+```
+
+Open Prisma Studio:
+
+```bash
+npm run db:studio
+```
+
+### Connection string
+
+The Prisma CLI reads `DATABASE_URL`. It is resolved from `packages/database/.env` (gitignored),
+which must match the `DATABASE_URL` in `apps/api/.env` used by the running API. In non-local
+environments (e.g. Vercel), set `DATABASE_URL` as a project environment variable; `db:migrate`
+forwards extra args (e.g. `--name`, `--create-only`, `--skip-generate`) to Prisma.

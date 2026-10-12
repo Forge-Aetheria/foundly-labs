@@ -11,6 +11,10 @@
     "preview": "npm run preview -w @foundly/landing",
     "check": "npm run check -w @foundly/landing",
     "astro": "npm run astro -w @foundly/landing",
+    "db:generate": "npm run db:generate -w @foundly/database",
+    "db:migrate": "npm run db:migrate -w @foundly/database --",
+    "db:push": "npm run db:push -w @foundly/database",
+    "db:studio": "npm run db:studio -w @foundly/database",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
