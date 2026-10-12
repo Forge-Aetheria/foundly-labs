@@ -38,7 +38,7 @@ describe('AuthService (unit, 006-foundly-pass-auth)', () => {
       role: 'owner',
     });
     const [payload, sig] = token.split('.');
-    const tampered = (payload?.slice(0, -1) ?? '') + (payload?.at(-1) === 'A' ? 'B' : 'A');
+    const tampered = (payload?.[0] === 'A' ? 'B' : 'A') + (payload?.slice(1) ?? '');
     expect(() => service.verifySession(`${tampered}.${sig}`)).toThrowError(
       expect.objectContaining({ extensions: { code: 'UNAUTHENTICATED' } }),
     );
@@ -51,7 +51,7 @@ describe('AuthService (unit, 006-foundly-pass-auth)', () => {
       role: 'owner',
     });
     const [payload, sig] = token.split('.');
-    const tampered = (sig?.slice(0, -1) ?? '') + (sig?.at(-1) === 'A' ? 'B' : 'A');
+    const tampered = (sig?.[0] === 'A' ? 'B' : 'A') + (sig?.slice(1) ?? '');
     expect(() => service.verifySession(`${payload}.${tampered}`)).toThrowError(
       expect.objectContaining({ extensions: { code: 'UNAUTHENTICATED' } }),
     );

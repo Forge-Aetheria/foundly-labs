@@ -4,6 +4,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { join } from 'node:path';
 import { AppController } from './app.controller';
 import { HealthResolver } from './health/health.resolver';
+import { createContext } from './graphql/context';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { ServicesModule } from './modules/services/services.module';
 import { SpecialistsModule } from './modules/specialists/specialists.module';
@@ -21,6 +22,7 @@ const isProduction = process.env.NODE_ENV === 'production';
       autoSchemaFile: join(process.cwd(), 'src', 'schema.gql'),
       playground: !isProduction,
       introspection: !isProduction,
+      context: createContext,
     }),
     SharedPrismaModule,
     TenantsModule,
