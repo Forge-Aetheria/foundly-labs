@@ -1,6 +1,8 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { AuthUser as AuthUserDecorator, RequireAuth } from '../auth/jwt.decorators';
+import type { AuthUser } from '../auth/jwt.types';
 import { TenantsService } from './tenants.service';
-import { CreateTenantInput, TenantObject } from './tenants.types';
+import { CreateTenantInput, TenantObject, UpdateBusinessProfileInput } from './tenants.types';
 
 @Resolver(() => TenantObject)
 export class TenantsResolver {
@@ -19,5 +21,15 @@ export class TenantsResolver {
   @Mutation(() => TenantObject)
   createTenant(@Args('input') input: CreateTenantInput): Promise<TenantObject> {
     return this.tenantsService.create(input);
+  }
+
+  /** Update the authenticated owner's business identity + profile (feature 013). */
+  @Mutation(() => TenantObject)
+  @RequireAuth()
+  updateMyBusinessProfile(
+    @AuthUserDecorator() user: AuthUser,
+    @Args('input', { type: () => UpdateBusinessProfileInput }) input: UpdateBusinessProfileInput,
+  ): Promise<TenantObject> {
+    return this.tenantsService.updateProfile(user, input);
   }
 }

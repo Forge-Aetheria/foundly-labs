@@ -28,6 +28,7 @@ model Tenant {
   appointments Appointment[]
   gallery      GalleryPhoto[]
   availability Availability[]
+  reviews      Review[]
 }
 
 model BusinessProfile {
@@ -148,4 +149,17 @@ model GalleryPhoto {
   createdAt   DateTime @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  tenantId  String
+  author    String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, createdAt])
 }

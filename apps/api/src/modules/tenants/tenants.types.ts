@@ -32,8 +32,8 @@ export class BusinessProfileObject {
   @Field(() => String, { nullable: true })
   brandColors?: string | null;
 
-  @Field(() => String, { nullable: true })
-  policies?: string | null;
+  @Field(() => [PortalPolicyObject])
+  policies!: PortalPolicyObject[];
 }
 
 @ObjectType()
@@ -139,4 +139,66 @@ export class CreateTenantInput {
 
   @Field(() => BusinessProfileInput)
   profile!: BusinessProfileInput;
+}
+
+/** A reservation/cancellation policy exposed on the public profile (feature 013). */
+@ObjectType()
+export class PortalPolicyObject {
+  @Field(() => String)
+  title!: string;
+
+  @Field(() => String)
+  body!: string;
+}
+
+/** A reservation/cancellation policy submitted by the profile editor (feature 013). */
+@InputType()
+export class BusinessPolicyInput {
+  @Field(() => String)
+  title!: string;
+
+  @Field(() => String)
+  body!: string;
+
+  constructor() {
+    this.title = '';
+    this.body = '';
+  }
+}
+
+/** Partial update of the business identity + profile (feature 013). */
+@InputType()
+export class UpdateBusinessProfileInput {
+  @Field(() => String, { nullable: true })
+  name?: string | null;
+
+  @Field(() => String, { nullable: true })
+  category?: string | null;
+
+  @Field(() => String, { nullable: true })
+  slug?: string | null;
+
+  @Field(() => String, { nullable: true })
+  bio?: string | null;
+
+  @Field(() => String, { nullable: true })
+  address?: string | null;
+
+  @Field(() => String, { nullable: true })
+  phone?: string | null;
+
+  @Field(() => String, { nullable: true })
+  instagram?: string | null;
+
+  @Field(() => String, { nullable: true })
+  whatsapp?: string | null;
+
+  @Field(() => String, { nullable: true })
+  logo?: string | null;
+
+  @Field(() => String, { nullable: true })
+  cover?: string | null;
+
+  @Field(() => [BusinessPolicyInput], { nullable: true })
+  policies?: BusinessPolicyInput[] | null;
 }
