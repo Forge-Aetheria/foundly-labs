@@ -1,5 +1,5 @@
 import { AvailabilityEditor } from './components/AvailabilityEditor';
-import { listAvailabilityRules, listTimeBlocks } from './utils/queries';
+import { listAvailabilityRules, listTimeBlocks } from './actions';
 import { getAdminTenantId } from '../../shared/tenancy/queries';
 
 /** Availability module view (server): rules + time blocks for the tenant. */

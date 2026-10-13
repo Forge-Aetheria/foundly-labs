@@ -20,7 +20,7 @@ import {
   PRIMARY_BUTTON_SX,
   SECONDARY_BUTTON_SX,
 } from '../../../shared/utils/landingCanon';
-import { createStaff, removeStaff, setStaffActive, updateStaff } from '../utils/actions';
+import { useCreateStaff, useRemoveStaff, useSetStaffActive, useUpdateStaff } from '../hooks';
 
 export interface StaffManagerProps {
   staff: Resource[];
@@ -102,6 +102,10 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const createStaff = useCreateStaff();
+  const updateStaff = useUpdateStaff();
+  const setStaffActive = useSetStaffActive();
+  const removeStaff = useRemoveStaff();
 
   /** Transient (network/config) failures surface as a non-destructive banner. */
   function handleActionFailure(result: {

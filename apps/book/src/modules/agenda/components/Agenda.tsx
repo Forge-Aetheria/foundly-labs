@@ -15,7 +15,7 @@ import {
   type DataTableColumn,
 } from '@foundly/ui';
 import type { Appointment, Resource, Service } from '../../../shared/types/appointments';
-import { createAppointment } from '../utils/actions';
+import { useCreateAppointment } from '../hooks';
 
 export interface AgendaRow {
   id: string;
@@ -84,6 +84,7 @@ type ModalState = { kind: 'create' } | { kind: 'detail'; row: AgendaRow } | null
 
 /** Agenda view: header + day/status filters + appointments table (Clean Light UI). */
 export function Agenda({ appointments, services = [], resources = [], error }: AgendaProps) {
+  const createAppointment = useCreateAppointment();
   const [rows, setRows] = useState<AgendaRow[]>(appointments);
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

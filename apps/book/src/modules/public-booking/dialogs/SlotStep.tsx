@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Stack, Typography } from '@foundly/ui';
 import { PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from '../../../shared/utils/landingCanon';
-import { fetchOfferedSlots, type SlotDay } from '../utils/actions';
+import type { SlotDay } from '../actions';
+import { useFetchOfferedSlots } from '../hooks';
 import { formatDayKey, formatTimeLabel } from '../../../shared/utils/format';
 
 function dateKey(date: Date): string {
@@ -34,6 +35,7 @@ export function SlotStep({
   const [mounted, setMounted] = useState(false);
   const [date, setDate] = useState<string>(() => dateKey(new Date()));
   const [daysData, setDaysData] = useState<SlotDay[]>([]);
+  const fetchSlots = useFetchOfferedSlots();
 
   useEffect(() => {
     setMounted(true);
@@ -51,7 +53,7 @@ export function SlotStep({
     if (!mounted) return;
     let cancelled = false;
     void (async () => {
-      const result = await fetchOfferedSlots({
+      const result = await fetchSlots({
         tenantSlug,
         serviceId,
         resourceId,

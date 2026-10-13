@@ -18,7 +18,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
-import { signOut } from '../infra/sessionActions';
+import { useSignOut } from '../../modules/auth/hooks';
 import { PRIMARY_NAV, SECONDARY_NAV, type AdminNavItem } from './AdminNavigation';
 
 /** Width of the persistent sidebar, shared by the drawer and the content offset. */
@@ -260,6 +260,7 @@ function PublicPageLink({ href, onNavigate }: { href: string; onNavigate?: () =>
 }
 
 function UserFooter({ tenantName }: { tenantName?: string }) {
+  const signOut = useSignOut();
   return (
     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 2.5, py: 2 }}>
       <Avatar

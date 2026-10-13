@@ -14,6 +14,7 @@ export default [
       '**/build/',
       '**/.next/',
       '**/next-env.d.ts',
+      '**/src/shared/api/generated.ts',
     ],
   },
   js.configs.recommended,

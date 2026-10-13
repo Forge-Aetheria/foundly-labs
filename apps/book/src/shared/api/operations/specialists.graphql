@@ -1,0 +1,33 @@
+# Public specialists operations — feature 011.
+
+query Specialists($tenantId: String, $tenantSlug: String) {
+  specialists(tenantId: $tenantId, tenantSlug: $tenantSlug) {
+    id
+    tenantId
+    name
+    role
+    avatar
+    bio
+    active
+    services {
+      id
+      name
+    }
+  }
+}
+
+query ServiceSpecialists($serviceId: String!) {
+  serviceSpecialists(serviceId: $serviceId) {
+    id
+    tenantId
+    name
+    role
+    avatar
+    bio
+    active
+    services {
+      id
+      name
+    }
+  }
+}

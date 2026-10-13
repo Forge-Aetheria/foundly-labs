@@ -1,6 +1,6 @@
 import { StaffManager } from './components/StaffManager';
-import { listStaff } from './utils/queries';
-import { listServices } from '../services/utils/queries';
+import { listStaff } from './actions';
+import { listServices } from '../services/actions';
 import { getAdminTenantId } from '../../shared/tenancy/queries';
 
 /** Staff module view (server): roster + tenant catalog for the editor. */

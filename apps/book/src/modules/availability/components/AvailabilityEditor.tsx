@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Badge, Button, Card, Chip, Stack, TextField, Typography } from '@foundly/ui';
 import type { AvailabilityRule, TimeBlock } from '../../../shared/types/appointments';
-import { saveWeeklyAvailability } from '../utils/actions';
+import { useSaveAvailability } from '../hooks';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -50,6 +50,7 @@ export interface AvailabilityEditorProps {
 
 /** Weekly availability editor: day toggles, time ranges and breaks (Clean Light UI). */
 export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorProps) {
+  const saveAvailability = useSaveAvailability();
   const [days, setDays] = useState<DayConfig[]>(() => initialDays(rules));
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -68,7 +69,7 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
   async function save() {
     setSaving(true);
     setSaveError(null);
-    const result = await saveWeeklyAvailability({
+    const result = await saveAvailability({
       days: days.map((day) => ({
         weekday: day.weekday,
         isOpen: day.isOpen,

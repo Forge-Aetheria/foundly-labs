@@ -1,17 +1,18 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 5.0.1 -> 5.1.0
-Bump rationale: Enmienda 5.1.0 (MINOR): adición material de un principio no negociable. Se
-  incorpora el Principio 5.V "Frontera Server/Client (React Server Components)" para prohibir que
-  los Server Components de `apps/book` y `apps/store` envíen valores no serializables (funciones:
-  `sx`-función, handlers, render props) a Client Components, causa del error "Functions cannot be
-  passed directly to Client Components". Este documento es un ESPEJO de la constitución canónica
-  de la raíz (`constitution.md` v5.1.0) y debe mantenerse sincronizado con ella.
+Version change: 5.1.0 -> 5.2.0
+Bump rationale: Enmienda 5.2.0 (MINOR): adición material de un principio no negociable. Se
+  incorpora el Principio 5.VI "Capa de Datos por Módulo y Hooks de Cliente" (`apps/book`/`apps/store`):
+  estructura canónica por módulo (`actions.ts`/`hooks.ts`/`components/`), nomenclatura
+  `use<Acción><Entidad|Módulo>`, tipado exclusivo vía `graphql-codegen` (`generated.ts`) y prohibición
+  de llamadas a datos (`useQuery`/`useMutation`/`apiRequest`/Server Actions) en la UI. Declara
+  `shared/infra` deprecada y en disolución. Este documento es un ESPEJO de la constitución canónica de
+  la raíz (`constitution.md` v5.2.0) y debe mantenerse sincronizado con ella.
 
 Modified principles: N/A
 Renamed principles: N/A
-Added sections: 5.V Frontera Server/Client (React Server Components)
+Added sections: 5.VI Capa de Datos por Módulo y Hooks de Cliente
 Removed sections: N/A
 
 Deferred TODOs:
@@ -21,7 +22,7 @@ Deferred TODOs:
 
 # Foundly Labs — Constitución de Desarrollo
 
-**Versión:** 5.1.0
+**Versión:** 5.2.0
 **Estado:** Binding
 **Ámbito:** Monorepo del ecosistema Foundly Labs (landing, book, store)
 **Stack Base:** Astro 5 (SSG, Server-First Islands) · Next.js / React 19 (SaaS) · Tailwind CSS v4 · TypeScript estricto
@@ -216,6 +217,31 @@ Aplica a `apps/book` y `apps/store` (Next.js App Router, React 19).
 - Si se requiere interacción o un `sx` dinámico con callback, el componente que lo declara DEBE ser `'use client'` y consumirse desde otro cliente.
 - Detalle operativo, ejemplos y verificación: `code-rules.md` §8.
 
+### VI. Capa de Datos por Módulo y Hooks de Cliente (apps/book, apps/store)
+
+Aplica a `apps/book` y `apps/store`. La lógica de datos de cada módulo de dominio DEBE vivir dentro de su propio módulo (`src/modules/<modulo>/`), nunca dispersa en la UI ni en `shared/infra`.
+
+**Estructura canónica de un módulo con datos:**
+
+```text
+src/modules/<modulo>/
+├── actions.ts     # Funciones de servidor: lecturas (fetches) y Server Actions
+├── hooks.ts       # Hooks de cliente que envuelven las interacciones
+├── components/    # Vistas y componentes de UI
+├── dialogs/       # (cuando aplique) flujos modales
+├── utils/         # Helpers puros, schemas, mappers
+├── tests/
+└── <Modulo>View.tsx
+```
+
+- **`actions.ts`**: única puerta de acceso a la API para el módulo. Contiene las funciones de servidor (lecturas y Server Actions). Los Server Components las consumen para el render inicial.
+- **`hooks.ts`**: hooks de cliente (`'use client'`), único punto desde el que los componentes interactivos disparan acciones. Envuelven las Server Actions de `actions.ts`.
+- **Prohibición en UI**: los componentes/vistas (cualquier `components/`, `dialogs/` o `<Modulo>View`) NO pueden llamar directamente a `useQuery`, `useMutation`, `apiRequest` ni a Server Actions. Toda interacción pasa por un hook de `hooks.ts`.
+- **Nomenclatura obligatoria**: `use<Acción><Entidad|Módulo>` (p. ej. `useFetchProfile`, `useCreateService`, `useUpdateAvailability`, `useCancelAppointment`).
+- **Tipado por codegen**: `actions.ts`/`hooks.ts` DEBEN usar exclusivamente los documentos y tipos autogenerados por `graphql-codegen` (`generated.ts`). Se prohíbe declarar DTOs o tipos manuales del contrato GraphQL.
+- **Coherencia con Server-First (§5.II)**: las lecturas de render se resuelven en Server Components a través de `actions.ts`; `hooks.ts` existe para la interacción real de cliente (formularios, tablas, modales), nunca para reemplazar el render en servidor.
+- **`shared/infra` deprecada y en disolución**: no puede alojar lógica de dominio ni acciones de servidor. Todo archivo de acciones/fetch de un dominio DEBE residir en el `actions.ts` de su módulo. Su contenido transversal se reubica en carpetas de propósito claro (`shared/api/`, `shared/types/`, `shared/auth/`) y `shared/infra/` DEBE eliminarse. Plan de migración: `specs/book/011-module-data-layer/`.
+
 ## 6. Guía de Diseño, Estética & Sistema de Tokens (Clean Light UI)
 
 La interfaz hereda la línea de diseño limpia, clara y de alto contraste de Foundly POS, proyectando una marca unificada (Lavender-to-White Body) en todas las apps.
@@ -295,6 +321,8 @@ Estas rutas son las canónicas; cualquier documento que use otras rutas debe cor
 | Rutas App Router (Next)       | `apps/{book,store}/src/app/`                                         | kebab-case (`.tsx`)     |
 | Vistas de módulo (Next)       | `apps/{book,store}/src/modules/<modulo>/<Modulo>View.tsx`            | PascalCase (`.tsx`)     |
 | Módulos de dominio (Next)     | `apps/{book,store}/src/modules/<modulo>/`                            | kebab-case              |
+| Acciones de servidor (Next)   | `apps/{book,store}/src/modules/<modulo>/actions.ts`                  | camelCase (`.ts`)       |
+| Hooks de cliente (Next)       | `apps/{book,store}/src/modules/<modulo>/hooks.ts`                    | `use*` (`.ts`)          |
 | Código compartido (Next)      | `apps/{book,store}/src/shared/`                                      | kebab-case / PascalCase |
 | Componentes compartidos       | `packages/ui/`                                                       | PascalCase              |
 | Configuración compartida      | `packages/config/`                                                   | kebab-case              |
@@ -331,4 +359,7 @@ Estas rutas son las canónicas; cualquier documento que use otras rutas debe cor
 
 Foundly Labs Constitution — "Local-First, Agile Commerce, Zero Compromise."
 
-**Version**: 5.1.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-12
+**Version**: 5.2.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-12
+
+*Enmienda 2026-10-12 (MINOR 5.1.0 → 5.2.0): Principio 5.VI "Capa de Datos por Módulo y Hooks de
+Cliente" y disolución de `shared/infra`. Plan de migración en `specs/book/011-module-data-layer/`.*

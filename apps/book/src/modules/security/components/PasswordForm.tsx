@@ -2,10 +2,11 @@
 
 import { useState, type FormEvent } from 'react';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
-import { changePassword } from '../../../shared/infra/securityActions';
+import { useChangePassword } from '../hooks';
 
-/** Password change form (feature 009 — US5). Calls the `changePassword` action. */
+/** Password change form (feature 009 — US5). Interacts through `useChangePassword`. */
 export function PasswordForm() {
+  const changePassword = useChangePassword();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

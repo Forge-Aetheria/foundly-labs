@@ -18,9 +18,9 @@ const { fetchSlotsMock, bookMock } = vi.hoisted(() => ({
   bookMock: vi.fn(async (): Promise<BookResult> => ({ ok: true, data: { id: 'a-online-1' } })),
 }));
 
-vi.mock('../utils/actions', () => ({
-  fetchOfferedSlots: fetchSlotsMock,
-  bookPublicAppointment: bookMock,
+vi.mock('../hooks', () => ({
+  useFetchOfferedSlots: () => fetchSlotsMock,
+  useBookAppointment: () => bookMock,
 }));
 
 const service: PublicService = {

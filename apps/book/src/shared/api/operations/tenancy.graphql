@@ -1,0 +1,73 @@
+# Tenancy operations — feature 008 (tenancy.contract.md).
+
+query TenantBySlug($slug: String!) {
+  tenant(slug: $slug) {
+    id
+    name
+    category
+    status
+    timezone
+    currency
+    profile {
+      slug
+      bio
+      address
+      phone
+      instagram
+      whatsapp
+      logo
+      cover
+    }
+    services {
+      id
+      name
+      description
+      durationMinutes
+      priceCents
+      currency
+      category
+      active
+    }
+  }
+}
+
+query Tenants {
+  tenants {
+    id
+    name
+    category
+    status
+    timezone
+    currency
+    profile {
+      slug
+      bio
+      address
+      phone
+      instagram
+      whatsapp
+      logo
+      cover
+    }
+    services {
+      id
+      name
+      description
+      durationMinutes
+      priceCents
+      currency
+      category
+      active
+    }
+  }
+}
+
+mutation CreateTenant($input: CreateTenantInput!) {
+  createTenant(input: $input) {
+    id
+    status
+    profile {
+      slug
+    }
+  }
+}

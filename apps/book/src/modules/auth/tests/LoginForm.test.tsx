@@ -13,7 +13,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock, refresh: refreshMock }),
 }));
 
-vi.mock('../../../shared/infra/sessionActions', () => ({ signIn: signInMock }));
+vi.mock('../hooks', () => ({ useSignIn: () => signInMock }));
 
 import { LoginForm } from '../components/LoginForm';
 

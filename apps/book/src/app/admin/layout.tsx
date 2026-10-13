@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { resolveTenantSession } from '../../shared/infra/authServer';
+import { resolveTenantSession } from '../../shared/auth/authServer';
 import { getCurrentTenant } from '../../shared/tenancy/queries';
 import { AdminShell } from '../../shared/components/AdminShell';
-import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '../../shared/infra/authConstants';
+import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '../../shared/auth/authConstants';
 
 /**
  * Private workspace: session/tenant guard (FR-016, feature 009 — US2) + shared

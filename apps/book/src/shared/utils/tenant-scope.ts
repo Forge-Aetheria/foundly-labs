@@ -1,6 +1,6 @@
-import { requireRole, requireTenant, type Session } from '../infra/auth';
-import { getEffectiveSession } from '../infra/authServer';
-import { ok, type ActionResult } from '../infra/result';
+import { requireRole, requireTenant, type Session } from '../auth/auth';
+import { getEffectiveSession } from '../auth/authServer';
+import { ok, type ActionResult } from '../types/result';
 
 /**
  * Resolve the acting admin's tenant from the live session (feature 010 — the

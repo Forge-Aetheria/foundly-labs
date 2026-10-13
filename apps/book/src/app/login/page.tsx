@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { LoginView } from '../../modules/auth/LoginView';
-import { getEffectiveSession } from '../../shared/infra/authServer';
-import { POST_LOGIN_ROUTE } from '../../shared/infra/authConstants';
+import { getEffectiveSession } from '../../shared/auth/authServer';
+import { POST_LOGIN_ROUTE } from '../../shared/auth/authConstants';
 
 /** Sign-in route (public `/book/login`). Signed-in users are sent to the panel. */
 export default async function LoginPage() {

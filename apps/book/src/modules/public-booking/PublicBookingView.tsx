@@ -1,6 +1,6 @@
 import { PublicPortal } from './components/PublicPortal';
 import { UnavailablePanel } from './components/UnavailablePanel';
-import { getPublicBusinessRemote } from './utils/queries';
+import { getPublicBusinessRemote } from './actions';
 
 /** Public mini-site view (server): resolves a tenant slug and renders its portal. */
 export async function PublicBookingView({ slug }: { slug: string }) {

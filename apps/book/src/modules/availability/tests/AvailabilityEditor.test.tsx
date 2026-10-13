@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import { AvailabilityEditor } from '../components/AvailabilityEditor';
 
-vi.mock('../utils/actions', () => ({
-  saveWeeklyAvailability: vi.fn(async () => ({ ok: true, data: { updated: true } })),
+vi.mock('../hooks', () => ({
+  useSaveAvailability: () => vi.fn(async () => ({ ok: true, data: { updated: true } })),
 }));
 
 const rules = [

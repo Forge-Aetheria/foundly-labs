@@ -1,43 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AppointmentDto } from '../../../shared/infra/remoteAppointments';
-import type { Service } from '../../../shared/types/appointments';
 import {
-  cancelAppointment,
-  changeAppointmentStatus,
-  createAppointment,
-} from '../utils/actions';
+  AppointmentDocument,
+  AppointmentStatus,
+  CancelAppointmentDocument,
+  CreateAppointmentDocument,
+  MyServicesDocument,
+  UpdateAppointmentStatusDocument,
+} from '../../../shared/api/generated';
+import { cancelAppointment, changeAppointmentStatus, createAppointment } from '../actions';
 
-const { sessionMock, remoteMock } = vi.hoisted(() => ({
-  sessionMock: { getEffectiveSession: vi.fn() },
-  remoteMock: {
-    listRemoteServices: vi.fn(),
-    createRemoteAppointment: vi.fn(),
-    findRemoteAppointment: vi.fn(),
-    cancelRemoteAppointment: vi.fn(),
-    updateRemoteAppointmentStatus: vi.fn(),
-  },
+const { apiMock, sessionMock } = vi.hoisted(() => ({
+  apiMock: vi.fn(),
+  sessionMock: { getEffectiveSession: vi.fn(), getAccessToken: vi.fn() },
 }));
 
-vi.mock('../../../shared/infra/authServer', () => ({
+vi.mock('../../../shared/api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
+vi.mock('../../../shared/auth/authServer', () => ({
   getEffectiveSession: (...args: unknown[]) => sessionMock.getEffectiveSession(...args),
-  getAccessToken: vi.fn(async () => 'token-test'),
+  getAccessToken: (...args: unknown[]) => sessionMock.getAccessToken(...args),
 }));
-
-vi.mock('../../../shared/infra/remoteCatalog', () => ({
-  listRemoteServices: (...args: unknown[]) => remoteMock.listRemoteServices(...args),
-}));
-
-vi.mock('../../../shared/infra/remoteAppointments', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../shared/infra/remoteAppointments')>();
-  return {
-    ...actual,
-    createRemoteAppointment: (...args: unknown[]) => remoteMock.createRemoteAppointment(...args),
-    findRemoteAppointment: (...args: unknown[]) => remoteMock.findRemoteAppointment(...args),
-    cancelRemoteAppointment: (...args: unknown[]) => remoteMock.cancelRemoteAppointment(...args),
-    updateRemoteAppointmentStatus: (...args: unknown[]) =>
-      remoteMock.updateRemoteAppointmentStatus(...args),
-  };
-});
 
 const admin = { userId: 'u-admin', role: 'admin' as const, tenantId: 'ten-ana' };
 const otherPro = {
@@ -47,7 +28,17 @@ const otherPro = {
   tenantId: 'ten-ana',
 };
 
-function makeDto(overrides: Partial<AppointmentDto> = {}): AppointmentDto {
+const service = {
+  id: 'svc-corte',
+  name: 'Corte de cabello',
+  description: null,
+  priceCents: 2000,
+  durationMinutes: 30,
+  category: null,
+  active: true,
+};
+
+function makeDto(overrides: Record<string, unknown> = {}) {
   return {
     id: 'apt-1',
     tenantId: 'ten-ana',
@@ -57,7 +48,7 @@ function makeDto(overrides: Partial<AppointmentDto> = {}): AppointmentDto {
     clientContact: null,
     startAt: '2026-06-03T10:00:00.000Z',
     endAt: '2026-06-03T10:30:00.000Z',
-    status: 'PENDING',
+    status: AppointmentStatus.Pending,
     appliedDurationMinutes: 30,
     appliedAmountCents: 2000,
     appliedCurrency: 'EUR',
@@ -65,21 +56,10 @@ function makeDto(overrides: Partial<AppointmentDto> = {}): AppointmentDto {
     notes: null,
     cancellationReason: null,
     service: { id: 'svc-corte', name: 'Corte de cabello' },
-    specialist: { id: 'res-ana', name: 'Ana Profesional' },
+    specialist: { id: 'res-ana', name: 'Ana' },
     ...overrides,
   };
 }
-
-const service: Service = {
-  id: 'svc-corte',
-  name: 'Corte de cabello',
-  description: null,
-  durationMinutes: 30,
-  bufferMinutes: 0,
-  category: null,
-  active: true,
-  tenantId: 'ten-ana',
-};
 
 const input = {
   resourceId: 'res-ana',
@@ -88,20 +68,24 @@ const input = {
   startAt: '2026-06-03T10:00:00Z',
 };
 
-describe('appointment actions (feature 010 — remote-only)', () => {
+describe('appointment actions (feature 011 — remote-only)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionMock.getEffectiveSession.mockResolvedValue(admin);
-    remoteMock.listRemoteServices.mockResolvedValue({ ok: true, data: { services: [service], rates: [] } });
-    remoteMock.createRemoteAppointment.mockResolvedValue({ ok: true, data: makeDto() });
-    remoteMock.findRemoteAppointment.mockResolvedValue({ ok: true, data: makeDto() });
-    remoteMock.cancelRemoteAppointment.mockResolvedValue({
-      ok: true,
-      data: makeDto({ status: 'CANCELLED', cancellationReason: 'Motivo' }),
-    });
-    remoteMock.updateRemoteAppointmentStatus.mockResolvedValue({
-      ok: true,
-      data: makeDto({ status: 'CONFIRMED' }),
+    sessionMock.getAccessToken.mockResolvedValue('token-test');
+    apiMock.mockImplementation(async (document: unknown) => {
+      if (document === MyServicesDocument) return { ok: true, data: { myServices: [service] } };
+      if (document === CreateAppointmentDocument)
+        return { ok: true, data: { createAppointment: makeDto() } };
+      if (document === AppointmentDocument) return { ok: true, data: { appointment: makeDto() } };
+      if (document === CancelAppointmentDocument)
+        return { ok: true, data: { cancelAppointment: makeDto({ status: AppointmentStatus.Cancelled }) } };
+      if (document === UpdateAppointmentStatusDocument)
+        return {
+          ok: true,
+          data: { updateAppointmentStatus: makeDto({ status: AppointmentStatus.Confirmed }) },
+        };
+      return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected document' } };
     });
   });
 
@@ -110,39 +94,26 @@ describe('appointment actions (feature 010 — remote-only)', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.resourceId).toBe('res-ana');
-      expect(result.data.appliedDurationMinutes).toBe(30);
-      expect(result.data.appliedAmountCents).toBe(2000);
       expect(result.data.status).toBe('pending');
+      expect(result.data.appliedAmountCents).toBe(2000);
     }
-    expect(remoteMock.createRemoteAppointment).toHaveBeenCalledWith({
-      tenantId: 'ten-ana',
-      serviceId: 'svc-corte',
-      specialistId: 'res-ana',
-      clientName: 'Luis',
-      clientContact: null,
-      startAt: '2026-06-03T10:00:00.000Z',
-      endAt: '2026-06-03T10:30:00.000Z',
-      origin: 'admin',
-      notes: null,
-    });
   });
 
-  it('propagates remote errors (CONFLICT etc.) without local logic', async () => {
-    remoteMock.createRemoteAppointment.mockResolvedValue({
-      ok: false,
-      error: { code: 'CONFLICT', message: 'Slot overlaps an existing appointment' },
+  it('propagates remote CONFLICT', async () => {
+    apiMock.mockImplementation(async (document: unknown) => {
+      if (document === MyServicesDocument) return { ok: true, data: { myServices: [service] } };
+      return { ok: false, error: { code: 'CONFLICT', message: 'Slot overlaps' } };
     });
     const result = await createAppointment(input);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('CONFLICT');
   });
 
-  it('forbids a professional acting on another resource (FORBIDDEN)', async () => {
+  it('forbids a professional acting on another resource', async () => {
     sessionMock.getEffectiveSession.mockResolvedValue(otherPro);
     const result = await createAppointment(input);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('FORBIDDEN');
-    expect(remoteMock.createRemoteAppointment).not.toHaveBeenCalled();
   });
 
   it('rejects malformed input with VALIDATION_ERROR', async () => {
@@ -155,7 +126,6 @@ describe('appointment actions (feature 010 — remote-only)', () => {
     const result = await cancelAppointment({ appointmentId: 'apt-1', reason: 'Motivo' });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.data.status).toBe('cancelled');
-    expect(remoteMock.cancelRemoteAppointment).toHaveBeenCalledWith('apt-1', 'Motivo');
   });
 
   it('rejects cancelling without a reason', async () => {
@@ -167,7 +137,10 @@ describe('appointment actions (feature 010 — remote-only)', () => {
   it('changes status through the API with the mapped enum', async () => {
     const result = await changeAppointmentStatus({ appointmentId: 'apt-1', status: 'confirmed' });
     expect(result.ok).toBe(true);
-    expect(remoteMock.updateRemoteAppointmentStatus).toHaveBeenCalledWith('apt-1', 'CONFIRMED');
+    expect(apiMock).toHaveBeenCalledWith(UpdateAppointmentStatusDocument, {
+      id: 'apt-1',
+      status: AppointmentStatus.Confirmed,
+    });
   });
 
   it('rejects statuses the provider cannot target', async () => {

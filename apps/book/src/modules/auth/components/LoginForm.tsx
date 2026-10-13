@@ -3,11 +3,12 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
-import { signIn } from '../../../shared/infra/sessionActions';
+import { useSignIn } from '../hooks';
 
-/** Sign-in form (feature 009 — US1). Calls the `signIn` Server Action. */
+/** Sign-in form (feature 009 — US1). Interacts through `useSignIn`. */
 export function LoginForm() {
   const router = useRouter();
+  const signIn = useSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fields, setFields] = useState<Record<string, string>>({});

@@ -5,7 +5,7 @@ import { FoundlyThemeProvider } from '@foundly/ui';
 
 const { changePasswordMock } = vi.hoisted(() => ({ changePasswordMock: vi.fn() }));
 
-vi.mock('../../../shared/infra/securityActions', () => ({ changePassword: changePasswordMock }));
+vi.mock('../hooks', () => ({ useChangePassword: () => changePasswordMock }));
 
 import { PasswordForm } from '../components/PasswordForm';
 

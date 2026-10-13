@@ -1,5 +1,5 @@
 import { Badge, Stack } from '@foundly/ui';
-import { checkHealth } from '../infra/health';
+import { checkHealth } from '../api/health';
 
 /**
  * Dev-only connectivity indicator (feature 008 — US4). Server component;

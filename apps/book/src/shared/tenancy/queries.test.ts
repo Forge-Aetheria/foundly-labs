@@ -1,15 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Session } from '../infra/auth';
-import type { TenantDto } from '../infra/remoteTenancy';
+import type { Session } from '../auth/auth';
 import { getCurrentTenant } from './queries';
 
-const { fetchTenantByIdMock } = vi.hoisted(() => ({ fetchTenantByIdMock: vi.fn() }));
+const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));
 
-vi.mock('../infra/remoteTenancy', () => ({
-  fetchTenantById: (...args: unknown[]) => fetchTenantByIdMock(...args),
-}));
+vi.mock('../api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
 
-function makeTenantDto(id: string, slug: string): TenantDto {
+function makeTenant(id: string, slug: string) {
   return {
     id,
     name: `Negocio ${slug}`,
@@ -31,14 +28,14 @@ function makeTenantDto(id: string, slug: string): TenantDto {
   };
 }
 
-describe('tenancy queries (SC-008, contracts/routes.contract.md — server-only)', () => {
+describe('tenancy queries (feature 011 — server-only)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('returns the session tenant from the API', async () => {
-    fetchTenantByIdMock.mockResolvedValue({ ok: true, data: makeTenantDto('ten-ana', 'estudio-ana') });
-    const session: Session = { userId: 'u-owner-ana', role: 'admin', tenantId: 'ten-ana' };
+    apiMock.mockResolvedValue({ ok: true, data: { tenants: [makeTenant('ten-ana', 'estudio-ana')] } });
+    const session: Session = { userId: 'u', role: 'admin', tenantId: 'ten-ana' };
     const result = await getCurrentTenant(session);
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -48,36 +45,29 @@ describe('tenancy queries (SC-008, contracts/routes.contract.md — server-only)
   });
 
   it('scopes resolution to the bound tenant (cross-tenant isolation)', async () => {
-    fetchTenantByIdMock.mockImplementation(async (tenantId: string) =>
-      tenantId === 'ten-b'
-        ? { ok: true, data: makeTenantDto('ten-b', 'b-shop') }
-        : { ok: true, data: makeTenantDto('ten-ana', 'estudio-ana') },
-    );
-
-    const sessionA: Session = { userId: 'u-a', role: 'admin', tenantId: 'ten-ana' };
-    const sessionB: Session = { userId: 'u-b', role: 'admin', tenantId: 'ten-b' };
-
-    const a = await getCurrentTenant(sessionA);
-    const b = await getCurrentTenant(sessionB);
+    apiMock.mockResolvedValue({
+      ok: true,
+      data: { tenants: [makeTenant('ten-ana', 'estudio-ana'), makeTenant('ten-b', 'b-shop')] },
+    });
+    const a = await getCurrentTenant({ userId: 'a', role: 'admin', tenantId: 'ten-ana' });
+    const b = await getCurrentTenant({ userId: 'b', role: 'admin', tenantId: 'ten-b' });
     expect(a.ok && a.data.id).toBe('ten-ana');
     expect(b.ok && b.data.id).toBe('ten-b');
     expect(b.ok && b.data.slug).toBe('b-shop');
   });
 
   it('surfaces NOT_FOUND when the API has no tenant', async () => {
-    fetchTenantByIdMock.mockResolvedValue({ ok: true, data: null });
-    const session: Session = { userId: 'u-x', role: 'admin', tenantId: 'ten-missing' };
-    const result = await getCurrentTenant(session);
+    apiMock.mockResolvedValue({ ok: true, data: { tenants: [] } });
+    const result = await getCurrentTenant({ userId: 'x', role: 'admin', tenantId: 'ten-missing' });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('NOT_FOUND');
   });
 
   it('rejects sessions without a tenant', async () => {
-    const session: Session = { userId: 'u-x', role: 'admin' };
-    const result = await getCurrentTenant(session);
+    const result = await getCurrentTenant({ userId: 'x', role: 'admin' });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
-    expect(fetchTenantByIdMock).not.toHaveBeenCalled();
+    expect(apiMock).not.toHaveBeenCalled();
   });
 
   it('rejects null sessions', async () => {

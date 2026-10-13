@@ -1,0 +1,155 @@
+# Appointment operations — feature 011.
+
+query Appointments(
+  $tenantId: String
+  $tenantSlug: String
+  $startDate: String
+  $endDate: String
+  $specialistId: String
+  $status: AppointmentStatus
+) {
+  appointments(
+    tenantId: $tenantId
+    tenantSlug: $tenantSlug
+    startDate: $startDate
+    endDate: $endDate
+    specialistId: $specialistId
+    status: $status
+  ) {
+    id
+    tenantId
+    serviceId
+    specialistId
+    clientName
+    clientContact
+    startAt
+    endAt
+    status
+    appliedDurationMinutes
+    appliedAmountCents
+    appliedCurrency
+    origin
+    notes
+    cancellationReason
+    service {
+      id
+      name
+    }
+    specialist {
+      id
+      name
+    }
+  }
+}
+
+query Appointment($id: String!) {
+  appointment(id: $id) {
+    id
+    tenantId
+    serviceId
+    specialistId
+    clientName
+    clientContact
+    startAt
+    endAt
+    status
+    appliedDurationMinutes
+    appliedAmountCents
+    appliedCurrency
+    origin
+    notes
+    cancellationReason
+    service {
+      id
+      name
+    }
+    specialist {
+      id
+      name
+    }
+  }
+}
+
+mutation CreateAppointment($input: CreateAppointmentInput!) {
+  createAppointment(input: $input) {
+    id
+    tenantId
+    serviceId
+    specialistId
+    clientName
+    clientContact
+    startAt
+    endAt
+    status
+    appliedDurationMinutes
+    appliedAmountCents
+    appliedCurrency
+    origin
+    notes
+    cancellationReason
+    service {
+      id
+      name
+    }
+    specialist {
+      id
+      name
+    }
+  }
+}
+
+mutation UpdateAppointmentStatus($id: String!, $status: AppointmentStatus!) {
+  updateAppointmentStatus(id: $id, status: $status) {
+    id
+    tenantId
+    serviceId
+    specialistId
+    clientName
+    clientContact
+    startAt
+    endAt
+    status
+    appliedDurationMinutes
+    appliedAmountCents
+    appliedCurrency
+    origin
+    notes
+    cancellationReason
+    service {
+      id
+      name
+    }
+    specialist {
+      id
+      name
+    }
+  }
+}
+
+mutation CancelAppointment($id: String!, $reason: String) {
+  cancelAppointment(id: $id, reason: $reason) {
+    id
+    tenantId
+    serviceId
+    specialistId
+    clientName
+    clientContact
+    startAt
+    endAt
+    status
+    appliedDurationMinutes
+    appliedAmountCents
+    appliedCurrency
+    origin
+    notes
+    cancellationReason
+    service {
+      id
+      name
+    }
+    specialist {
+      id
+      name
+    }
+  }
+}

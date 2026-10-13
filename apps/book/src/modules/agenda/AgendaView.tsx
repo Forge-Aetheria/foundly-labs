@@ -1,7 +1,7 @@
 import { Agenda, type AgendaRow } from './components/Agenda';
-import { listAgenda } from './utils/queries';
-import { listServices } from '../services/utils/queries';
-import { listStaff } from '../staff/utils/queries';
+import { listAgenda } from './actions';
+import { listServices } from '../services/actions';
+import { listStaff } from '../staff/actions';
 import { getAdminTenantId } from '../../shared/tenancy/queries';
 
 /** Agenda module view (server): resolves the week's rows and renders the table. */

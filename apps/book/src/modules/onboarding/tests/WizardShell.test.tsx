@@ -16,9 +16,9 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
 }));
 
-vi.mock('../utils/actions', () => ({
-  validateSlug: vi.fn(async () => ({ available: true })),
-  createBusiness: createBusinessMock,
+vi.mock('../hooks', () => ({
+  useValidateSlug: () => vi.fn(async () => ({ available: true })),
+  useCreateBusiness: () => createBusinessMock,
 }));
 
 import { WizardShell } from '../components/WizardShell';

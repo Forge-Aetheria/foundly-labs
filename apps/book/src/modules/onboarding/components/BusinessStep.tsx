@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
 import { suggestSlug, validateSlug as validateSlugRules } from '../../../shared/utils/slug';
-import { validateSlug as checkSlugAvailability } from '../utils/actions';
+import { useValidateSlug } from '../hooks';
 import { businessSchema, type BusinessFields } from '../utils/schemas';
 
 export interface BusinessStepProps {
@@ -15,6 +15,7 @@ type SlugStatus = 'idle' | 'format' | 'reserved';
 
 /** Step 2 — business data with public-URL feedback (FR-008/FR-009). */
 export function BusinessStep({ initial, onComplete }: BusinessStepProps) {
+  const checkSlugAvailability = useValidateSlug();
   const [values, setValues] = useState<BusinessFields>(
     initial ?? { name: '', slug: '', category: '' },
   );

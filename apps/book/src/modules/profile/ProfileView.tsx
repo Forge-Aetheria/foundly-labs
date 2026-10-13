@@ -1,5 +1,5 @@
 import { ProfileEditor } from './components/ProfileEditor';
-import { getTenantProfile, listPolicies } from './utils/queries';
+import { getTenantProfile, listPolicies } from './actions';
 import { getAdminTenantId } from '../../shared/tenancy/queries';
 
 /** Profile module view (server): profile via API + empty policies (no backend). */

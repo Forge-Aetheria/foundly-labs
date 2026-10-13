@@ -1,6 +1,6 @@
 # Foundly Labs — Arquitectura del Monorepo & Despliegue
 
-**Versión:** 1.0.0
+**Versión:** 1.1.0
 **Estado:** Binding
 **Ámbito:** Monorepo Foundly Labs (`apps/*`, `packages/*`) y su despliegue en Vercel.
 **Autoridad:** Subordinado a `specs/business-model.md` y `constitution.md`; por encima de `code-rules.md` y de las specs de dominio, según la jerarquía del Principio 1 de la constitución.
@@ -39,10 +39,16 @@ Reglas de dependencias (constitución §3.II):
 Todas las apps comparten el mismo patrón de organización interna (detalle canónico en `constitution.md` §3 y §7):
 
 - **Rutas delgadas**: `apps/landing/src/pages/` y `apps/{book,store}/src/app/` solo renderizan una vista de módulo (`<Modulo>View.astro` / `<Modulo>View.tsx`).
-- **`modules/<modulo>/`**: la lógica de dominio de cada app — componentes, islas/dialogs, utils, tests y su `<Modulo>View`.
-- **`shared/`**: lo reutilizable dentro de la app — componentes, datos, tipos y utils; en las apps Next también `infra/` (seam de sesión/store) y `tenancy/`.
+- **`modules/<modulo>/`**: la lógica de dominio de cada app — componentes, islas/dialogs, utils, tests y su `<Modulo>View`. En las apps Next (`apps/book`, `apps/store`) cada módulo con datos organiza el acceso así:
+  - `actions.ts` — funciones de servidor (lecturas y Server Actions); única puerta a la API del módulo.
+  - `hooks.ts` — hooks de cliente que envuelven las interacciones; único punto de disparo desde la UI.
+  - `components/` — vistas y componentes de UI (prohibido llamar a datos aquí; constitución §5.VI).
+- **`shared/`**: lo reutilizable dentro de la app — componentes, datos, tipos y utils; en las apps Next, `api/` (transporte GraphQL + artefactos codegen), `auth/` (sesión) y `tenancy/`.
+- **`shared/infra/` está deprecada y en disolución**: no puede alojar lógica de dominio ni acciones de servidor. Migración en `specs/book/011-module-data-layer/`.
 
 `apps/store` (**aún no generada**) deberá nacer con esta misma estructura.
+
+> Nota (feature `specs/book/010-remove-local-store`): `apps/book` ya **no** usa un store en memoria; todas las lecturas/escrituras pasan por la API/DB vía el `actions.ts` de cada módulo.
 
 ---
 
@@ -150,7 +156,11 @@ El enrutado Multi-Zone solo se reproduce en Vercel; en local cada app se ejecuta
 
 Este documento se subordina a `specs/business-model.md` y `constitution.md`. Todo cambio de topología, dominios o Build Settings debe reflejarse aquí y, si afecta al flujo SDD, actualizar la constitución según su procedimiento de enmienda.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-12
+**Version**: 1.1.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-12
+
+*Enmienda 2026-10-12 (MINOR 1.0.0 → 1.1.0): §1.I documenta la estructura de datos por módulo
+(`actions.ts`/`hooks.ts`/`components/`), la deprecación de `shared/infra` y el fin del store en memoria
+en `apps/book` (constitución §5.VI; migración en `specs/book/011-module-data-layer/`).*
 
 *Enmienda 2026-10-12 (PATCH): §3.1 documenta `API_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`,
 `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (book) y `CORS_ORIGINS` (api), y añade la nota de

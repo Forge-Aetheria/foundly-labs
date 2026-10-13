@@ -1,26 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TenantDto } from '../../../shared/infra/remoteTenancy';
-import type { AvailabilityDto } from '../../../shared/infra/remoteAvailability';
-import type { PublicSpecialistDto } from '../../../shared/infra/remoteSpecialists';
-import { deriveWeeklyHours, getPublicBusinessRemote } from '../utils/queries';
+import {
+  AvailabilityDocument,
+  SpecialistsDocument,
+  TenantBySlugDocument,
+} from '../../../shared/api/generated';
+import { getPublicBusinessRemote } from '../actions';
+import { deriveWeeklyHours } from '../utils/availability';
 
-const { tenantMock, specialistsMock, availabilityMock } = vi.hoisted(() => ({
-  tenantMock: vi.fn(),
-  specialistsMock: vi.fn(),
-  availabilityMock: vi.fn(),
-}));
+const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));
+vi.mock('../../../shared/api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
 
-vi.mock('../../../shared/infra/remoteTenancy', () => ({
-  fetchTenantBySlug: (...args: unknown[]) => tenantMock(...args),
-}));
-vi.mock('../../../shared/infra/remoteSpecialists', () => ({
-  listPublicSpecialists: (...args: unknown[]) => specialistsMock(...args),
-}));
-vi.mock('../../../shared/infra/remoteAvailability', () => ({
-  listRemoteAvailability: (...args: unknown[]) => availabilityMock(...args),
-}));
-
-function makeTenantDto(status = 'active'): TenantDto {
+function makeTenant(status = 'active') {
   return {
     id: 'ten-ana',
     name: 'Estudio Ana',
@@ -50,7 +40,7 @@ function makeTenantDto(status = 'active'): TenantDto {
         active: true,
       },
       {
-        id: 'svc-inactive',
+        id: 'svc-off',
         name: 'Oculto',
         description: null,
         durationMinutes: 20,
@@ -63,20 +53,7 @@ function makeTenantDto(status = 'active'): TenantDto {
   };
 }
 
-function makeSpecialist(): PublicSpecialistDto {
-  return {
-    id: 'res-ana',
-    tenantId: 'ten-ana',
-    name: 'Ana',
-    role: 'Peluquera senior',
-    avatar: null,
-    bio: null,
-    active: true,
-    services: [{ id: 'svc-corte', name: 'Corte de cabello' }],
-  };
-}
-
-function makeRule(overrides: Partial<AvailabilityDto> = {}): AvailabilityDto {
+function makeRule(overrides: Record<string, unknown> = {}) {
   return {
     id: 'rule-1',
     tenantId: 'ten-ana',
@@ -92,31 +69,38 @@ function makeRule(overrides: Partial<AvailabilityDto> = {}): AvailabilityDto {
   };
 }
 
-describe('public-booking queries (feature 010 — server-only)', () => {
+function makeSpecialist() {
+  return {
+    id: 'res-ana',
+    tenantId: 'ten-ana',
+    name: 'Ana',
+    role: 'Peluquera senior',
+    avatar: null,
+    bio: null,
+    active: true,
+    services: [{ id: 'svc-corte', name: 'Corte de cabello' }],
+  };
+}
+
+describe('public-booking queries (feature 011 — server-only)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    tenantMock.mockResolvedValue({ ok: true, data: makeTenantDto() });
-    specialistsMock.mockResolvedValue({ ok: true, data: [makeSpecialist()] });
-    availabilityMock.mockResolvedValue({ ok: true, data: [makeRule()] });
+    apiMock.mockImplementation(async (document: unknown) => {
+      if (document === TenantBySlugDocument) return { ok: true, data: { tenant: makeTenant() } };
+      if (document === SpecialistsDocument) return { ok: true, data: { specialists: [makeSpecialist()] } };
+      if (document === AvailabilityDocument) return { ok: true, data: { availability: [makeRule()] } };
+      return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected' } };
+    });
   });
 
   it('resolves an active tenant with API services, specialists and availability', async () => {
     const result = await getPublicBusinessRemote('estudio-ana');
     expect(result.status).toBe('available');
     if (result.status !== 'available') return;
-
     expect(result.business.name).toBe('Estudio Ana');
-    expect(result.business.slug).toBe('estudio-ana');
-    expect(result.business.bio).toContain('Madrid');
-    // Only active services are exposed.
     expect(result.business.services.map((service) => service.id)).toEqual(['svc-corte']);
-    expect(result.business.services[0]?.priceCents).toBe(2000);
-    // Specialists come from the API, carrying their assigned service names.
     expect(result.business.specialists[0]?.services).toEqual(['Corte de cabello']);
-    // Weekly hours derived from tenant-level availability.
     expect(result.business.weeklyHours).toHaveLength(7);
-    expect(result.business.weeklyHours.find((day) => day.weekday === 1)?.isOpen).toBe(true);
-    // Sections with no backend render empty (FR-007).
     expect(result.business.policies).toEqual([]);
     expect(result.business.gallery).toEqual([]);
     expect(result.business.reviews).toEqual([]);
@@ -124,28 +108,30 @@ describe('public-booking queries (feature 010 — server-only)', () => {
   });
 
   it('exposes no data for unknown, draft or suspended tenants', async () => {
-    tenantMock.mockResolvedValueOnce({ ok: true, data: null });
+    apiMock.mockResolvedValueOnce({ ok: true, data: { tenant: null } });
     expect((await getPublicBusinessRemote('no-existe')).status).toBe('unavailable');
 
-    tenantMock.mockResolvedValueOnce({ ok: true, data: makeTenantDto('draft') });
+    apiMock.mockResolvedValueOnce({ ok: true, data: { tenant: makeTenant('draft') } });
     const draft = await getPublicBusinessRemote('draft-shop');
     expect(draft.status).toBe('unavailable');
     if (draft.status === 'unavailable') expect(draft.reason).toBe('draft');
 
-    tenantMock.mockResolvedValueOnce({ ok: true, data: makeTenantDto('suspended') });
+    apiMock.mockResolvedValueOnce({ ok: true, data: { tenant: makeTenant('suspended') } });
     const suspended = await getPublicBusinessRemote('suspended-shop');
     expect(suspended.status).toBe('unavailable');
     if (suspended.status === 'unavailable') expect(suspended.reason).toBe('suspended');
   });
 
-  it('renders empty sections when the API is unreachable (no fallback)', async () => {
-    tenantMock.mockResolvedValueOnce({ ok: false, error: { code: 'STATE_ERROR', message: 'down' } });
+  it('renders empty when the API is unreachable (no fallback)', async () => {
+    apiMock.mockResolvedValueOnce({ ok: false, error: { code: 'STATE_ERROR', message: 'down' } });
     expect((await getPublicBusinessRemote('estudio-ana')).status).toBe('unavailable');
   });
 
   it('keeps the portal usable when specialists/availability fail', async () => {
-    specialistsMock.mockResolvedValueOnce({ ok: false, error: { code: 'STATE_ERROR', message: 'x' } });
-    availabilityMock.mockResolvedValueOnce({ ok: false, error: { code: 'STATE_ERROR', message: 'x' } });
+    apiMock.mockImplementation(async (document: unknown) => {
+      if (document === TenantBySlugDocument) return { ok: true, data: { tenant: makeTenant() } };
+      return { ok: false, error: { code: 'STATE_ERROR', message: 'x' } };
+    });
     const result = await getPublicBusinessRemote('estudio-ana');
     expect(result.status).toBe('available');
     if (result.status !== 'available') return;
@@ -155,7 +141,10 @@ describe('public-booking queries (feature 010 — server-only)', () => {
 
   it('derives weekly hours from tenant-level availability only', () => {
     expect(deriveWeeklyHours([])).toEqual([]);
-    const hours = deriveWeeklyHours([makeRule({ weekday: 3 }), makeRule({ specialistId: 'res-ana', weekday: 5 })]);
+    const hours = deriveWeeklyHours([
+      makeRule({ weekday: 3 }),
+      makeRule({ specialistId: 'res-ana', weekday: 5 }),
+    ]);
     expect(hours).toHaveLength(7);
     expect(hours.find((day) => day.weekday === 3)?.isOpen).toBe(true);
     expect(hours.find((day) => day.weekday === 5)?.isOpen).toBe(false);

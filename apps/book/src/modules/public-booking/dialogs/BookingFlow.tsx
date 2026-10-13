@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, Modal, Stack, Typography } from '@foundly/ui';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
-import { bookPublicAppointment } from '../utils/actions';
+import { useBookAppointment } from '../hooks';
 import { formatPrice } from '../../../shared/utils/format';
 import type { ClientDetails } from '../utils/schemas';
 import type { PublicService, PublicSpecialist } from '../utils/types';
@@ -23,6 +23,7 @@ export interface BookingFlowProps {
 
 /** Guided 4-step booking flow in an `@foundly/ui` Modal (FR-009…FR-015). */
 export function BookingFlow({ service, tenantSlug, specialists, onClose }: BookingFlowProps) {
+  const bookAppointment = useBookAppointment();
   const skipSpecialist = specialists.length <= 1;
   const [step, setStep] = useState(skipSpecialist ? 1 : 0);
   const [specialistId, setSpecialistId] = useState<string | null>(
@@ -41,7 +42,7 @@ export function BookingFlow({ service, tenantSlug, specialists, onClose }: Booki
     if (!slot || !client) return;
     setSubmitting(true);
     setError(null);
-    const result = await bookPublicAppointment({
+    const result = await bookAppointment({
       tenantSlug,
       serviceId: service.id,
       resourceId: specialistId ?? undefined,

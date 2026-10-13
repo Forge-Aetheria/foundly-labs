@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Container, Stack, Typography } from '@foundly/ui';
-import { createBusiness } from '../utils/actions';
+import { useCreateBusiness } from '../hooks';
 import {
   clearActiveDraftId,
   clearDraft,
@@ -27,6 +27,7 @@ function emptyDraft(draftId: string): BookingDraft {
 /** Three-step onboarding wizard (FR-003, FR-013): local-first draft + one submit. */
 export function WizardShell() {
   const router = useRouter();
+  const createBusiness = useCreateBusiness();
   const [draft, setDraft] = useState<BookingDraft>(() => {
     const draftId = loadActiveDraftId() ?? crypto.randomUUID();
     saveActiveDraftId(draftId);

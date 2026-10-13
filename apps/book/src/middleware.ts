@@ -1,8 +1,8 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { liveAuthEnv } from './shared/infra/supabase/env';
-import { toNextResponseCookieOptions } from './shared/infra/supabase/cookies';
-import { evaluateRedirect } from './shared/infra/authGuard';
+import { liveAuthEnv } from './shared/auth/supabase/env';
+import { toNextResponseCookieOptions } from './shared/auth/supabase/cookies';
+import { evaluateRedirect } from './shared/auth/authGuard';
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],

@@ -1,6 +1,6 @@
 # Foundly Labs — Code & TypeScript Standards
 
-**Version:** 2.1.0 (Monorepo — Landing Web Domain)
+**Version:** 2.2.0 (Monorepo — Landing Web Domain + Next.js data access)
 **Scope:** `apps/landing` (Astro 5 + TypeScript + Tailwind CSS v4). Sirve además como **base de los estándares de TypeScript** para los paquetes compartidos (`packages/ui`) y las apps (`apps/book`, `apps/store`).
 **Authority:** Inviolable — subordinado a `specs/business-model.md`, `constitution.md` (v5.1.0) y `specs/architecture.md`.
 **Design source of truth:** `specs/system-design.md` v3.0.0 y `packages/ui/src/styles/tokens.css`.
@@ -149,3 +149,68 @@ boxShadow: elevated ? foundlyTheme.palette.shadow.fab : foundlyTheme.palette.sha
 
 - Al renderizar cualquier ruta en `next dev`, la consola y la respuesta HTTP **NO** deben mostrar `Functions cannot be passed directly to Client Components`.
 - Todo cambio en un Server Component o en `packages/ui` debe probarse cargando las rutas afectadas, además de pasar `tsc`, ESLint y la suite de tests.
+
+## 9. Next.js Data Access & Module Hooks (apps/book, apps/store)
+
+Norma obligatoria (constitución §5.VI). La lógica de datos vive **dentro del módulo**, nunca en la UI ni en `shared/infra`.
+
+### 9.1 Estructura canónica de un módulo con datos
+
+```text
+src/modules/<modulo>/
+├── actions.ts     # Funciones de servidor: lecturas (fetches) y Server Actions
+├── hooks.ts       # Hooks de cliente que envuelven las interacciones
+├── components/    # Vistas y componentes de UI
+├── dialogs/       # (cuando aplique)
+├── utils/         # Helpers puros, schemas, mappers
+├── tests/
+└── <Modulo>View.tsx
+```
+
+- **`actions.ts`** — única puerta a la API para el módulo. Server-only: lecturas y `'use server'` actions. Consumido por Server Components (render inicial) y por `hooks.ts`.
+- **`hooks.ts`** — `'use client'`; único punto desde el que la UI interactiva dispara acciones. Envuelve las Server Actions de `actions.ts`.
+
+### 9.2 Prohibiciones en la UI
+
+En `components/`, `dialogs/` y `<Modulo>View.tsx` queda **prohibido** llamar directamente a:
+
+- `useQuery` / `useMutation` (TanStack Query u otra librería).
+- `apiRequest` o cualquier transporte GraphQL.
+- Server Actions importadas de `actions.ts`.
+
+Toda interacción debe pasar por un hook de `hooks.ts`.
+
+### 9.3 Nomenclatura de hooks
+
+Patrón obligatorio `use<Acción><Entidad|Módulo>`:
+
+```ts
+// ✅ BIEN
+export function useCreateService() { /* envuelve createService de actions.ts */ }
+export function useUpdateAvailability() { /* ... */ }
+export function useCancelAppointment() { /* ... */ }
+
+// ❌ MAL
+export function serviceCreator() {}
+export function useThing() {}
+```
+
+### 9.4 Tipado por codegen
+
+`actions.ts`/`hooks.ts` DEBEN usar **exclusivamente** los documentos y tipos autogenerados por
+`graphql-codegen` (`generated.ts`). Se prohíbe declarar DTOs o tipos manuales del contrato GraphQL.
+
+```ts
+// ✅ BIEN — documento + tipos generados
+import { MyServicesDocument, type MyServicesQuery } from '../../shared/api/generated';
+
+// ❌ MAL — DTO manual
+interface MyServiceDto { id: string; name: string; /* ... */ }
+```
+
+### 9.5 `shared/infra` deprecada
+
+`shared/infra/` no puede alojar lógica de dominio ni acciones de servidor y DEBE desaparecer. El
+contenido transversal se reubica en carpetas de propósito claro: `shared/api/` (transporte + codegen),
+`shared/types/` (resultados/contratos de dominio), `shared/auth/` (sesión). Plan de migración:
+`specs/book/011-module-data-layer/`.

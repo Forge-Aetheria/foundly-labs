@@ -1,19 +1,19 @@
 import type { CodegenConfig } from '@graphql-codegen/cli';
 
 /**
- * GraphQL Codegen config (feature 008 — research decision: graphql-request +
- * typed-document-node). The schema is downloaded via introspection from the
- * running API (quickstart scenario 1) into `codegen.schema.gql`, then:
+ * GraphQL Codegen config (feature 011 — module-data-layer).
+ * The schema is the API's code-first SDL (`apps/api/src/schema.gql`); the
+ * documents live per area under `src/shared/api/operations/`. The generated
+ * artifact (`src/shared/api/generated.ts`) is COMMITTED so `typecheck`/`build`
+ * pass without a running API:
  *
  *   npm run codegen -w @foundly/book
- *
- * Generated artifacts are gitignored (regenerate per environment).
  */
 const config: CodegenConfig = {
-  schema: 'codegen.schema.gql',
-  documents: ['src/shared/infra/graphql/**/*.graphql'],
+  schema: '../api/src/schema.gql',
+  documents: ['src/shared/api/operations/**/*.graphql'],
   generates: {
-    'src/shared/infra/graphql/generated.ts': {
+    'src/shared/api/generated.ts': {
       plugins: ['typescript', 'typescript-operations', 'typed-document-node'],
       config: {
         strictScalars: true,

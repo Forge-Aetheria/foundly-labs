@@ -1,0 +1,50 @@
+# Availability operations — feature 011.
+
+query Availability($tenantId: String, $tenantSlug: String, $specialistId: String) {
+  availability(tenantId: $tenantId, tenantSlug: $tenantSlug, specialistId: $specialistId) {
+    id
+    tenantId
+    specialistId
+    weekday
+    startTime
+    endTime
+    slotGranularityMinutes
+    minLeadTimeMinutes
+    bookingHorizonDays
+    breaks
+  }
+}
+
+mutation CreateAvailability($input: CreateAvailabilityInput!) {
+  createAvailability(input: $input) {
+    id
+    tenantId
+    specialistId
+    weekday
+    startTime
+    endTime
+    slotGranularityMinutes
+    minLeadTimeMinutes
+    bookingHorizonDays
+    breaks
+  }
+}
+
+mutation UpdateAvailability($id: String!, $input: UpdateAvailabilityInput!) {
+  updateAvailability(id: $id, input: $input) {
+    id
+    tenantId
+    specialistId
+    weekday
+    startTime
+    endTime
+    slotGranularityMinutes
+    minLeadTimeMinutes
+    bookingHorizonDays
+    breaks
+  }
+}
+
+mutation RemoveAvailability($id: String!) {
+  removeAvailability(id: $id)
+}

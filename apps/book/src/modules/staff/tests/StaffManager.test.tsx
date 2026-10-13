@@ -15,7 +15,12 @@ const { staffActionsMock } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../utils/actions', () => staffActionsMock);
+vi.mock('../hooks', () => ({
+  useCreateStaff: () => staffActionsMock.createStaff,
+  useUpdateStaff: () => staffActionsMock.updateStaff,
+  useSetStaffActive: () => staffActionsMock.setStaffActive,
+  useRemoveStaff: () => staffActionsMock.removeStaff,
+}));
 
 const services: Service[] = [
   {

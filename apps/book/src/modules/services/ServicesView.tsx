@@ -1,5 +1,5 @@
 import { ServiceCatalog } from './components/ServiceCatalog';
-import { listServices } from './utils/queries';
+import { listServices } from './actions';
 import { getAdminTenantId } from '../../shared/tenancy/queries';
 
 /** Services module view (server): catalog + current rates for the tenant. */
