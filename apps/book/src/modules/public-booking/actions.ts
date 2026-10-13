@@ -11,6 +11,7 @@ import {
   ReviewsDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
+  TimeBlocksDocument,
   type AppointmentsQuery,
   type GalleryQuery,
   type SpecialistsQuery,
@@ -262,7 +263,7 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
   const resourceId = parsed.data.resourceId ?? specialists[0]?.id;
   if (!resourceId) return [];
 
-  const [availabilityResult, appointmentsResult] = await Promise.all([
+  const [availabilityResult, appointmentsResult, blocksResult] = await Promise.all([
     apiRequest(AvailabilityDocument, { tenantId, tenantSlug: null, specialistId: resourceId }),
     apiRequest(AppointmentsDocument, {
       tenantId,
@@ -272,6 +273,7 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
       specialistId: resourceId,
       status: null,
     }),
+    apiRequest(TimeBlocksDocument, { tenantId: null, tenantSlug: parsed.data.tenantSlug, specialistId: resourceId }),
   ]);
 
   const rules = availabilityResult.ok
@@ -291,6 +293,13 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
         status: mapAppointmentStatus(dto.status),
       }))
     : [];
+  const blocks = blocksResult.ok
+    ? blocksResult.data.timeBlocks.map((dto) => ({
+        startAt: new Date(dto.startAt),
+        endAt: new Date(dto.endAt),
+        kind: 'block' as const,
+      }))
+    : [];
 
   const days = computeAvailability({
     resourceId,
@@ -298,7 +307,7 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
     range: { startDate: parsed.data.startDate, endDate: parsed.data.endDate },
     timezone,
     rules,
-    blocks: [],
+    blocks,
     appointments,
     now: new Date(),
   });

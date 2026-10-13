@@ -1,24 +1,31 @@
 'use server';
 
 import { apiRequest } from '../../shared/api/client';
+import { apiRequestAdmin } from '../../shared/api/admin-request';
 import {
+  AddTimeBlockDocument,
   AvailabilityDocument,
   CreateAvailabilityDocument,
   RemoveAvailabilityDocument,
+  RemoveTimeBlockDocument,
+  TimeBlocksDocument,
   UpdateAvailabilityDocument,
   type AvailabilityQuery,
+  type TimeBlocksQuery,
 } from '../../shared/api/generated';
-import { fail, ok, type ActionResult } from '../../shared/types/result';
+import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
 import { adminTenantId } from '../../shared/utils/tenant-scope';
 import type { AvailabilityRule, TimeBlock } from '../../shared/types/appointments';
-import { saveAvailabilitySchema } from './utils/schemas';
+import { removeTimeBlockSchema, saveAvailabilitySchema, timeBlockSchema } from './utils/schemas';
 
 /**
- * Availability module — server data access (feature 011; constitution §5.VI).
- * Codegen documents/types only. Time blocks have no backend counterpart.
+ * Availability module — server data access (feature 011/015; constitution §5.VI).
+ * Codegen documents/types only. Weekly rules use the public transport; time
+ * blocks use the session-aware transport (`apiRequestAdmin`).
  */
 
 type ApiAvailability = AvailabilityQuery['availability'][number];
+type ApiTimeBlock = TimeBlocksQuery['timeBlocks'][number];
 
 /** Tenant-level availability (`specialistId` null) → domain rule. */
 function mapRule(dto: ApiAvailability, tenantId: string): AvailabilityRule {
@@ -51,11 +58,62 @@ export async function listAvailabilityRules(
   );
 }
 
-/** Time blocks have no backend counterpart yet (feature 010): empty. */
-export async function listTimeBlocks(): Promise<TimeBlock[]> {
-  return [];
+/** Map an API time block → domain TimeBlock (feature 015). */
+function mapTimeBlock(dto: ApiTimeBlock, tenantId: string): TimeBlock {
+  return {
+    id: dto.id,
+    resourceId: dto.specialistId ?? tenantId,
+    startAt: dto.startAt,
+    endAt: dto.endAt,
+    kind: 'block',
+    recurrence: 'none',
+    recurrenceUntil: null,
+    reason: dto.reason ?? null,
+  };
 }
 
+/** The tenant's concrete time blocks. SERVER-ONLY, no fallback. */
+export async function listTimeBlocks(tenantId: string): Promise<ActionResult<TimeBlock[]>> {
+  const result = await apiRequestAdmin(TimeBlocksDocument, {
+    tenantId,
+    tenantSlug: null,
+    specialistId: null,
+  });
+  if (!result.ok) return result;
+  return ok(result.data.timeBlocks.map((dto) => mapTimeBlock(dto, tenantId)));
+}
+
+/** Block a concrete date/time range for the authenticated owner's business. */
+export async function addTimeBlock(input: unknown): Promise<ActionResult<TimeBlock>> {
+  const tenant = await adminTenantId();
+  if (!tenant.ok) return tenant;
+
+  const parsed = timeBlockSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail('VALIDATION_ERROR', 'Datos del bloqueo inválidos.', zodFields(parsed.error));
+  }
+  const { date, startTime, endTime, reason } = parsed.data;
+  const result = await apiRequestAdmin(AddTimeBlockDocument, {
+    input: {
+      startAt: `${date}T${startTime}:00`,
+      endAt: `${date}T${endTime}:00`,
+      reason: reason?.trim() ? reason.trim() : null,
+    },
+  });
+  if (!result.ok) return result;
+  return ok(mapTimeBlock(result.data.addTimeBlock, tenant.data));
+}
+
+/** Remove one of the authenticated owner's time blocks. */
+export async function removeTimeBlock(input: unknown): Promise<ActionResult<{ id: string }>> {
+  const parsed = removeTimeBlockSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail('VALIDATION_ERROR', 'Bloqueo inválido.', zodFields(parsed.error));
+  }
+  const result = await apiRequestAdmin(RemoveTimeBlockDocument, { id: parsed.data.id });
+  if (!result.ok) return result;
+  return ok({ id: parsed.data.id });
+}
 const DEFAULTS = {
   slotGranularityMinutes: 30,
   minLeadTimeMinutes: 0,

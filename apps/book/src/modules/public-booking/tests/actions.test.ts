@@ -6,6 +6,7 @@ import {
   CreateAppointmentDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
+  TimeBlocksDocument,
 } from '../../../shared/api/generated';
 import { bookPublicAppointment, fetchOfferedSlots } from '../actions';
 
@@ -204,5 +205,42 @@ describe('public-booking actions (feature 011 — remote-only)', () => {
       endDate: '2030-01-07',
     });
     expect(days).toEqual([]);
+  });
+
+  it('excludes slots covered by a time block (feature 015)', async () => {
+    apiMock.mockImplementation(async (document: unknown) => {
+      if (document === TenantBySlugDocument) return { ok: true, data: { tenant: makeTenant() } };
+      if (document === SpecialistsDocument) return { ok: true, data: { specialists: [makeSpecialist()] } };
+      if (document === AvailabilityDocument)
+        return { ok: true, data: { availability: [0, 1, 2, 3, 4, 5, 6].map(makeRule) } };
+      if (document === AppointmentsDocument) return { ok: true, data: { appointments: [] } };
+      if (document === TimeBlocksDocument)
+        return {
+          ok: true,
+          data: {
+            timeBlocks: [
+              {
+                id: 'tb1',
+                tenantId: 'ten-ana',
+                specialistId: null,
+                startAt: '2030-01-07T00:00:00.000Z',
+                endAt: '2030-01-08T00:00:00.000Z',
+                reason: 'Festivo',
+              },
+            ],
+          },
+        };
+      return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected' } };
+    });
+
+    const days = await fetchOfferedSlots({
+      tenantSlug: 'estudio-ana',
+      serviceId: 'svc-corte',
+      resourceId: 'res-ana',
+      startDate: '2030-01-07',
+      endDate: '2030-01-07',
+    });
+    expect(days).toHaveLength(1);
+    expect(days[0]?.slots).toEqual([]);
   });
 });

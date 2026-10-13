@@ -2,14 +2,19 @@ import { AvailabilityEditor } from './components/AvailabilityEditor';
 import { listAvailabilityRules, listTimeBlocks } from './actions';
 import { getAdminTenantId } from '../../shared/tenancy/queries';
 
-/** Availability module view (server): rules + time blocks for the tenant. */
+/** Availability module view (server): weekly rules + concrete time blocks. */
 export async function AvailabilityView() {
   const tenantId = await getAdminTenantId();
-  const [rulesResult, blocks] = await Promise.all([
+  const [rulesResult, blocksResult] = await Promise.all([
     listAvailabilityRules(tenantId),
-    listTimeBlocks(),
+    listTimeBlocks(tenantId),
   ]);
   const rules = rulesResult.ok ? rulesResult.data : [];
-  const error = rulesResult.ok ? null : rulesResult.error.message;
+  const blocks = blocksResult.ok ? blocksResult.data : [];
+  const error = !rulesResult.ok
+    ? rulesResult.error.message
+    : !blocksResult.ok
+      ? blocksResult.error.message
+      : null;
   return <AvailabilityEditor rules={rules} blocks={blocks} error={error} />;
 }

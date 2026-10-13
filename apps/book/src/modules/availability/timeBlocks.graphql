@@ -1,0 +1,25 @@
+query TimeBlocks($tenantId: ID, $tenantSlug: String, $specialistId: ID) {
+  timeBlocks(tenantId: $tenantId, tenantSlug: $tenantSlug, specialistId: $specialistId) {
+    id
+    tenantId
+    specialistId
+    startAt
+    endAt
+    reason
+  }
+}
+
+mutation AddTimeBlock($input: AddTimeBlockInput!) {
+  addTimeBlock(input: $input) {
+    id
+    tenantId
+    specialistId
+    startAt
+    endAt
+    reason
+  }
+}
+
+mutation RemoveTimeBlock($id: ID!) {
+  removeTimeBlock(id: $id)
+}

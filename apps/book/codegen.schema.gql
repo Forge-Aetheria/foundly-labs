@@ -206,6 +206,15 @@ type ReviewSummaryObject {
   count: Int!
 }
 
+type TimeBlockObject {
+  id: ID!
+  tenantId: String!
+  specialistId: String
+  startAt: String!
+  endAt: String!
+  reason: String
+}
+
 type Query {
   health: HealthPayload!
   tenants: [TenantObject!]!
@@ -228,6 +237,7 @@ type Query {
   mySpecialist(id: ID!): MySpecialist
   gallery(tenantId: ID, tenantSlug: String): [GalleryItem!]!
   reviews(tenantId: ID, tenantSlug: String): ReviewSummaryObject!
+  timeBlocks(tenantId: ID, tenantSlug: String, specialistId: ID): [TimeBlockObject!]!
 }
 
 type Mutation {
@@ -256,6 +266,8 @@ type Mutation {
   addGalleryItem(input: AddGalleryItemInput!): GalleryItem!
   removeGalleryItem(id: ID!): Boolean!
   addReview(input: AddReviewInput!): ReviewObject!
+  addTimeBlock(input: AddTimeBlockInput!): TimeBlockObject!
+  removeTimeBlock(id: ID!): Boolean!
 }
 
 input CreateTenantInput {
@@ -424,4 +436,13 @@ input AddReviewInput {
   author: String! = ""
   rating: Int! = 0
   comment: String! = ""
+}
+
+input AddTimeBlockInput {
+  tenantId: ID
+  tenantSlug: String
+  specialistId: ID
+  startAt: String! = ""
+  endAt: String! = ""
+  reason: String
 }
