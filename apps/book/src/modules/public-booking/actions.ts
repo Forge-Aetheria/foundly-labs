@@ -8,6 +8,7 @@ import {
   AvailabilityDocument,
   CreateAppointmentDocument,
   GalleryDocument,
+  ReviewsDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
   type AppointmentsQuery,
@@ -22,6 +23,8 @@ import type { GalleryCategory } from '../../shared/types/tenancy';
 import type {
   PublicBusinessProfile,
   PublicGalleryPhoto,
+  PublicPolicyView,
+  PublicReview,
   PublicService,
   PublicSpecialist,
 } from './utils/types';
@@ -202,7 +205,24 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
     ? galleryResult.data.gallery.map(mapGalleryPhoto)
     : [];
 
+  const reviewsResult = await apiRequest(ReviewsDocument, { tenantSlug: slug });
+  const reviews: PublicReview[] = reviewsResult.ok
+    ? reviewsResult.data.reviews.items.map((item) => ({
+        id: item.id,
+        author: item.author,
+        rating: item.rating,
+        comment: item.comment,
+        date: item.createdAt,
+      }))
+    : [];
+  const rating = reviewsResult.ok ? (reviewsResult.data.reviews.average ?? null) : null;
+  const reviewCount = reviewsResult.ok ? reviewsResult.data.reviews.count : 0;
+
   const profile = tenant.profile;
+  const policies: PublicPolicyView[] = (profile?.policies ?? []).map((policy) => ({
+    title: policy.title,
+    body: policy.body,
+  }));
   return {
     status: 'available',
     business: {
@@ -222,11 +242,11 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
       services,
       specialists,
       weeklyHours,
-      policies: [],
+      policies,
       gallery,
-      rating: null,
-      reviewCount: 0,
-      reviews: [],
+      rating,
+      reviewCount,
+      reviews,
     },
   };
 }

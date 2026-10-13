@@ -11,6 +11,10 @@ vi.mock('../actions', () => ({
   bookPublicAppointment: vi.fn(async () => ({ ok: true, data: { id: 'a-online-1' } })),
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 const profile: PublicBusinessProfile = {
   slug: 'estudio-ana',
   name: 'Estudio Ana',

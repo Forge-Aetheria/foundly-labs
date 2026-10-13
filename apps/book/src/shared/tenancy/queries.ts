@@ -6,7 +6,7 @@ import { getEffectiveSession } from '../auth/authServer';
 import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '../auth/authConstants';
 import { fail, ok, type ActionResult } from '../types/result';
 import type { Session } from '../auth/auth';
-import type { Tenant, TenantStatus } from '../types/tenancy';
+import type { PortalPolicy, Tenant, TenantStatus } from '../types/tenancy';
 
 /**
  * Tenancy reads (feature 011; constitution §5.VI). Codegen documents/types only;
@@ -29,6 +29,12 @@ export function mapTenant(dto: ApiTenant): Tenant {
           whatsapp: profile?.whatsapp ?? undefined,
         }
       : null;
+  const policies: PortalPolicy[] = (profile?.policies ?? []).map((policy, index) => ({
+    id: `policy-${index}`,
+    tenantId: dto.id,
+    title: policy.title,
+    body: policy.body,
+  }));
   return {
     id: dto.id,
     name: dto.name,
@@ -48,6 +54,7 @@ export function mapTenant(dto: ApiTenant): Tenant {
     address: profile?.address ?? null,
     phone: profile?.phone ?? null,
     social,
+    policies,
     createdAt: '',
     updatedAt: '',
   };

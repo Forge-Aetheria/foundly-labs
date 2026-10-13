@@ -49,6 +49,8 @@ export interface Tenant {
   social: { instagram?: string; whatsapp?: string } | null;
   /** Photo gallery (annotated photos) shown on the provider landing (006). */
   gallery?: GalleryPhoto[];
+  /** Reservation/cancellation policies shown on the public profile (014). */
+  policies?: PortalPolicy[];
   createdAt: string;
   updatedAt: string;
 }

@@ -1,13 +1,13 @@
 import { ProfileEditor } from './components/ProfileEditor';
-import { getTenantProfile, listPolicies } from './actions';
+import { getProfile } from './actions';
 import { getAdminTenantId } from '../../shared/tenancy/queries';
 
-/** Profile module view (server): profile via API + empty policies (no backend). */
+/** Profile module view (server): real editable profile for the tenant. */
 export async function ProfileView() {
   const tenantId = await getAdminTenantId();
-  const profile = await getTenantProfile(tenantId);
+  const profile = await getProfile(tenantId);
   if (!profile.ok) {
-    return <ProfileEditor profile={null} policies={[]} error={profile.error.message} />;
+    return <ProfileEditor profile={null} error={profile.error.message} />;
   }
-  return <ProfileEditor profile={profile.data} policies={listPolicies()} />;
+  return <ProfileEditor profile={profile.data} />;
 }

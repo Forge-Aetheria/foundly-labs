@@ -1,9 +1,14 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import type { Tenant } from '../../../shared/types/tenancy';
 import { ProfileEditor } from '../components/ProfileEditor';
+
+const { updateMock } = vi.hoisted(() => ({ updateMock: vi.fn() }));
+
+vi.mock('../hooks', () => ({ useUpdateProfile: () => updateMock }));
 
 function makeTenant(): Tenant {
   return {
@@ -29,50 +34,91 @@ function makeTenant(): Tenant {
     address: 'Calle Mayor 7, 28013 Madrid',
     phone: '+34 612 345 678',
     social: { instagram: 'https://instagram.com/estudioana' },
+    policies: [{ id: 'policy-0', tenantId: 'ten-ana', title: 'Cancelación', body: 'Avisa con 24 h.' }],
     createdAt: '2026-10-08T00:00:00.000Z',
     updatedAt: '2026-10-08T00:00:00.000Z',
   };
 }
 
-describe('ProfileEditor (admin Perfil y Acerca de, 007 — feature 010 read-only)', () => {
-  it('renders the API profile read-only with an empty policies state', async () => {
-    const { container } = render(
-      <FoundlyThemeProvider>
-        <ProfileEditor profile={makeTenant()} policies={[]} />
-      </FoundlyThemeProvider>,
-    );
+function renderEditor(profile: Tenant | null = makeTenant(), error: string | null = null) {
+  return render(
+    <FoundlyThemeProvider>
+      <ProfileEditor profile={profile} error={error} />
+    </FoundlyThemeProvider>,
+  );
+}
+
+describe('ProfileEditor (admin Perfil, feature 014)', () => {
+  beforeEach(() => {
+    updateMock.mockReset();
+  });
+
+  it('renders the editable profile with current values, policies and hours', async () => {
+    const { container } = renderEditor();
 
     expect(screen.getByText('Perfil y Acerca de')).toBeInTheDocument();
-    expect(screen.getByText('Solo lectura')).toBeInTheDocument();
-    expect(screen.getByText('Estudio Ana')).toBeInTheDocument();
-    expect(screen.getByText('Peluquería')).toBeInTheDocument();
-    expect(screen.getByText('/book/estudio-ana')).toBeInTheDocument();
-    expect(screen.getByText('+34 612 345 678')).toBeInTheDocument();
-    expect(screen.getByText('Estudio de referencia en Madrid.')).toBeInTheDocument();
-
-    // Policies have no backend: clean empty state, no mocked rows.
-    expect(
-      screen.getByText(
-        'Todavía no hay políticas: esta sección aún no tiene soporte en el backend.',
-      ),
-    ).toBeInTheDocument();
-    expect(screen.queryByLabelText('Política 1 · Título')).not.toBeInTheDocument();
-
-    // Editing is not available (no API mutation).
-    expect(screen.queryByRole('button', { name: 'Guardar perfil' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Nombre del negocio/)).toHaveValue('Estudio Ana');
+    expect(screen.getByLabelText(/URL pública/)).toHaveValue('estudio-ana');
+    expect(screen.getByLabelText(/Teléfono/)).toHaveValue('+34 612 345 678');
+    expect(screen.getByLabelText(/Instagram/)).toHaveValue('https://instagram.com/estudioana');
+    expect(screen.getByRole('button', { name: 'Guardar perfil' })).toBeInTheDocument();
+    // Existing policy rendered.
+    expect(screen.getByDisplayValue('Cancelación')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Avisa con 24 h.')).toBeInTheDocument();
+    // Hours summary.
+    expect(screen.getAllByText('09:00 – 18:00').length).toBeGreaterThan(0);
 
     const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
     expect(results.violations).toHaveLength(0);
   });
 
-  it('surfaces a clean error when the profile cannot be loaded', () => {
-    render(
-      <FoundlyThemeProvider>
-        <ProfileEditor profile={null} policies={[]} error="No se pudo cargar el perfil." />
-      </FoundlyThemeProvider>,
-    );
+  it('saves the edited profile through the hook', async () => {
+    updateMock.mockResolvedValue({ ok: true, data: makeTenant() });
+    const user = userEvent.setup();
+    renderEditor();
 
+    const nameField = screen.getByLabelText(/Nombre del negocio/);
+    await user.clear(nameField);
+    await user.type(nameField, 'Estudio Ana Renovado');
+    await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
+
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    const arg = updateMock.mock.calls[0]![0] as { name: string; policies: unknown[] };
+    expect(arg.name).toBe('Estudio Ana Renovado');
+    expect(arg.policies).toHaveLength(1);
+    expect(await screen.findByText('Guardado')).toBeInTheDocument();
+  });
+
+  it('surfaces an inline field error returned by the save action', async () => {
+    updateMock.mockResolvedValue({
+      ok: false,
+      error: { code: 'CONFLICT', message: 'Esa URL pública ya está en uso.', fields: { slug: 'Esa URL pública ya está en uso.' } },
+    });
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
+
+    expect(await screen.findByText('Esa URL pública ya está en uso.')).toBeInTheDocument();
+  });
+
+  it('adds a policy to the submission', async () => {
+    updateMock.mockResolvedValue({ ok: true, data: makeTenant() });
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(screen.getByRole('button', { name: '+ Añadir política' }));
+    await user.type(screen.getByLabelText(/Título · política 2/), 'Depósito');
+    await user.type(screen.getAllByLabelText(/Contenido/)[1]!, 'Se pide un depósito.');
+    await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
+
+    const arg = updateMock.mock.calls[0]![0] as { policies: { title: string }[] };
+    expect(arg.policies).toHaveLength(2);
+    expect(arg.policies[1]?.title).toBe('Depósito');
+  });
+
+  it('shows a clean error dialog when the profile cannot be loaded', () => {
+    renderEditor(null, 'No se pudo cargar el perfil.');
     expect(screen.getByRole('dialog')).toHaveTextContent('No se pudo cargar el perfil.');
-    expect(screen.getByText('Horario no disponible todavía.')).toBeInTheDocument();
   });
 });

@@ -1,0 +1,34 @@
+mutation UpdateBusinessProfile($input: UpdateBusinessProfileInput!) {
+  updateMyBusinessProfile(input: $input) {
+    id
+    name
+    category
+    status
+    timezone
+    currency
+    profile {
+      slug
+      bio
+      address
+      phone
+      instagram
+      whatsapp
+      logo
+      cover
+      policies {
+        title
+        body
+      }
+    }
+    services {
+      id
+      name
+      description
+      durationMinutes
+      priceCents
+      currency
+      category
+      active
+    }
+  }
+}

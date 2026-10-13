@@ -20,7 +20,7 @@ type BusinessProfileObject {
   logo: String
   cover: String
   brandColors: String
-  policies: String
+  policies: [PortalPolicyObject!]!
 }
 
 type ServiceObject {
@@ -43,6 +43,11 @@ type TenantObject {
   currency: String!
   profile: BusinessProfileObject
   services: [ServiceObject!]!
+}
+
+type PortalPolicyObject {
+  title: String!
+  body: String!
 }
 
 type SpecialistRef {
@@ -187,6 +192,20 @@ type GalleryItem {
   order: Int!
 }
 
+type ReviewObject {
+  id: ID!
+  author: String!
+  rating: Int!
+  comment: String!
+  createdAt: String!
+}
+
+type ReviewSummaryObject {
+  items: [ReviewObject!]!
+  average: Float
+  count: Int!
+}
+
 type Query {
   health: HealthPayload!
   tenants: [TenantObject!]!
@@ -208,10 +227,12 @@ type Query {
   mySpecialists(active: Boolean): [MySpecialist!]!
   mySpecialist(id: ID!): MySpecialist
   gallery(tenantId: ID, tenantSlug: String): [GalleryItem!]!
+  reviews(tenantId: ID, tenantSlug: String): ReviewSummaryObject!
 }
 
 type Mutation {
   createTenant(input: CreateTenantInput!): TenantObject!
+  updateMyBusinessProfile(input: UpdateBusinessProfileInput!): TenantObject!
   createService(input: CreateServiceInput!): Service!
   updateService(id: String!, input: UpdateServiceInput!): Service!
   removeService(id: String!): Boolean!
@@ -234,6 +255,7 @@ type Mutation {
   deleteMySpecialist(id: ID!): Boolean!
   addGalleryItem(input: AddGalleryItemInput!): GalleryItem!
   removeGalleryItem(id: ID!): Boolean!
+  addReview(input: AddReviewInput!): ReviewObject!
 }
 
 input CreateTenantInput {
@@ -255,6 +277,25 @@ input BusinessProfileInput {
   cover: String
   brandColors: String
   policies: String
+}
+
+input UpdateBusinessProfileInput {
+  name: String
+  category: String
+  slug: String
+  bio: String
+  address: String
+  phone: String
+  instagram: String
+  whatsapp: String
+  logo: String
+  cover: String
+  policies: [BusinessPolicyInput!]
+}
+
+input BusinessPolicyInput {
+  title: String! = ""
+  body: String! = ""
 }
 
 input CreateServiceInput {
@@ -375,4 +416,12 @@ input AddGalleryItemInput {
   title: String
   description: String
   category: String
+}
+
+input AddReviewInput {
+  tenantId: ID
+  tenantSlug: String
+  author: String! = ""
+  rating: Int! = 0
+  comment: String! = ""
 }

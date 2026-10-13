@@ -13,6 +13,7 @@ import type {
 } from '../utils/types';
 import { ServiceCard } from './ServiceCard';
 import { RatingStars } from './RatingStars';
+import { ReviewForm } from '../../reviews/components/ReviewForm';
 
 interface ProviderSectionsProps {
   profile: PublicBusinessProfile;
@@ -36,6 +37,7 @@ export function ProviderSections({ profile, onReserve }: ProviderSectionsProps) 
       <GallerySection gallery={profile.gallery ?? []} />
       <ReviewsSection
         name={profile.name}
+        tenantSlug={profile.slug}
         rating={profile.rating ?? null}
         reviewCount={profile.reviewCount ?? 0}
         reviews={profile.reviews ?? []}
@@ -328,11 +330,13 @@ function GallerySection({ gallery }: { gallery: PublicGalleryPhoto[] }) {
 
 function ReviewsSection({
   name,
+  tenantSlug,
   rating,
   reviewCount,
   reviews,
 }: {
   name: string;
+  tenantSlug: string;
   rating: number | null;
   reviewCount: number;
   reviews: PublicReview[];
@@ -381,6 +385,7 @@ function ReviewsSection({
           </Typography>
         </Card>
       ) : null}
+      <ReviewForm tenantSlug={tenantSlug} />
     </Stack>
   );
 }

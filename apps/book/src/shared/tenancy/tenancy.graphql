@@ -17,6 +17,10 @@ query TenantBySlug($slug: String!) {
       whatsapp
       logo
       cover
+      policies {
+        title
+        body
+      }
     }
     services {
       id
@@ -48,6 +52,10 @@ query Tenants {
       whatsapp
       logo
       cover
+      policies {
+        title
+        body
+      }
     }
     services {
       id

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AvailabilityDocument,
   GalleryDocument,
+  ReviewsDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
 } from '../../../shared/api/generated';
@@ -28,6 +29,7 @@ function makeTenant(status = 'active') {
       whatsapp: 'https://wa.me/34612345678',
       logo: null,
       cover: null,
+      policies: [{ title: 'Cancelación', body: 'Avisa con 24 h.' }],
     },
     services: [
       {
@@ -106,6 +108,25 @@ describe('public-booking queries (feature 011 — server-only)', () => {
             ],
           },
         };
+      if (document === ReviewsDocument)
+        return {
+          ok: true,
+          data: {
+            reviews: {
+              items: [
+                {
+                  id: 'rev-1',
+                  author: 'Lucía',
+                  rating: 5,
+                  comment: 'Genial',
+                  createdAt: '2026-10-13T10:00:00.000Z',
+                },
+              ],
+              average: 5,
+              count: 1,
+            },
+          },
+        };
       return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected' } };
     });
   });
@@ -118,12 +139,15 @@ describe('public-booking queries (feature 011 — server-only)', () => {
     expect(result.business.services.map((service) => service.id)).toEqual(['svc-corte']);
     expect(result.business.specialists[0]?.services).toEqual(['Corte de cabello']);
     expect(result.business.weeklyHours).toHaveLength(7);
-    expect(result.business.policies).toEqual([]);
+    expect(result.business.policies).toEqual([{ title: 'Cancelación', body: 'Avisa con 24 h.' }]);
     expect(result.business.gallery).toEqual([
       { id: 'gal-1', url: 'https://example.com/1.jpg', title: 'Fachada', category: 'Local' },
     ]);
-    expect(result.business.reviews).toEqual([]);
-    expect(result.business.rating).toBeNull();
+    expect(result.business.reviews).toEqual([
+      { id: 'rev-1', author: 'Lucía', rating: 5, comment: 'Genial', date: '2026-10-13T10:00:00.000Z' },
+    ]);
+    expect(result.business.rating).toBe(5);
+    expect(result.business.reviewCount).toBe(1);
   });
 
   it('exposes no data for unknown, draft or suspended tenants', async () => {

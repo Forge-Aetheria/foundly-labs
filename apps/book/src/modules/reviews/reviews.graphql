@@ -1,0 +1,23 @@
+query Reviews($tenantSlug: String) {
+  reviews(tenantSlug: $tenantSlug) {
+    items {
+      id
+      author
+      rating
+      comment
+      createdAt
+    }
+    average
+    count
+  }
+}
+
+mutation AddReview($input: AddReviewInput!) {
+  addReview(input: $input) {
+    id
+    author
+    rating
+    comment
+    createdAt
+  }
+}
