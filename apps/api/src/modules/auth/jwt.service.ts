@@ -7,6 +7,14 @@ import type { AuthUser } from './jwt.types';
 const CLOCK_TOLERANCE_SECONDS = 30;
 const AUDIENCE = 'authenticated';
 
+/**
+ * Asymmetric algorithms accepted for Supabase Auth access tokens. New Supabase
+ * projects sign with an asymmetric ECC signing key (`ES256`); legacy asymmetric
+ * setups use `RS256`. Hard-coding a single algorithm (`['RS256']`) rejected
+ * every ES256 token, failing all authenticated requests with `UNAUTHENTICATED`.
+ */
+const ALLOWED_ALGORITHMS: string[] = ['RS256', 'ES256'];
+
 /** JWKS provider seam (Nest token) — one injectable RemoteJWKSet for the whole app. */
 export const JWT_JWKS = Symbol('JWT_JWKS');
 
@@ -40,7 +48,8 @@ function unauthError(): GraphQLError {
 }
 
 /**
- * Verifies Supabase Auth access tokens (RS256, signed by the project JWKS) and resolves the
+ * Verifies Supabase Auth access tokens (asymmetric, signed by the project JWKS:
+ * `ES256` in new projects, `RS256` in legacy asymmetric setups) and resolves the
  * caller identity (`AuthUser`). Any verification failure fails closed as `UNAUTHENTICATED`.
  */
 @Injectable()
@@ -55,7 +64,7 @@ export class SupabaseJwtService {
     let payload: Record<string, unknown>;
     try {
       const { payload: claims } = await jwtVerify(raw, this.jwks, {
-        algorithms: ['RS256'],
+        algorithms: ALLOWED_ALGORITHMS,
         issuer,
         audience: AUDIENCE,
         clockTolerance: CLOCK_TOLERANCE_SECONDS,

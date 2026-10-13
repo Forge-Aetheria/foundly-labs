@@ -44,6 +44,18 @@ describe('SupabaseJwtService (unit, 008-supabase-jwt-auth)', () => {
     });
   });
 
+  it('accepts the ES256 (EC P-256) tokens Supabase signs in production', async () => {
+    const token = await signTestToken(privateJwk, { sub: 'ec-user' });
+    const [header] = token.split('.');
+    const decoded = JSON.parse(Buffer.from(header ?? '', 'base64url').toString('utf8')) as {
+      alg?: string;
+    };
+    // Regression guard: the test key MUST be EC/ES256, so the suite would fail
+    // if the service reverted to an RS256-only allow-list.
+    expect(decoded.alg).toBe('ES256');
+    await expect(service.verify(token)).resolves.toMatchObject({ sub: 'ec-user' });
+  });
+
   it('rejects an expired token (beyond the 30 s leeway)', async () => {
     const token = await signTestToken(privateJwk, { expiresIn: '-1h' });
     await expectUnauth(service.verify(token));

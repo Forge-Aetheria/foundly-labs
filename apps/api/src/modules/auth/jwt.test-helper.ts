@@ -7,20 +7,18 @@ export const TEST_KID = 'test-kid';
 
 export type TestJwk = Record<string, unknown>;
 
-/** Ephemeral RSA key pair (extractable) for offline specs — no network, no live DB. */
+/** Ephemeral EC (P-256) key pair for offline specs — mirrors Supabase's ES256 signing key. */
 export async function makeTestKeys(): Promise<{ publicJwk: TestJwk; privateJwk: TestJwk }> {
   const { publicKey, privateKey } = await webcrypto.subtle.generateKey(
     {
-      name: 'RSASSA-PKCS1-v1_5',
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: 'SHA-256',
+      name: 'ECDSA',
+      namedCurve: 'P-256',
     },
     true,
     ['sign', 'verify'],
   );
   return {
-    publicJwk: { ...(await exportJWK(publicKey)), kid: TEST_KID, alg: 'RS256', use: 'sig' },
+    publicJwk: { ...(await exportJWK(publicKey)), kid: TEST_KID, alg: 'ES256', use: 'sig' },
     privateJwk: await exportJWK(privateKey),
   };
 }
@@ -41,7 +39,7 @@ export interface TokenOverrides {
   tenantId?: string;
 }
 
-/** RS256 test token signed against `privateJwk` with configurable claims (expiry, issuer, aud...). */
+/** ES256 test token signed against `privateJwk` with configurable claims (expiry, issuer, aud...). */
 export async function signTestToken(
   privateJwk: TestJwk,
   overrides: TokenOverrides = {},
@@ -53,7 +51,7 @@ export async function signTestToken(
     issuer = TEST_AUTH_URL,
     audience = 'authenticated',
     expiresIn = '1h',
-    algorithm = 'RS256',
+    algorithm = 'ES256',
     tenantId,
   } = overrides;
 
