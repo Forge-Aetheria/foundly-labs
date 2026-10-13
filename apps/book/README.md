@@ -70,8 +70,9 @@ equipo) y la **tenancy** (onboarding → creación de negocio + vinculación `te
    resuelve la identidad (claims `sub` + `app_metadata.tenant_id`).
 
 Sin entorno remoto configurado, `signIn`/`signOut` fallan **visiblemente** (la autenticación es solo del
-proveedor; no hay seam local). Todas las secciones del panel (servicios, equipo, disponibilidad, agenda,
-galería, perfil, políticas y reseñas) se sirven desde la API. Escenarios de validación en el `quickstart.md`
+proveedor; no hay seam local). Todas las secciones del panel (servicios, equipo, disponibilidad, bloqueos,
+agenda, galería, perfil, políticas y reseñas) se sirven desde la API. La disponibilidad semanal y sus bloqueos
+se aplican también al cálculo de franjas del booking público. Escenarios de validación en el `quickstart.md`
 de cada spec.
 
 ## Autenticación (feature `009-admin-auth`)
@@ -126,7 +127,9 @@ rechazado como problema de sesión. Al iniciar sesión se valida además que la 
 - `specs/book/012-centralized-api-errors/` — manejo centralizado de errores de API, expiración de sesión global y consistencia login↔API.
 - `specs/book/013-gallery-integration/` — galería conectada al backend (admin `/admin/gallery` + `#galeria` del mini-sitio).
 - `specs/book/014-profile-policies-reviews/` — perfil editable + políticas y reseñas reales (admin `/admin/profile` + mini-sitio).
+- `specs/book/015-availability-time-blocks/` — bloqueos de disponibilidad reales (admin `/admin/availability`) y su exclusión del booking público.
 - `specs/api/012-gallery-management/` — superficie GraphQL de la galería (lectura pública + add/remove autenticados y por tenant).
 - `specs/api/013-profile-policies-reviews/` — superficie GraphQL del perfil (update autenticado) y de reseñas (lectura + alta públicas).
+- `specs/api/014-availability-time-blocks/` — superficie GraphQL de bloqueos de disponibilidad (lectura pública + add/remove autenticados y por tenant).
 
 > Pendiente: paginación/windowing de la agenda (T039 de `001`) y suite Playwright E2E (`e2e/`).
