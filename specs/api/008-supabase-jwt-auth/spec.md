@@ -8,6 +8,8 @@
 
 **Input**: User description: "Supabase Auth & JWT Integration for GraphQL API (Foundly Ecosystem). Implement robust authentication and authorization within `apps/api` using Supabase Auth JWTs. The system must securely intercept incoming GraphQL requests, validate the Bearer token, extract user claims, and inject the authenticated user profile into the GraphQL context (`ctx.user`). (1) Token Extraction & Validation: parse the `Authorization` header, validate Supabase JWT tokens securely (expiration and signature verification). (2) Context Enrichment: extend `GraphQLContext` with a user object (`id`, `email`, `role`, etc.); handle unauthenticated requests gracefully (public queries open, protected resolvers restricted). (3) Guards / Directives / Decorators: protect mutations and private queries from anonymous access. (4) Testing & SDD Compliance: unit and integration tests for valid tokens, expired tokens, missing headers, guarded routes; strict TypeScript; monorepo workspace boundaries."
 
+**Corrected by**: `specs/api/011-jwt-algorithm-support` — the verifier accepted only `RS256` while the project issues `ES256`; the allow-list and the test key were corrected there.
+
 ## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Recognize who is calling a protected operation (Priority: P1)
