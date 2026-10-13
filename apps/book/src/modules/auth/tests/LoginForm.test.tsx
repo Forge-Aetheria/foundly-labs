@@ -64,4 +64,14 @@ describe('LoginForm (009 — US1)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Email o contraseña incorrectos.');
     expect(pushMock).not.toHaveBeenCalled();
   });
+
+  it('explains the bounce when the session expired (feature 012)', () => {
+    render(
+      <FoundlyThemeProvider>
+        <LoginForm sessionExpired />
+      </FoundlyThemeProvider>,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(/sesión ha caducado/i);
+  });
 });

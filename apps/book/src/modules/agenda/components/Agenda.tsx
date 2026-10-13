@@ -16,6 +16,7 @@ import {
 } from '@foundly/ui';
 import type { Appointment, Resource, Service } from '../../../shared/types/appointments';
 import { useCreateAppointment } from '../hooks';
+import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 
 export interface AgendaRow {
   id: string;
@@ -281,11 +282,7 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
         </Stack>
       }
     >
-      {error ? (
-        <Typography variant="body2" color="error" role="alert" sx={{ mb: 2 }}>
-          {error}
-        </Typography>
-      ) : null}
+      <ApiErrorDialog title="No se pudo cargar la agenda" message={error} />
       {mounted && selectedDate ? (
         <DataTable
           columns={columns}

@@ -14,6 +14,7 @@ import {
   type DataTableColumn,
 } from '@foundly/ui';
 import { formatPrice } from '../../../shared/utils/format';
+import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import type { Rate, Service } from '../../../shared/types/appointments';
 
 export interface ServiceCatalogProps {
@@ -125,13 +126,7 @@ export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) 
         </Stack>
       }
     >
-      {error ? (
-        <Stack spacing={1} sx={{ mb: 2 }}>
-          <Typography variant="body2" color="error" role="alert">
-            {error}
-          </Typography>
-        </Stack>
-      ) : null}
+      <ApiErrorDialog title="No se pudieron cargar los servicios" message={error} />
       <DataTable
         columns={columns}
         rows={visible}

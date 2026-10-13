@@ -21,6 +21,7 @@ import {
   SECONDARY_BUTTON_SX,
 } from '../../../shared/utils/landingCanon';
 import { useCreateStaff, useRemoveStaff, useSetStaffActive, useUpdateStaff } from '../hooks';
+import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 
 export interface StaffManagerProps {
   staff: Resource[];
@@ -227,16 +228,8 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
 
   return (
     <Stack spacing={3}>
-      {error ? (
-        <Typography variant="body2" color="error" role="alert">
-          {error}
-        </Typography>
-      ) : null}
-      {actionNotice ? (
-        <Typography variant="body2" color="error" role="alert">
-          {actionNotice}
-        </Typography>
-      ) : null}
+      <ApiErrorDialog title="No se pudo cargar el equipo" message={error} />
+      <ApiErrorDialog title="No se pudo completar la acción" message={actionNotice} />
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
         <Stack spacing={0.25}>
           <Typography variant="h5" component="h1">

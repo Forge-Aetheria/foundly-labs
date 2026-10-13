@@ -3,6 +3,7 @@
 import Box from '@mui/material/Box';
 import { Badge, Card, Stack, Typography } from '@foundly/ui';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
+import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import type { BusinessHours, PortalPolicy, Tenant } from '../../../shared/types/tenancy';
 import { WEEKDAY_LABELS } from '../../../shared/utils/format';
 
@@ -76,11 +77,7 @@ export function ProfileEditor({ profile, policies, error }: ProfileEditorProps) 
         }
       >
         <Stack spacing={2}>
-          {error ? (
-            <Typography variant="body2" color="error" role="alert">
-              {error}
-            </Typography>
-          ) : null}
+          <ApiErrorDialog title="No se pudo cargar el perfil" message={error} />
 
           <Typography variant="h6" component="h2">
             Identidad

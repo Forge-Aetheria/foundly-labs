@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
 import { useSignIn } from '../hooks';
 
-/** Sign-in form (feature 009 — US1). Interacts through `useSignIn`. */
-export function LoginForm() {
+/** Sign-in form (feature 009 — US1; feature 012 session-expiry notice). Interacts through `useSignIn`. */
+export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean }) {
   const router = useRouter();
   const signIn = useSignIn();
   const [email, setEmail] = useState('');
@@ -40,6 +40,11 @@ export function LoginForm() {
   return (
     <form onSubmit={submit} noValidate>
       <Stack spacing={2}>
+        {sessionExpired ? (
+          <Typography role="status" variant="body2" sx={{ color: 'primary.main', fontWeight: 600 }}>
+            Tu sesión ha caducado. Vuelve a iniciar sesión para continuar.
+          </Typography>
+        ) : null}
         <TextField
           label="Email"
           name="email"

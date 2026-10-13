@@ -1,0 +1,8 @@
+# Auth (feature 012) — verifies the API accepts the owner's token at sign-in.
+query Viewer {
+  viewer {
+    sub
+    email
+    role
+  }
+}

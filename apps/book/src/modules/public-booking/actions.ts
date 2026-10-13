@@ -298,6 +298,13 @@ export async function bookPublicAppointment(input: unknown): Promise<ActionResul
       notes: parsed.data.notes ?? null,
     },
   });
-  if (!created.ok) return created;
+  if (!created.ok) {
+    // The API reports overlaps in English ("Slot overlaps…"); keep the public
+    // message precise without leaking provider text.
+    if (created.error.code === 'CONFLICT') {
+      return fail('CONFLICT', 'Ese hueco ya está ocupado. Elige otro horario.');
+    }
+    return created;
+  }
   return ok(mapAppointment(created.data.createAppointment));
 }

@@ -1,8 +1,8 @@
 import { Card, Container, Stack, Typography } from '@foundly/ui';
 import { LoginForm } from './components/LoginForm';
 
-/** Sign-in view (feature 009 — US1): server shell around the client form. */
-export function LoginView() {
+/** Sign-in view (feature 009 — US1; feature 012 session-expiry notice). Server shell around the client form. */
+export function LoginView({ sessionExpired = false }: { sessionExpired?: boolean }) {
   return (
     <Container maxWidth="sm" sx={{ py: { xs: 6, md: 10 } }}>
       <Stack spacing={3}>
@@ -15,7 +15,7 @@ export function LoginView() {
           </Typography>
         </Stack>
         <Card>
-          <LoginForm />
+          <LoginForm sessionExpired={sessionExpired} />
         </Card>
       </Stack>
     </Container>

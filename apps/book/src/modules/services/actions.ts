@@ -1,6 +1,5 @@
-import { apiRequest } from '../../shared/api/client';
+import { apiRequestAdmin } from '../../shared/api/admin-request';
 import { MyServicesDocument, type MyServicesQuery } from '../../shared/api/generated';
-import { getAccessToken } from '../../shared/auth/authServer';
 import { ok, type ActionResult } from '../../shared/types/result';
 import type { Rate, Service } from '../../shared/types/appointments';
 
@@ -43,8 +42,7 @@ export function mapMyService(dto: ApiService, tenantId: string): { service: Serv
 
 /** The tenant's services with their current rates. SERVER-ONLY, no fallback. */
 export async function listServices(tenantId: string): Promise<ActionResult<ServiceCatalogResult>> {
-  const token = await getAccessToken();
-  const result = await apiRequest(MyServicesDocument, { active: null }, { token });
+  const result = await apiRequestAdmin(MyServicesDocument, { active: null });
   if (!result.ok) return result;
   const mapped = result.data.myServices.map((dto) => mapMyService(dto, tenantId));
   return ok({

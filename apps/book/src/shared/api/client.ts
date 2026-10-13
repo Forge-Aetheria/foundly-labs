@@ -1,6 +1,7 @@
 import { request, type RequestDocument, type Variables } from 'graphql-request';
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core';
 import { fail, ok, type ActionResult, type ErrorCode } from '../types/result';
+import { errorMessage } from './error-surface';
 
 /**
  * Typed GraphQL transport for the Foundly API (feature 008; feature 011).
@@ -56,11 +57,12 @@ export function mapActionError(error: unknown): ActionResult<never> {
     if (first?.extensions?.code) {
       const code = mapErrorCode(first.extensions.code);
       if (code) {
-        return fail(code, first.message || 'Error de la API');
+        // Never leak the raw provider message (English/technical) to the UI.
+        return fail(code, errorMessage(code));
       }
     }
   }
-  return fail('STATE_ERROR', 'No se pudo conectar con el servicio. Inténtalo de nuevo.');
+  return fail('STATE_ERROR', errorMessage('STATE_ERROR'));
 }
 
 /**

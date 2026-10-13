@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Badge, Button, Card, Chip, Stack, TextField, Typography } from '@foundly/ui';
 import type { AvailabilityRule, TimeBlock } from '../../../shared/types/appointments';
 import { useSaveAvailability } from '../hooks';
+import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -104,11 +105,7 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
       }
     >
       <Stack spacing={1.5}>
-        {error ? (
-          <Typography variant="body2" color="error" role="alert">
-            {error}
-          </Typography>
-        ) : null}
+        <ApiErrorDialog title="No se pudo cargar la disponibilidad" message={error} />
         {days.map((day) => (
           <Stack
             key={day.weekday}

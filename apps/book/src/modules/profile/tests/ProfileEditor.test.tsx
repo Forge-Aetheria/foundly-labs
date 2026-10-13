@@ -72,7 +72,7 @@ describe('ProfileEditor (admin Perfil y Acerca de, 007 — feature 010 read-only
       </FoundlyThemeProvider>,
     );
 
-    expect(screen.getByRole('alert')).toHaveTextContent('No se pudo cargar el perfil.');
+    expect(screen.getByRole('dialog')).toHaveTextContent('No se pudo cargar el perfil.');
     expect(screen.getByText('Horario no disponible todavía.')).toBeInTheDocument();
   });
 });

@@ -1,6 +1,7 @@
 'use server';
 
 import { apiRequest } from '../../shared/api/client';
+import { apiRequestAdmin } from '../../shared/api/admin-request';
 import {
   AppointmentDocument,
   AppointmentStatus,
@@ -11,7 +12,7 @@ import {
   UpdateAppointmentStatusDocument,
   type AppointmentsQuery,
 } from '../../shared/api/generated';
-import { getAccessToken, getEffectiveSession } from '../../shared/auth/authServer';
+import { getEffectiveSession } from '../../shared/auth/authServer';
 import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
 import type { Appointment } from '../../shared/types/appointments';
 import { cancelAppointmentSchema, changeStatusSchema, createAppointmentSchema } from './utils/schemas';
@@ -121,8 +122,7 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Ap
   }
   if (!session.tenantId) return fail('FORBIDDEN', 'La sesión no está asociada a un negocio.');
 
-  const token = await getAccessToken();
-  const services = await apiRequest(MyServicesDocument, { active: null }, { token });
+  const services = await apiRequestAdmin(MyServicesDocument, { active: null });
   if (!services.ok) return services;
   const service = services.data.myServices.find((item) => item.id === parsed.data.serviceId);
   if (!service) return fail('NOT_FOUND', 'Servicio no encontrado.');
