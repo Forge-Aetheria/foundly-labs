@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import { AvailabilityEditor } from '../components/AvailabilityEditor';
+
+vi.mock('../utils/actions', () => ({
+  saveWeeklyAvailability: vi.fn(async () => ({ ok: true, data: { updated: true } })),
+}));
 
 const rules = [
   {

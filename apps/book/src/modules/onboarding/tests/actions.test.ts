@@ -1,7 +1,19 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { getStore, resetStore } from '../../../shared/infra/store';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createBusiness, validateSlug } from '../utils/actions';
 import type { BookingDraft } from '../../../shared/types/tenancy';
+
+const { provisionMock, fetchTenantBySlugMock } = vi.hoisted(() => ({
+  provisionMock: vi.fn(),
+  fetchTenantBySlugMock: vi.fn(),
+}));
+
+vi.mock('../utils/server', () => ({
+  provisionOnboardingRemote: (...args: unknown[]) => provisionMock(...args),
+}));
+
+vi.mock('../../../shared/infra/remoteTenancy', () => ({
+  fetchTenantBySlug: (...args: unknown[]) => fetchTenantBySlugMock(...args),
+}));
 
 const hours = [0, 1, 2, 3, 4, 5, 6].map((weekday) =>
   weekday === 0
@@ -16,12 +28,33 @@ const input = {
   setup: { defaultAppointmentDurationMinutes: 45, businessHours: hours },
 };
 
-describe('onboarding actions (contracts/onboarding.contract.md)', () => {
+describe('onboarding actions (contracts/onboarding.contract.md — server-only)', () => {
   beforeEach(() => {
-    resetStore();
+    vi.clearAllMocks();
+    provisionMock.mockResolvedValue({
+      ok: true,
+      data: { tenantId: 'ten-remote', redirectTo: '/admin/agenda' },
+    });
+    fetchTenantBySlugMock.mockResolvedValue({ ok: true, data: null });
   });
 
-  it('rejects a registered email with EMAIL_TAKEN', async () => {
+  it('delegates provisioning to the remote provider (no local fallback)', async () => {
+    const result = await createBusiness(input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.redirectTo).toBe('/admin/agenda');
+    expect(provisionMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('surfaces a remote EMAIL_TAKEN failure without inventing a local account', async () => {
+    provisionMock.mockResolvedValue({
+      ok: false,
+      error: {
+        code: 'EMAIL_TAKEN',
+        message: 'Ese email ya está registrado.',
+        fields: { email: 'El email ya está en uso.' },
+      },
+    });
     const result = await createBusiness({
       ...input,
       draftId: 'd-email',
@@ -31,71 +64,33 @@ describe('onboarding actions (contracts/onboarding.contract.md)', () => {
     if (!result.ok) expect(result.error.code).toBe('EMAIL_TAKEN');
   });
 
-  it('rejects an existing slug with SLUG_TAKEN', async () => {
-    const result = await createBusiness({
-      ...input,
-      draftId: 'd-slug',
-      business: { ...input.business, slug: 'estudio-ana' },
-    });
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe('SLUG_TAKEN');
-  });
-
-  it('provisions tenant + owner + defaults and is idempotent per draftId', async () => {
-    const first = await createBusiness(input);
-    expect(first.ok).toBe(true);
-    if (!first.ok) return;
-    expect(first.data.redirectTo).toBe('/admin/agenda');
-
-    const second = await createBusiness(input);
-    expect(second.ok).toBe(true);
-    if (!second.ok) return;
-    expect(second.data.tenantId).toBe(first.data.tenantId);
-
-    const tenants = getStore().tenants.filter((tenant) => tenant.slug === 'estudio-nuevo');
-    expect(tenants).toHaveLength(1);
-  });
-
-  it('provisions a default resource, service and availability rules (SC-005)', async () => {
-    const result = await createBusiness(input);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-
-    const tenant = getStore().tenants.find((item) => item.slug === 'estudio-nuevo');
-    if (!tenant) throw new Error('tenant missing');
-
-    expect(tenant.status).toBe('active');
-    expect(tenant.defaultAppointmentDurationMinutes).toBe(45);
-    expect(tenant.businessHours.filter((hours) => hours.isOpen)).toHaveLength(6);
-
-    const resource = getStore().resources.find((item) => item.id === `res-${tenant.id}`);
-    expect(resource).toBeDefined();
-
-    const rules = getStore().availabilityRules.filter((rule) => rule.resourceId === resource?.id);
-    expect(rules.length).toBe(6);
-
-    const service = getStore().services.find((item) => item.id === `svc-${tenant.id}`);
-    expect(service?.durationMinutes).toBe(45);
-
-    const owner = getStore().users.find((user) => user.id === tenant.ownerUserId);
-    expect(owner?.tenantId).toBe(tenant.id);
-    expect(owner?.role).toBe('owner');
-  });
-
-  it('reports slug availability', () => {
-    expect(validateSlug('estudio-nuevo')).toEqual({ available: true });
-    expect(validateSlug('estudio-ana')).toEqual({ available: false, reason: 'taken' });
-    expect(validateSlug('admin')).toEqual({ available: false, reason: 'reserved' });
-    expect(validateSlug('Mi Negocio')).toEqual({ available: false, reason: 'format' });
-  });
-
-  it('rejects an invalid draft shape with VALIDATION_ERROR', async () => {
+  it('rejects an invalid draft shape with VALIDATION_ERROR before hitting remote', async () => {
     const result = await createBusiness({
       ...input,
       setup: { ...input.setup, defaultAppointmentDurationMinutes: 0 },
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('VALIDATION_ERROR');
+    expect(provisionMock).not.toHaveBeenCalled();
+  });
+
+  it('reports slug availability against the backend (no store)', async () => {
+    await expect(validateSlug('estudio-nuevo')).resolves.toEqual({ available: true });
+
+    fetchTenantBySlugMock.mockResolvedValue({
+      ok: true,
+      data: { id: 'ten-ana', name: 'Estudio Ana', category: 'Peluquería', status: 'active' },
+    });
+    await expect(validateSlug('estudio-ana')).resolves.toEqual({
+      available: false,
+      reason: 'taken',
+    });
+
+    await expect(validateSlug('admin')).resolves.toEqual({ available: false, reason: 'reserved' });
+    await expect(validateSlug('Mi Negocio')).resolves.toEqual({
+      available: false,
+      reason: 'format',
+    });
   });
 
   it('keeps BookingDraft structurally compatible', () => {

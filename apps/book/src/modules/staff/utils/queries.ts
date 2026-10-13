@@ -1,18 +1,13 @@
 import type { Resource } from '../../../shared/types/appointments';
-import { getStore } from '../../../shared/infra/store';
-import { getAccessToken, getEffectiveSession } from '../../../shared/infra/authServer';
+import { getAccessToken } from '../../../shared/infra/authServer';
 import { listRemoteSpecialists } from '../../../shared/infra/remoteCatalog';
+import type { ActionResult } from '../../../shared/infra/result';
 
 /**
  * The tenant's professionals, active and inactive (feature 008 — US1).
- * Remote-first with store fallback (US3). `serviceIds`/`timezone` stay local.
+ * SERVER-ONLY (feature 010 — T010): no in-memory fallback; failures surface.
  */
-export async function listStaff(tenantId: string): Promise<Resource[]> {
-  const session = await getEffectiveSession();
-  if (session?.tenantId === tenantId) {
-    const token = await getAccessToken();
-    const remote = await listRemoteSpecialists(token, tenantId);
-    if (remote.ok) return remote.data;
-  }
-  return getStore().resources.filter((resource) => resource.tenantId === tenantId);
+export async function listStaff(tenantId: string): Promise<ActionResult<Resource[]>> {
+  const token = await getAccessToken();
+  return listRemoteSpecialists(token, tenantId);
 }

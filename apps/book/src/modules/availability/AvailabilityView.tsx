@@ -5,7 +5,11 @@ import { getAdminTenantId } from '../../shared/tenancy/queries';
 /** Availability module view (server): rules + time blocks for the tenant. */
 export async function AvailabilityView() {
   const tenantId = await getAdminTenantId();
-  return (
-    <AvailabilityEditor rules={listAvailabilityRules(tenantId)} blocks={listTimeBlocks(tenantId)} />
-  );
+  const [rulesResult, blocks] = await Promise.all([
+    listAvailabilityRules(tenantId),
+    listTimeBlocks(),
+  ]);
+  const rules = rulesResult.ok ? rulesResult.data : [];
+  const error = rulesResult.ok ? null : rulesResult.error.message;
+  return <AvailabilityEditor rules={rules} blocks={blocks} error={error} />;
 }

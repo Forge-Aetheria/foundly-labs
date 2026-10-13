@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   Card,
+  Chip,
   DataTable,
   Modal,
   Stack,
@@ -13,6 +14,8 @@ import {
   type BadgeStatus,
   type DataTableColumn,
 } from '@foundly/ui';
+import type { Appointment, Resource, Service } from '../../../shared/types/appointments';
+import { createAppointment } from '../utils/actions';
 
 export interface AgendaRow {
   id: string;
@@ -28,6 +31,12 @@ export interface AgendaRow {
 
 export interface AgendaProps {
   appointments: AgendaRow[];
+  /** Tenant catalog (real services) for the create flow. */
+  services?: Service[];
+  /** Tenant professionals (real specialists) for the create flow. */
+  resources?: Resource[];
+  /** Backend/load error surfaced to the user (FR-010). */
+  error?: string | null;
 }
 
 const STATUS_BADGE: Record<string, BadgeStatus> = {
@@ -74,17 +83,19 @@ function dateKey(date: Date): string {
 type ModalState = { kind: 'create' } | { kind: 'detail'; row: AgendaRow } | null;
 
 /** Agenda view: header + day/status filters + appointments table (Clean Light UI). */
-export function Agenda({ appointments }: AgendaProps) {
+export function Agenda({ appointments, services = [], resources = [], error }: AgendaProps) {
   const [rows, setRows] = useState<AgendaRow[]>(appointments);
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [modal, setModal] = useState<ModalState>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [form, setForm] = useState({
     clientName: '',
     clientEmail: '',
     clientPhone: '',
-    serviceName: '',
+    serviceId: '',
+    specialistId: '',
     date: '',
     time: '09:00',
   });
@@ -113,31 +124,50 @@ export function Agenda({ appointments }: AgendaProps) {
   }, [rows, selectedDate, statusFilter]);
 
   function openCreate() {
+    setCreateError(null);
     setForm((prev) => ({ ...prev, date: selectedDate ?? '' }));
     setModal({ kind: 'create' });
   }
 
-  function saveCreate() {
-    const startAt = `${form.date}T${form.time}:00`;
-    const endAt = `${form.date}T${String((Number(form.time.slice(0, 2)) + 1) % 24).padStart(2, '0')}:${form.time.slice(3, 5)}:00`;
-    const newRow: AgendaRow = {
-      id: crypto.randomUUID(),
-      startAt,
-      endAt,
-      clientName: form.clientName || '—',
+  async function saveCreate() {
+    setCreateError(null);
+    if (!form.serviceId || !form.specialistId) {
+      setCreateError('Selecciona un servicio y un profesional reales.');
+      return;
+    }
+    const result = await createAppointment({
+      resourceId: form.specialistId,
+      serviceId: form.serviceId,
+      clientName: form.clientName,
       clientContact:
-        form.clientEmail || form.clientPhone ? `${form.clientEmail} · ${form.clientPhone}` : null,
-      serviceName: form.serviceName || '—',
-      durationMinutes: 30,
-      resourceName: '—',
-      status: 'pending',
+        form.clientEmail || form.clientPhone ? `${form.clientEmail} · ${form.clientPhone}` : undefined,
+      startAt: `${form.date}T${form.time}:00`,
+    });
+    if (!result.ok) {
+      setCreateError(result.error.message);
+      return;
+    }
+    const created: Appointment = result.data;
+    const service = services.find((item) => item.id === created.serviceId);
+    const resource = resources.find((item) => item.id === created.resourceId);
+    const newRow: AgendaRow = {
+      id: created.id,
+      startAt: created.startAt,
+      endAt: created.endAt,
+      clientName: created.clientName,
+      clientContact: created.clientContact,
+      serviceName: service?.name ?? '—',
+      durationMinutes: created.appliedDurationMinutes,
+      resourceName: resource?.name ?? '—',
+      status: created.status,
     };
     setRows((prev) => [newRow, ...prev]);
     setForm({
       clientName: '',
       clientEmail: '',
       clientPhone: '',
-      serviceName: '',
+      serviceId: '',
+      specialistId: '',
       date: '',
       time: '09:00',
     });
@@ -250,6 +280,11 @@ export function Agenda({ appointments }: AgendaProps) {
         </Stack>
       }
     >
+      {error ? (
+        <Typography variant="body2" color="error" role="alert" sx={{ mb: 2 }}>
+          {error}
+        </Typography>
+      ) : null}
       {mounted && selectedDate ? (
         <DataTable
           columns={columns}
@@ -279,11 +314,46 @@ export function Agenda({ appointments }: AgendaProps) {
               value={form.clientPhone}
               onChange={(value) => setForm((prev) => ({ ...prev, clientPhone: value }))}
             />
-            <TextField
-              label="Servicio"
-              value={form.serviceName}
-              onChange={(value) => setForm((prev) => ({ ...prev, serviceName: value }))}
-            />
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Servicio
+            </Typography>
+            {services.length > 0 ? (
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                {services.map((service) => (
+                  <Chip
+                    key={service.id}
+                    label={service.name}
+                    selectable
+                    selected={form.serviceId === service.id}
+                    onClick={() => setForm((prev) => ({ ...prev, serviceId: service.id }))}
+                  />
+                ))}
+              </Stack>
+            ) : (
+              <Typography variant="caption" color="text.secondary">
+                No hay servicios disponibles.
+              </Typography>
+            )}
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Profesional
+            </Typography>
+            {resources.length > 0 ? (
+              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                {resources.map((resource) => (
+                  <Chip
+                    key={resource.id}
+                    label={resource.name}
+                    selectable
+                    selected={form.specialistId === resource.id}
+                    onClick={() => setForm((prev) => ({ ...prev, specialistId: resource.id }))}
+                  />
+                ))}
+              </Stack>
+            ) : (
+              <Typography variant="caption" color="text.secondary">
+                No hay profesionales disponibles.
+              </Typography>
+            )}
             <TextField
               label="Fecha"
               type="date"
@@ -296,6 +366,11 @@ export function Agenda({ appointments }: AgendaProps) {
               value={form.time}
               onChange={(value) => setForm((prev) => ({ ...prev, time: value }))}
             />
+            {createError ? (
+              <Typography variant="body2" color="error" role="alert">
+                {createError}
+              </Typography>
+            ) : null}
             <Stack direction="row" justifyContent="flex-end" spacing={1}>
               <Button variant="secondary" onClick={() => setModal(null)}>
                 Cancelar

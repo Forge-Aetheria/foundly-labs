@@ -68,25 +68,27 @@ equipo) y la **tenancy** (onboarding → creación de negocio + vinculación `te
 4. Sesión: `src/middleware.ts` refresca las cookies de Supabase; `getEffectiveSession()` (server-only)
    resuelve la identidad (claims `sub` + `app_metadata.tenant_id`).
 
-Sin entorno remoto configurado, la app degrada con gracia al store en memoria (secciones no migradas:
-galería, reseñas, políticas, agenda/disponibilidad). Escenarios de validación en el
-`quickstart.md` de la spec del feature.
+Sin entorno remoto configurado, `signIn`/`signOut` fallan **visiblemente** (la autenticación es solo del
+proveedor; no hay seam local). Las secciones aún no migradas al backend (galería, reseñas, políticas,
+agenda/disponibilidad) siguen leyendo del store en memoria de forma transitoria; se migran en las fases
+del feature `010-remove-local-store`. Escenarios de validación en el `quickstart.md` de la spec del feature.
 
 ## Autenticación (feature `009-admin-auth`)
 
 Ciclo de acceso completo del propietario:
 
-- **Login**: `/login` autentica con email + contraseña (`signIn`). En **modo live** usa Supabase Auth
-  (`signInWithPassword`); en **modo local** (sin `NEXT_PUBLIC_SUPABASE_*`) valida contra el store en
-  memoria y fija una cookie httpOnly. Cuenta de desarrollo sembrada: `ana@foundly.dev` / `mock-credential`.
+- **Login**: `/login` autentica con email + contraseña (`signIn`) vía **Supabase Auth** únicamente
+  (`signInWithPassword`); sin `NEXT_PUBLIC_SUPABASE_*` no hay sesión posible (feature `010` eliminó el
+  modo local/cookie).
 - **Logout**: la acción `signOut` (botón en el footer del panel) cierra la sesión y redirige a `/login`.
 - **Protección de rutas**: `src/middleware.ts` redirige `/admin/*` sin sesión a `/login` y `/login` con
   sesión a `/admin/agenda`; las guardas de servidor (layout admin, `getAdminTenantId`) re-verifican.
 - **Enlace público**: el panel muestra un botón "Ver página pública" con la URL del `slug` del negocio.
 - **Cambio de contraseña**: `/admin/seguridad` actualiza la contraseña exigiendo la actual (re-auth en live).
 
-`getEffectiveSession()` (server-only) resuelve la sesión live primero y, si no, la cookie local; el
-store en memoria ya **no** autentica por sí solo. Detalles: `specs/book/009-admin-auth/`.
+`getEffectiveSession()` (server-only) resuelve la sesión **solo** desde los claims live de Supabase
+(`sub` + `app_metadata.tenant_id`); el store en memoria **no** autentica por sí solo y la cookie local
+fue eliminada. Detalles: `specs/book/009-admin-auth/` y `specs/book/010-remove-local-store/`.
 
 ## Dominio y datos
 

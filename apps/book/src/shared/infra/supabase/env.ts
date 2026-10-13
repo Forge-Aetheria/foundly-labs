@@ -17,8 +17,3 @@ export function supabaseAdminEnv(): { url: string; serviceRoleKey: string } | nu
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   return url && serviceRoleKey ? { url, serviceRoleKey } : null;
 }
-
-/** Whether live Supabase integration is configured at all (feature 008). */
-export function hasLiveAuth(): boolean {
-  return liveAuthEnv() !== null;
-}

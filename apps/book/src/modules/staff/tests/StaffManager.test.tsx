@@ -1,32 +1,90 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import type { Resource, Service } from '../../../shared/types/appointments';
-import { getStore, resetStore } from '../../../shared/infra/store';
-import { getPublicBusiness } from '../../public-booking/utils/queries';
 import { StaffManager } from '../components/StaffManager';
 
-function staffFromStore(): Resource[] {
-  return getStore().resources.filter((resource) => resource.tenantId === 'ten-ana');
+const { staffActionsMock } = vi.hoisted(() => ({
+  staffActionsMock: {
+    createStaff: vi.fn(),
+    updateStaff: vi.fn(),
+    setStaffActive: vi.fn(),
+    removeStaff: vi.fn(),
+  },
+}));
+
+vi.mock('../utils/actions', () => staffActionsMock);
+
+const services: Service[] = [
+  {
+    id: 'svc-corte',
+    name: 'Corte de cabello',
+    description: null,
+    durationMinutes: 30,
+    bufferMinutes: 0,
+    category: null,
+    active: true,
+    tenantId: 'ten-ana',
+  },
+];
+
+function makeResource(overrides: Partial<Resource> = {}): Resource {
+  return {
+    id: 'res-ana',
+    name: 'Ana Profesional',
+    type: 'professional',
+    active: true,
+    timezone: 'Europe/Madrid',
+    tenantId: 'ten-ana',
+    role: 'Peluquera senior',
+    avatar: null,
+    bio: 'Especialista en cortes, color y acabados.',
+    serviceIds: ['svc-corte'],
+    ...overrides,
+  };
 }
 
-function servicesFromStore(): Service[] {
-  return getStore().services.filter((service) => service.tenantId === 'ten-ana');
-}
-
-function renderManager() {
+function renderManager(staff: Resource[] = [makeResource(), makeResource({ id: 'res-luis', name: 'Luis Estilista', role: 'Barbero', serviceIds: [] })]) {
   return render(
     <FoundlyThemeProvider>
-      <StaffManager staff={staffFromStore()} services={servicesFromStore()} />
+      <StaffManager staff={staff} services={services} />
     </FoundlyThemeProvider>,
   );
 }
 
 describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
   beforeEach(() => {
-    resetStore();
+    vi.clearAllMocks();
+
+    staffActionsMock.createStaff.mockImplementation(async (input: unknown) => {
+      const data = input as { name: string; role?: string | null; bio?: string | null; avatar?: string | null; active?: boolean; serviceIds?: string[] };
+      return {
+        ok: true as const,
+        data: makeResource({
+          id: 'res-new',
+          name: data.name,
+          role: data.role ?? null,
+          bio: data.bio ?? null,
+          avatar: data.avatar ?? null,
+          active: data.active ?? true,
+          serviceIds: data.serviceIds ?? [],
+        }),
+      };
+    });
+    staffActionsMock.updateStaff.mockImplementation(async (input: unknown) => {
+      const data = input as { id: string; name?: string; role?: string | null; bio?: string | null; avatar?: string | null; active?: boolean; serviceIds?: string[] };
+      return { ok: true as const, data: makeResource({ id: data.id, name: data.name ?? 'Ana Profesional', serviceIds: data.serviceIds ?? [] }) };
+    });
+    staffActionsMock.setStaffActive.mockImplementation(async (input: unknown) => {
+      const data = input as { id: string; active: boolean };
+      return { ok: true as const, data: makeResource({ id: data.id, name: 'Ana Profesional', active: data.active }) };
+    });
+    staffActionsMock.removeStaff.mockImplementation(async (input: unknown) => {
+      const data = input as { id: string };
+      return { ok: true as const, data: { id: data.id } };
+    });
   });
 
   it('renders the member grid with service and status badges plus actions', async () => {
@@ -34,22 +92,17 @@ describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
 
     expect(screen.getByText('Equipo y Especialistas')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '+ Añadir Profesional' })).toBeInTheDocument();
-
-    // Ana carries an assigned service; Luis has none.
     expect(screen.getByText('Ana Profesional')).toBeInTheDocument();
     expect(screen.getByText('Corte de cabello')).toBeInTheDocument();
     expect(screen.getByText('Sin servicios asignados')).toBeInTheDocument();
     expect(screen.getAllByText('Activo')).toHaveLength(2);
-
     expect(screen.getAllByRole('button', { name: 'Desactivar' })).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: 'Editar' })).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: 'Eliminar' })).toHaveLength(2);
 
     const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
     expect(results.violations).toHaveLength(0);
   });
 
-  it('adds a professional with an assigned service, reflected on the public portal', async () => {
+  it('adds a professional through the server action', async () => {
     const user = userEvent.setup();
     renderManager();
 
@@ -59,13 +112,8 @@ describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Corte de cabello' }));
     await user.click(screen.getByRole('button', { name: 'Guardar profesional' }));
 
-    expect(screen.getByText('Nuria Pons')).toBeInTheDocument();
-    const portal = getPublicBusiness('estudio-ana');
-    expect(portal.status).toBe('available');
-    if (portal.status === 'available') {
-      const specialist = portal.business.specialists.find((s) => s.name === 'Nuria Pons');
-      expect(specialist?.services).toContain('Corte de cabello');
-    }
+    expect(await screen.findByText('Nuria Pons')).toBeInTheDocument();
+    expect(staffActionsMock.createStaff).toHaveBeenCalledTimes(1);
   });
 
   it('blocks saving when name or role are missing', async () => {
@@ -77,9 +125,8 @@ describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
 
     expect(screen.getByText('El nombre es obligatorio.')).toBeInTheDocument();
     expect(screen.getByText('El cargo es obligatorio.')).toBeInTheDocument();
-
-    // The modal stays open.
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(staffActionsMock.createStaff).not.toHaveBeenCalled();
   });
 
   it('warns when no service is assigned while allowing the save', async () => {
@@ -87,10 +134,7 @@ describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
     renderManager();
 
     await user.click(screen.getByRole('button', { name: '+ Añadir Profesional' }));
-    const warning = screen.getByText(/no tiene ningún servicio asignado/i);
-    expect(warning).toBeInTheDocument();
-
-    // Select a service and the warning clears.
+    expect(screen.getByText(/no tiene ningún servicio asignado/i)).toBeInTheDocument();
     await user.click(screen.getByRole('checkbox', { name: 'Corte de cabello' }));
     expect(screen.queryByText(/no tiene ningún servicio asignado/i)).not.toBeInTheDocument();
   });
@@ -99,28 +143,20 @@ describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
     const user = userEvent.setup();
     renderManager();
 
-    // Ana: data saved on the seeded store.
     await user.click(screen.getAllByRole('button', { name: 'Editar' })[0]!);
-
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('Editar · Ana Profesional')).toBeInTheDocument();
     expect(screen.getByLabelText(/Nombre/)).toHaveValue('Ana Profesional');
     expect(screen.getByLabelText(/Cargo/)).toHaveValue('Peluquera senior');
     expect(screen.getByRole('checkbox', { name: 'Corte de cabello' })).toBeChecked();
-    expect(screen.getByRole('checkbox', { name: /Activo/ })).toBeChecked();
   });
 
-  it('toggles a professional away from the public team', async () => {
+  it('toggles a professional to inactive through the server action', async () => {
     const user = userEvent.setup();
     renderManager();
 
     await user.click(screen.getAllByRole('button', { name: 'Desactivar' })[0]!);
     expect(screen.getAllByText('Inactivo')).toHaveLength(1);
-
-    const portal = getPublicBusiness('estudio-ana');
-    if (portal.status === 'available') {
-      expect(portal.business.specialists.map((s) => s.name)).not.toContain('Ana Profesional');
-    }
+    expect(staffActionsMock.setStaffActive).toHaveBeenCalledWith({ id: 'res-ana', active: false });
   });
 
   it('removes a professional after confirming the dialog', async () => {
@@ -131,5 +167,6 @@ describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
     await user.click(screen.getByRole('button', { name: 'Sí, eliminar' }));
 
     expect(screen.queryByText('Ana Profesional')).not.toBeInTheDocument();
+    expect(staffActionsMock.removeStaff).toHaveBeenCalledWith({ id: 'res-ana' });
   });
 });

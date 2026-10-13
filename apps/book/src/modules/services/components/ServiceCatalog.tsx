@@ -19,12 +19,14 @@ import type { Rate, Service } from '../../../shared/types/appointments';
 export interface ServiceCatalogProps {
   services: Service[];
   rates: Rate[];
+  /** Backend error surfaced to the user (FR-010) when the API is unreachable. */
+  error?: string | null;
 }
 
 type Feedback = { kind: 'create' } | { kind: 'edit'; service: Service } | null;
 
 /** Services view: searchable catalog with row actions (Clean Light UI). */
-export function ServiceCatalog({ services, rates }: ServiceCatalogProps) {
+export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) {
   const [query, setQuery] = useState('');
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
@@ -123,6 +125,13 @@ export function ServiceCatalog({ services, rates }: ServiceCatalogProps) {
         </Stack>
       }
     >
+      {error ? (
+        <Stack spacing={1} sx={{ mb: 2 }}>
+          <Typography variant="body2" color="error" role="alert">
+            {error}
+          </Typography>
+        </Stack>
+      ) : null}
       <DataTable
         columns={columns}
         rows={visible}

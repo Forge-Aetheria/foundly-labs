@@ -1,165 +1,163 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import type { Appointment } from '../../../shared/types/appointments';
-import type { BusinessHours, Tenant } from '../../../shared/types/tenancy';
-import { getStore, resetStore } from '../../../shared/infra/store';
-import { getOfferedSlots, getPublicBusiness } from '../utils/queries';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { TenantDto } from '../../../shared/infra/remoteTenancy';
+import type { AvailabilityDto } from '../../../shared/infra/remoteAvailability';
+import type { PublicSpecialistDto } from '../../../shared/infra/remoteSpecialists';
+import { deriveWeeklyHours, getPublicBusinessRemote } from '../utils/queries';
 
-const NOW = '2026-10-09T00:00:00.000Z';
-const hours: BusinessHours[] = [0, 1, 2, 3, 4, 5, 6].map((weekday) =>
-  weekday === 0
-    ? { weekday, isOpen: false, startTime: '', endTime: '' }
-    : { weekday, isOpen: true, startTime: '09:00', endTime: '18:00' },
-);
+const { tenantMock, specialistsMock, availabilityMock } = vi.hoisted(() => ({
+  tenantMock: vi.fn(),
+  specialistsMock: vi.fn(),
+  availabilityMock: vi.fn(),
+}));
 
-function makeTenant(id: string, slug: string, status: Tenant['status']): Tenant {
+vi.mock('../../../shared/infra/remoteTenancy', () => ({
+  fetchTenantBySlug: (...args: unknown[]) => tenantMock(...args),
+}));
+vi.mock('../../../shared/infra/remoteSpecialists', () => ({
+  listPublicSpecialists: (...args: unknown[]) => specialistsMock(...args),
+}));
+vi.mock('../../../shared/infra/remoteAvailability', () => ({
+  listRemoteAvailability: (...args: unknown[]) => availabilityMock(...args),
+}));
+
+function makeTenantDto(status = 'active'): TenantDto {
   return {
-    id,
-    name: `Negocio ${slug}`,
-    slug,
-    category: 'Salón',
+    id: 'ten-ana',
+    name: 'Estudio Ana',
+    category: 'Peluquería',
     status,
-    ownerUserId: `u-${id}`,
-    defaultAppointmentDurationMinutes: 30,
-    businessHours: hours,
-    currency: 'EUR',
     timezone: 'Europe/Madrid',
-    onlineBookingEnabled: true,
-    license: null,
-    avatar: null,
-    cover: null,
-    bio: null,
-    address: null,
-    phone: null,
-    social: null,
-    createdAt: NOW,
-    updatedAt: NOW,
+    currency: 'EUR',
+    profile: {
+      slug: 'estudio-ana',
+      bio: 'Estudio de referencia en Madrid.',
+      address: 'Calle Mayor 7, 28013 Madrid',
+      phone: '+34 612 345 678',
+      instagram: 'https://instagram.com/estudioana',
+      whatsapp: 'https://wa.me/34612345678',
+      logo: null,
+      cover: null,
+    },
+    services: [
+      {
+        id: 'svc-corte',
+        name: 'Corte de cabello',
+        description: 'Corte y peinado',
+        durationMinutes: 30,
+        priceCents: 2000,
+        currency: 'EUR',
+        category: 'Peluquería',
+        active: true,
+      },
+      {
+        id: 'svc-inactive',
+        name: 'Oculto',
+        description: null,
+        durationMinutes: 20,
+        priceCents: 1000,
+        currency: 'EUR',
+        category: null,
+        active: false,
+      },
+    ],
   };
 }
 
-describe('public-booking queries (contracts/portal-profile.contract.md)', () => {
+function makeSpecialist(): PublicSpecialistDto {
+  return {
+    id: 'res-ana',
+    tenantId: 'ten-ana',
+    name: 'Ana',
+    role: 'Peluquera senior',
+    avatar: null,
+    bio: null,
+    active: true,
+    services: [{ id: 'svc-corte', name: 'Corte de cabello' }],
+  };
+}
+
+function makeRule(overrides: Partial<AvailabilityDto> = {}): AvailabilityDto {
+  return {
+    id: 'rule-1',
+    tenantId: 'ten-ana',
+    specialistId: null,
+    weekday: 1,
+    startTime: '09:00',
+    endTime: '18:00',
+    slotGranularityMinutes: 30,
+    minLeadTimeMinutes: 0,
+    bookingHorizonDays: 60,
+    breaks: null,
+    ...overrides,
+  };
+}
+
+describe('public-booking queries (feature 010 — server-only)', () => {
   beforeEach(() => {
-    resetStore();
+    vi.clearAllMocks();
+    tenantMock.mockResolvedValue({ ok: true, data: makeTenantDto() });
+    specialistsMock.mockResolvedValue({ ok: true, data: [makeSpecialist()] });
+    availabilityMock.mockResolvedValue({ ok: true, data: [makeRule()] });
   });
 
-  it('resolves an active tenant with its full profile (FR-016)', () => {
-    const result = getPublicBusiness('estudio-ana');
+  it('resolves an active tenant with API services, specialists and availability', async () => {
+    const result = await getPublicBusinessRemote('estudio-ana');
     expect(result.status).toBe('available');
-    if (result.status === 'available') {
-      expect(result.business.name).toBe('Estudio Ana');
-      expect(result.business.category).toBe('Peluquería');
-      expect(result.business.bio).toContain('Madrid');
-      expect(result.business.address).toBe('Calle Mayor 7, 28013 Madrid');
-      expect(result.business.phone).toBe('+34 612 345 678');
-      expect(result.business.social?.instagram).toBe('https://instagram.com/estudioana');
-      expect(result.business.social?.whatsapp).toMatch(/wa\.me/);
-      // services carry the current rate
-      expect(result.business.services).toHaveLength(1);
-      expect(result.business.services[0]?.id).toBe('svc-corte');
-      expect(result.business.services[0]?.priceCents).toBe(2000);
-      // specialists are the tenant's active resources
-      expect(result.business.specialists.map((specialist) => specialist.id)).toEqual([
-        'res-ana',
-        'res-luis',
-      ]);
-      expect(result.business.weeklyHours).toHaveLength(7);
-      expect(result.business.policies).toHaveLength(2);
-    }
+    if (result.status !== 'available') return;
+
+    expect(result.business.name).toBe('Estudio Ana');
+    expect(result.business.slug).toBe('estudio-ana');
+    expect(result.business.bio).toContain('Madrid');
+    // Only active services are exposed.
+    expect(result.business.services.map((service) => service.id)).toEqual(['svc-corte']);
+    expect(result.business.services[0]?.priceCents).toBe(2000);
+    // Specialists come from the API, carrying their assigned service names.
+    expect(result.business.specialists[0]?.services).toEqual(['Corte de cabello']);
+    // Weekly hours derived from tenant-level availability.
+    expect(result.business.weeklyHours).toHaveLength(7);
+    expect(result.business.weeklyHours.find((day) => day.weekday === 1)?.isOpen).toBe(true);
+    // Sections with no backend render empty (FR-007).
+    expect(result.business.policies).toEqual([]);
+    expect(result.business.gallery).toEqual([]);
+    expect(result.business.reviews).toEqual([]);
+    expect(result.business.rating).toBeNull();
   });
 
-  it('exposes no data for unknown, draft or suspended tenants', () => {
-    getStore().tenants.push(makeTenant('t-draft', 'draft-shop', 'draft'));
-    getStore().tenants.push(makeTenant('t-susp', 'suspended-shop', 'suspended'));
+  it('exposes no data for unknown, draft or suspended tenants', async () => {
+    tenantMock.mockResolvedValueOnce({ ok: true, data: null });
+    expect((await getPublicBusinessRemote('no-existe')).status).toBe('unavailable');
 
-    expect(getPublicBusiness('no-existe').status).toBe('unavailable');
-    expect(getPublicBusiness('draft-shop').status).toBe('unavailable');
-    expect(getPublicBusiness('suspended-shop').status).toBe('unavailable');
+    tenantMock.mockResolvedValueOnce({ ok: true, data: makeTenantDto('draft') });
+    const draft = await getPublicBusinessRemote('draft-shop');
+    expect(draft.status).toBe('unavailable');
+    if (draft.status === 'unavailable') expect(draft.reason).toBe('draft');
+
+    tenantMock.mockResolvedValueOnce({ ok: true, data: makeTenantDto('suspended') });
+    const suspended = await getPublicBusinessRemote('suspended-shop');
+    expect(suspended.status).toBe('unavailable');
+    if (suspended.status === 'unavailable') expect(suspended.reason).toBe('suspended');
   });
 
-  it('offers slots that respect business hours (deterministic now)', () => {
-    const tenant = getStore().tenants.find((item) => item.slug === 'estudio-ana');
-    const service = getStore().services[0];
-    if (!tenant || !service) throw new Error('seed missing');
-
-    const now = new Date('2026-10-09T07:00:00Z');
-    const days = getOfferedSlots(
-      tenant,
-      service.id,
-      { startDate: '2026-10-09', endDate: '2026-10-11' },
-      now,
-    );
-
-    const friday = days.find((day) => day.date === '2026-10-09');
-    expect(friday?.slots.length).toBeGreaterThan(0);
-    const saturday = days.find((day) => day.date === '2026-10-10');
-    expect(saturday?.reason).toBe('no-working-hours');
+  it('renders empty sections when the API is unreachable (no fallback)', async () => {
+    tenantMock.mockResolvedValueOnce({ ok: false, error: { code: 'STATE_ERROR', message: 'down' } });
+    expect((await getPublicBusinessRemote('estudio-ana')).status).toBe('unavailable');
   });
 
-  it('excludes an occupied slot (respects existing appointments)', () => {
-    const tenant = getStore().tenants.find((item) => item.slug === 'estudio-ana');
-    const service = getStore().services[0];
-    const resource = getStore().resources.find((item) => item.tenantId === tenant?.id);
-    if (!tenant || !service || !resource) throw new Error('seed missing');
-
-    const now = new Date('2026-10-09T07:00:00Z');
-    const range = { startDate: '2026-10-09', endDate: '2026-10-09' };
-    const before = getOfferedSlots(tenant, service.id, range, now);
-    const takenStart = before[0]?.slots[0]?.startAt;
-    if (!takenStart) throw new Error('no slots offered');
-
-    const appointment: Appointment = {
-      id: crypto.randomUUID(),
-      resourceId: resource.id,
-      serviceId: service.id,
-      clientName: 'Ocupado',
-      clientContact: null,
-      startAt: takenStart.toISOString(),
-      endAt: new Date(takenStart.getTime() + 30 * 60_000).toISOString(),
-      status: 'confirmed',
-      notes: null,
-      appliedDurationMinutes: 30,
-      appliedAmountCents: 0,
-      appliedCurrency: 'EUR',
-      origin: 'online',
-      cancellationReason: null,
-      createdAt: NOW,
-      updatedAt: NOW,
-    };
-    getStore().appointments.push(appointment);
-
-    const after = getOfferedSlots(tenant, service.id, range, now);
-    expect(after[0]?.slots.some((slot) => slot.startAt.getTime() === takenStart.getTime())).toBe(
-      false,
-    );
+  it('keeps the portal usable when specialists/availability fail', async () => {
+    specialistsMock.mockResolvedValueOnce({ ok: false, error: { code: 'STATE_ERROR', message: 'x' } });
+    availabilityMock.mockResolvedValueOnce({ ok: false, error: { code: 'STATE_ERROR', message: 'x' } });
+    const result = await getPublicBusinessRemote('estudio-ana');
+    expect(result.status).toBe('available');
+    if (result.status !== 'available') return;
+    expect(result.business.specialists).toEqual([]);
+    expect(result.business.weeklyHours).toEqual([]);
   });
 
-  it('scopes offered slots to a specialist via resourceId (research R5)', () => {
-    const tenant = getStore().tenants.find((item) => item.slug === 'estudio-ana');
-    const service = getStore().services[0];
-    if (!tenant || !service) throw new Error('seed missing');
-
-    // Luis only works Friday 10:00–12:00 (Europe/Madrid).
-    getStore().availabilityRules.push({
-      id: 'rule-luis-fri',
-      resourceId: 'res-luis',
-      weekday: 5,
-      startTime: '10:00',
-      endTime: '12:00',
-      slotGranularityMinutes: 30,
-      minLeadTimeMinutes: 0,
-      bookingHorizonDays: 60,
-    });
-
-    const now = new Date('2026-10-09T07:00:00Z');
-    const range = { startDate: '2026-10-09', endDate: '2026-10-09' };
-
-    const ana = getOfferedSlots(tenant, service.id, range, now, 'res-ana');
-    const luis = getOfferedSlots(tenant, service.id, range, now, 'res-luis');
-
-    // 09:00 Europe/Madrid = 07:00Z ; 10:00 Europe/Madrid = 08:00Z.
-    const anaFirst = ana[0]?.slots[0]?.startAt.getTime();
-    const luisFirst = luis[0]?.slots[0]?.startAt.getTime();
-    expect(anaFirst).toBe(new Date('2026-10-09T07:00:00Z').getTime());
-    expect(luisFirst).toBe(new Date('2026-10-09T08:00:00Z').getTime());
-    expect(anaFirst).not.toBe(luisFirst);
+  it('derives weekly hours from tenant-level availability only', () => {
+    expect(deriveWeeklyHours([])).toEqual([]);
+    const hours = deriveWeeklyHours([makeRule({ weekday: 3 }), makeRule({ specialistId: 'res-ana', weekday: 5 })]);
+    expect(hours).toHaveLength(7);
+    expect(hours.find((day) => day.weekday === 3)?.isOpen).toBe(true);
+    expect(hours.find((day) => day.weekday === 5)?.isOpen).toBe(false);
   });
 });

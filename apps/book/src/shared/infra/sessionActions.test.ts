@@ -1,21 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { cookieStore, redirectMock } = vi.hoisted(() => ({
-  cookieStore: new Map<string, string>(),
+const { supabaseMock, redirectMock } = vi.hoisted(() => ({
+  supabaseMock: { auth: { signInWithPassword: vi.fn(), signOut: vi.fn() } },
   redirectMock: vi.fn(),
-}));
-
-vi.mock('next/headers', () => ({
-  cookies: async () => ({
-    get: (name: string) =>
-      cookieStore.has(name) ? { name, value: cookieStore.get(name) } : undefined,
-    set: (name: string, value: string) => {
-      cookieStore.set(name, value);
-    },
-    delete: (name: string) => {
-      cookieStore.delete(name);
-    },
-  }),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -25,31 +12,41 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
-import { signIn, signOut } from './sessionActions';
-import { resetStore } from './store';
-import { LOCAL_SESSION_COOKIE } from './authConstants';
+vi.mock('./supabase/server', () => ({
+  createServerSupabaseClient: vi.fn(async () => supabaseMock),
+}));
 
-describe('session actions (009 — US1/US3, local mode)', () => {
+import { signIn, signOut } from './sessionActions';
+import { createServerSupabaseClient } from './supabase/server';
+
+describe('session actions (009 — US1/US3, live-only)', () => {
   beforeEach(() => {
-    resetStore();
-    cookieStore.clear();
-    redirectMock.mockClear();
-    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '');
-    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
+    vi.clearAllMocks();
+    supabaseMock.auth.signInWithPassword.mockResolvedValue({
+      data: { user: { id: 'u-live' } },
+      error: null,
+    });
+    supabaseMock.auth.signOut.mockResolvedValue({ error: null });
   });
 
-  it('signs in a seeded owner and sets the session cookie', async () => {
-    const result = await signIn({ email: 'ana@foundly.dev', password: 'mock-credential' });
+  it('signs in through the identity provider', async () => {
+    const result = await signIn({ email: 'ana@foundly.dev', password: 'secreto123' });
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.data.redirectTo).toBe('/admin/agenda');
-    expect(cookieStore.get(LOCAL_SESSION_COOKIE)).toBe('u-owner-ana');
+    expect(supabaseMock.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: 'ana@foundly.dev',
+      password: 'secreto123',
+    });
   });
 
-  it('rejects invalid credentials without creating a session', async () => {
+  it('rejects invalid credentials without a session', async () => {
+    supabaseMock.auth.signInWithPassword.mockResolvedValue({
+      data: null,
+      error: { message: 'Invalid login credentials' },
+    });
     const result = await signIn({ email: 'ana@foundly.dev', password: 'wrong-password' });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
-    expect(cookieStore.has(LOCAL_SESSION_COOKIE)).toBe(false);
   });
 
   it('rejects malformed input with a validation error', async () => {
@@ -58,10 +55,16 @@ describe('session actions (009 — US1/US3, local mode)', () => {
     if (!result.ok) expect(result.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('signs out, clearing the cookie and redirecting to /login', async () => {
-    cookieStore.set(LOCAL_SESSION_COOKIE, 'u-owner-ana');
+  it('fails visibly when auth is not configured (no provider client)', async () => {
+    vi.mocked(createServerSupabaseClient).mockResolvedValueOnce(null);
+    const result = await signIn({ email: 'ana@foundly.dev', password: 'secreto123' });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('STATE_ERROR');
+  });
+
+  it('signs out and redirects to /login', async () => {
     await expect(signOut()).rejects.toThrow('REDIRECT:/login');
-    expect(cookieStore.has(LOCAL_SESSION_COOKIE)).toBe(false);
+    expect(supabaseMock.auth.signOut).toHaveBeenCalled();
     expect(redirectMock).toHaveBeenCalledWith('/login');
   });
 });

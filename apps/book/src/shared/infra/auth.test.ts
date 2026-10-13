@@ -1,19 +1,13 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { getCurrentSession, requireRole, requireTenant } from './auth';
-import { resetStore } from './store';
+import { describe, expect, it } from 'vitest';
+import { requireRole, requireTenant } from './auth';
 
-describe('auth seam (feature 008 — session-auth.contract.md)', () => {
-  beforeEach(() => {
-    resetStore();
-  });
-
-  it('requires a tenant-bound session', () => {
-    const session = getCurrentSession();
-    expect(session).not.toBeNull();
+describe('auth seam (feature 008/010 — session-auth.contract.md, live-only)', () => {
+  it('accepts a tenant-bound session', () => {
+    const session = { userId: 'u-live-1', role: 'admin' as const, tenantId: 'ten-live-1' };
 
     const tenant = requireTenant(session);
     expect(tenant.ok).toBe(true);
-    if (tenant.ok) expect(tenant.data.tenantId).toBe('ten-ana');
+    if (tenant.ok) expect(tenant.data.tenantId).toBe('ten-live-1');
 
     const withRole = requireRole(session, ['admin']);
     expect(withRole.ok).toBe(true);

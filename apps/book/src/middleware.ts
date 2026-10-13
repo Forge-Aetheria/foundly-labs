@@ -2,18 +2,19 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { liveAuthEnv } from './shared/infra/supabase/env';
 import { toNextResponseCookieOptions } from './shared/infra/supabase/cookies';
-import { evaluateRedirect, hasLocalSessionCookie } from './shared/infra/authGuard';
+import { evaluateRedirect } from './shared/infra/authGuard';
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
 
 /**
- * Supabase session refresh + route guard (feature 008/009).
+ * Supabase session refresh + route guard (feature 008/009, feature 010).
  * Refreshes the session cookies on every navigation and protects `/admin/*`
- * (unauthenticated → `/login`) and `/login` (authenticated → admin). Live env
- * verifies claims via `getClaims()` (Edge-safe JWKS); without live env the local
- * session cookie is a coarse presence hint (the server guards re-validate).
+ * (unauthenticated → `/login`) and `/login` (authenticated → admin). Claims are
+ * verified via `getClaims()` (Edge-safe JWKS). Without live env there is NO
+ * session source (the local cookie seam was removed in feature 010), so every
+ * request is unauthenticated — the server guards re-validate.
  */
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });
@@ -40,7 +41,8 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     const claims = (data?.claims ?? null) as Record<string, unknown> | null;
     authenticated = Boolean(claims && typeof claims.sub === 'string' && claims.sub.length > 0);
   } else {
-    authenticated = hasLocalSessionCookie(request);
+    // Provider-only auth: nothing can authenticate without Supabase configured.
+    authenticated = false;
   }
 
   const redirectTo = evaluateRedirect(request.nextUrl.pathname, authenticated);

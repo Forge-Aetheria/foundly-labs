@@ -1,11 +1,20 @@
+'use server';
+
 import { z } from 'zod';
 import type { Appointment } from '../../../shared/types/appointments';
-import { getStore } from '../../../shared/infra/store';
+import { computeAvailability } from '../../../shared/utils/computeAvailability';
+import { fetchTenantBySlug } from '../../../shared/infra/remoteTenancy';
+import { listPublicSpecialists } from '../../../shared/infra/remoteSpecialists';
+import { listRemoteAvailability } from '../../../shared/infra/remoteAvailability';
+import {
+  createRemoteAppointment,
+  listRemoteAppointments,
+  mapAppointmentDto,
+  mapAppointmentStatus,
+} from '../../../shared/infra/remoteAppointments';
 import { fail, ok, zodFields, type ActionResult } from '../../../shared/infra/result';
-import { getOfferedSlots, getPublicBusiness } from './queries';
 
 const MINUTE_MS = 60_000;
-const ACTIVE_STATUSES: readonly Appointment['status'][] = ['pending', 'confirmed', 'checked-in'];
 
 const bookSchema = z.object({
   tenantSlug: z.string().min(1),
@@ -23,131 +32,102 @@ const bookSchema = z.object({
 });
 export type BookPublicInput = z.infer<typeof bookSchema>;
 
+const slotQuerySchema = z.object({
+  tenantSlug: z.string().min(1),
+  serviceId: z.string().min(1),
+  resourceId: z.string().min(1).optional(),
+  startDate: z.string().min(1),
+  endDate: z.string().min(1),
+});
+export type SlotQueryInput = z.infer<typeof slotQuerySchema>;
+
 export interface SlotDay {
   date: string;
   slots: { startAt: string; endAt: string }[];
 }
 
-function findConflict(resourceId: string, start: Date, end: Date): Appointment | undefined {
-  const startMs = start.getTime();
-  const endMs = end.getTime();
-  return getStore().appointments.find((appointment) => {
-    if (appointment.resourceId !== resourceId) return false;
-    if (!ACTIVE_STATUSES.includes(appointment.status)) return false;
-    return (
-      new Date(appointment.startAt).getTime() < endMs &&
-      new Date(appointment.endAt).getTime() > startMs
-    );
-  });
+interface Resolved {
+  tenantId: string;
+  timezone: string;
+  service: { id: string; durationMinutes: number };
+  specialists: { id: string; name: string }[];
 }
 
-function resolveRate(serviceId: string, at: Date) {
-  const atMs = at.getTime();
-  return getStore()
-    .rates.filter(
-      (rate) =>
-        rate.serviceId === serviceId &&
-        new Date(rate.effectiveFrom).getTime() <= atMs &&
-        (rate.effectiveTo === null || new Date(rate.effectiveTo).getTime() > atMs),
-    )
-    .sort((a, b) => new Date(b.effectiveFrom).getTime() - new Date(a.effectiveFrom).getTime())[0];
-}
-
-/** Guest booking on the public portal (FR-018): creates an `origin: 'online'` appointment. */
-export function bookPublicAppointment(input: unknown): ActionResult<Appointment> {
-  const parsed = bookSchema.safeParse(input);
-  if (!parsed.success) {
-    return fail('VALIDATION_ERROR', 'Datos de reserva inválidos.', zodFields(parsed.error));
-  }
-  const {
-    tenantSlug,
-    serviceId,
-    resourceId,
-    startAt,
-    clientName,
-    clientEmail,
-    clientPhone,
-    notes,
-  } = parsed.data;
-  const store = getStore();
-
-  const resolved = getPublicBusiness(tenantSlug);
-  if (resolved.status !== 'available') {
+/** Resolve an active tenant + service + bookable specialists from the API. */
+async function resolve(slug: string, serviceId: string): Promise<ActionResult<Resolved>> {
+  const tenantResult = await fetchTenantBySlug(slug);
+  if (!tenantResult.ok) return tenantResult;
+  const tenant = tenantResult.data;
+  if (!tenant || tenant.status !== 'active') {
     return fail('NOT_FOUND', 'Ese negocio no está disponible.');
   }
+  const service = tenant.services.find((item) => item.id === serviceId && item.active);
+  if (!service) return fail('NOT_FOUND', 'Servicio no encontrado.');
 
-  const tenant = store.tenants.find((item) => item.slug === tenantSlug);
-  const service = store.services.find(
-    (item) => item.id === serviceId && item.tenantId === tenant?.id && item.active,
-  );
-  if (!tenant || !service) return fail('NOT_FOUND', 'Servicio no encontrado.');
+  const specialistsResult = await listPublicSpecialists({ tenantSlug: slug });
+  if (!specialistsResult.ok) return specialistsResult;
+  const specialists = specialistsResult.data
+    .filter((specialist) => specialist.active)
+    .map((specialist) => ({ id: specialist.id, name: specialist.name }));
 
-  const resource = resourceId
-    ? store.resources.find((item) => item.tenantId === tenant.id && item.id === resourceId)
-    : store.resources.find((item) => item.tenantId === tenant.id);
-  if (!resource) return fail('NOT_FOUND', 'Recurso no encontrado.');
-
-  const start = new Date(startAt);
-  const end = new Date(start.getTime() + service.durationMinutes * MINUTE_MS);
-  if (end <= start) {
-    return fail('VALIDATION_ERROR', 'La hora de fin debe ser posterior al inicio.');
-  }
-  if (findConflict(resource.id, start, end)) {
-    return fail('CONFLICT', 'Ese hueco ya está ocupado.');
-  }
-
-  const rate = resolveRate(service.id, start);
-  const now = new Date().toISOString();
-  const appointment: Appointment = {
-    id: crypto.randomUUID(),
-    resourceId: resource.id,
-    serviceId: service.id,
-    clientName,
-    clientContact: `${clientEmail} · ${clientPhone}`,
-    startAt: start.toISOString(),
-    endAt: end.toISOString(),
-    status: 'pending',
-    notes: notes ?? null,
-    appliedDurationMinutes: service.durationMinutes,
-    appliedAmountCents: rate?.amountCents ?? 0,
-    appliedCurrency: rate?.currency ?? 'EUR',
-    origin: 'online',
-    cancellationReason: null,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  store.appointments.push(appointment);
-  store.audit.push({
-    id: crypto.randomUUID(),
-    appointmentId: appointment.id,
-    action: 'created',
-    fromValue: null,
-    toValue: null,
-    reason: null,
-    actorId: 'online-guest',
-    createdAt: now,
+  return ok({
+    tenantId: tenant.id,
+    timezone: tenant.timezone,
+    service: { id: service.id, durationMinutes: service.durationMinutes },
+    specialists,
   });
-  return ok(appointment);
 }
 
 /** Serializable slot lookup consumed by the client booking flow (per specialist). */
-export function fetchOfferedSlots(input: {
-  tenantSlug: string;
-  serviceId: string;
-  resourceId?: string;
-  startDate: string;
-  endDate: string;
-}): SlotDay[] {
-  const tenant = getStore().tenants.find((item) => item.slug === input.tenantSlug);
-  if (!tenant || tenant.status !== 'active') return [];
-  const days = getOfferedSlots(
-    tenant,
-    input.serviceId,
-    { startDate: input.startDate, endDate: input.endDate },
-    new Date(),
-    input.resourceId,
-  );
+export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
+  const parsed = slotQuerySchema.safeParse(input);
+  if (!parsed.success) return [];
+  const resolved = await resolve(parsed.data.tenantSlug, parsed.data.serviceId);
+  if (!resolved.ok) return [];
+  const { tenantId, timezone, service, specialists } = resolved.data;
+
+  const resourceId = parsed.data.resourceId ?? specialists[0]?.id;
+  if (!resourceId) return [];
+
+  const [availabilityResult, appointmentsResult] = await Promise.all([
+    listRemoteAvailability({ tenantId, specialistId: resourceId }),
+    listRemoteAppointments({
+      tenantId,
+      specialistId: resourceId,
+      startDate: parsed.data.startDate,
+      endDate: parsed.data.endDate,
+    }),
+  ]);
+
+  const rules = availabilityResult.ok
+    ? availabilityResult.data.map((dto) => ({
+        weekday: dto.weekday,
+        startTime: dto.startTime,
+        endTime: dto.endTime,
+        slotGranularityMinutes: dto.slotGranularityMinutes,
+        minLeadTimeMinutes: dto.minLeadTimeMinutes,
+        bookingHorizonDays: dto.bookingHorizonDays,
+      }))
+    : [];
+  const appointments = appointmentsResult.ok
+    ? appointmentsResult.data.map((dto) => ({
+        startAt: new Date(dto.startAt),
+        endAt: new Date(dto.endAt),
+        status: mapAppointmentStatus(dto.status),
+      }))
+    : [];
+
+  const days = computeAvailability({
+    resourceId,
+    service: { durationMinutes: service.durationMinutes, bufferMinutes: 0 },
+    range: { startDate: parsed.data.startDate, endDate: parsed.data.endDate },
+    timezone,
+    rules,
+    blocks: [],
+    appointments,
+    now: new Date(),
+  });
+
   return days.map((day) => ({
     date: day.date,
     slots: day.slots.map((slot) => ({
@@ -155,4 +135,45 @@ export function fetchOfferedSlots(input: {
       endAt: slot.endAt.toISOString(),
     })),
   }));
+}
+
+/**
+ * Guest booking on the public portal (FR-018; feature 010 — T016): creates a
+ * real `origin: 'online'` appointment through the API. The API owns conflict
+ * detection; failures surface (no local fallback).
+ */
+export async function bookPublicAppointment(input: unknown): Promise<ActionResult<Appointment>> {
+  const parsed = bookSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail('VALIDATION_ERROR', 'Datos de reserva inválidos.', zodFields(parsed.error));
+  }
+
+  const resolved = await resolve(parsed.data.tenantSlug, parsed.data.serviceId);
+  if (!resolved.ok) return resolved;
+  const { tenantId, service, specialists } = resolved.data;
+
+  const resourceId = parsed.data.resourceId ?? specialists[0]?.id;
+  if (!resourceId || !specialists.some((specialist) => specialist.id === resourceId)) {
+    return fail('NOT_FOUND', 'Recurso no encontrado.');
+  }
+
+  const start = new Date(parsed.data.startAt);
+  const end = new Date(start.getTime() + service.durationMinutes * MINUTE_MS);
+  if (end <= start) {
+    return fail('VALIDATION_ERROR', 'La hora de fin debe ser posterior al inicio.');
+  }
+
+  const created = await createRemoteAppointment({
+    tenantId,
+    serviceId: service.id,
+    specialistId: resourceId,
+    clientName: parsed.data.clientName,
+    clientContact: `${parsed.data.clientEmail} · ${parsed.data.clientPhone}`,
+    startAt: start.toISOString(),
+    endAt: end.toISOString(),
+    origin: 'online',
+    notes: parsed.data.notes ?? null,
+  });
+  if (!created.ok) return created;
+  return ok(mapAppointmentDto(created.data));
 }

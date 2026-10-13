@@ -1,76 +1,87 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import type { BusinessHours, Tenant } from '../types/tenancy';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Session } from '../infra/auth';
-import { getStore, resetStore } from '../infra/store';
+import type { TenantDto } from '../infra/remoteTenancy';
 import { getCurrentTenant } from './queries';
 
-const NOW = '2026-10-09T00:00:00.000Z';
-const hours: BusinessHours[] = [0, 1, 2, 3, 4, 5, 6].map((weekday) =>
-  weekday === 0
-    ? { weekday, isOpen: false, startTime: '', endTime: '' }
-    : { weekday, isOpen: true, startTime: '09:00', endTime: '18:00' },
-);
+const { fetchTenantByIdMock } = vi.hoisted(() => ({ fetchTenantByIdMock: vi.fn() }));
 
-function makeTenant(id: string, slug: string): Tenant {
+vi.mock('../infra/remoteTenancy', () => ({
+  fetchTenantById: (...args: unknown[]) => fetchTenantByIdMock(...args),
+}));
+
+function makeTenantDto(id: string, slug: string): TenantDto {
   return {
     id,
     name: `Negocio ${slug}`,
-    slug,
     category: 'Salón',
     status: 'active',
-    ownerUserId: `u-${id}`,
-    defaultAppointmentDurationMinutes: 30,
-    businessHours: hours,
-    currency: 'EUR',
     timezone: 'Europe/Madrid',
-    onlineBookingEnabled: true,
-    license: null,
-    avatar: null,
-    cover: null,
-    bio: null,
-    address: null,
-    phone: null,
-    social: null,
-    createdAt: NOW,
-    updatedAt: NOW,
+    currency: 'EUR',
+    profile: {
+      slug,
+      bio: null,
+      address: null,
+      phone: null,
+      instagram: null,
+      whatsapp: null,
+      logo: null,
+      cover: null,
+    },
+    services: [],
   };
 }
 
-describe('tenancy queries (SC-008, contracts/routes.contract.md)', () => {
+describe('tenancy queries (SC-008, contracts/routes.contract.md — server-only)', () => {
   beforeEach(() => {
-    resetStore();
+    vi.clearAllMocks();
   });
 
-  it('returns the session tenant', () => {
+  it('returns the session tenant from the API', async () => {
+    fetchTenantByIdMock.mockResolvedValue({ ok: true, data: makeTenantDto('ten-ana', 'estudio-ana') });
     const session: Session = { userId: 'u-owner-ana', role: 'admin', tenantId: 'ten-ana' };
-    const result = getCurrentTenant(session);
+    const result = await getCurrentTenant(session);
     expect(result.ok).toBe(true);
-    if (result.ok) expect(result.data.id).toBe('ten-ana');
+    if (result.ok) {
+      expect(result.data.id).toBe('ten-ana');
+      expect(result.data.slug).toBe('estudio-ana');
+    }
   });
 
-  it('scopes resolution to the bound tenant (cross-tenant isolation)', () => {
-    const store = getStore();
-    store.tenants.push(makeTenant('ten-b', 'b-shop'));
+  it('scopes resolution to the bound tenant (cross-tenant isolation)', async () => {
+    fetchTenantByIdMock.mockImplementation(async (tenantId: string) =>
+      tenantId === 'ten-b'
+        ? { ok: true, data: makeTenantDto('ten-b', 'b-shop') }
+        : { ok: true, data: makeTenantDto('ten-ana', 'estudio-ana') },
+    );
 
     const sessionA: Session = { userId: 'u-a', role: 'admin', tenantId: 'ten-ana' };
     const sessionB: Session = { userId: 'u-b', role: 'admin', tenantId: 'ten-b' };
 
-    const a = getCurrentTenant(sessionA);
-    const b = getCurrentTenant(sessionB);
+    const a = await getCurrentTenant(sessionA);
+    const b = await getCurrentTenant(sessionB);
     expect(a.ok && a.data.id).toBe('ten-ana');
     expect(b.ok && b.data.id).toBe('ten-b');
     expect(b.ok && b.data.slug).toBe('b-shop');
   });
 
-  it('rejects sessions without a tenant', () => {
-    const session: Session = { userId: 'u-x', role: 'admin' };
-    const result = getCurrentTenant(session);
+  it('surfaces NOT_FOUND when the API has no tenant', async () => {
+    fetchTenantByIdMock.mockResolvedValue({ ok: true, data: null });
+    const session: Session = { userId: 'u-x', role: 'admin', tenantId: 'ten-missing' };
+    const result = await getCurrentTenant(session);
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
+    if (!result.ok) expect(result.error.code).toBe('NOT_FOUND');
   });
 
-  it('rejects null sessions', () => {
-    const result = getCurrentTenant(null);
+  it('rejects sessions without a tenant', async () => {
+    const session: Session = { userId: 'u-x', role: 'admin' };
+    const result = await getCurrentTenant(session);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
+    expect(fetchTenantByIdMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects null sessions', async () => {
+    const result = await getCurrentTenant(null);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
   });

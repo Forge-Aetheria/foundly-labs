@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Badge, Button, Card, Chip, Stack, TextField, Typography } from '@foundly/ui';
 import type { AvailabilityRule, TimeBlock } from '../../../shared/types/appointments';
+import { saveWeeklyAvailability } from '../utils/actions';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -43,12 +44,16 @@ function initialDays(rules: AvailabilityRule[]): DayConfig[] {
 export interface AvailabilityEditorProps {
   rules: AvailabilityRule[];
   blocks: TimeBlock[];
+  /** Backend/load error surfaced to the user (FR-010). */
+  error?: string | null;
 }
 
 /** Weekly availability editor: day toggles, time ranges and breaks (Clean Light UI). */
-export function AvailabilityEditor({ rules, blocks }: AvailabilityEditorProps) {
+export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorProps) {
   const [days, setDays] = useState<DayConfig[]>(() => initialDays(rules));
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   function update(weekday: number, patch: Partial<DayConfig>) {
     setSaved(false);
@@ -58,6 +63,25 @@ export function AvailabilityEditor({ rules, blocks }: AvailabilityEditorProps) {
   function toggle(weekday: number) {
     const day = days.find((item) => item.weekday === weekday);
     update(weekday, { isOpen: !(day?.isOpen ?? false) });
+  }
+
+  async function save() {
+    setSaving(true);
+    setSaveError(null);
+    const result = await saveWeeklyAvailability({
+      days: days.map((day) => ({
+        weekday: day.weekday,
+        isOpen: day.isOpen,
+        startTime: day.startTime,
+        endTime: day.endTime,
+      })),
+    });
+    setSaving(false);
+    if (!result.ok) {
+      setSaveError(result.error.message);
+      return;
+    }
+    setSaved(true);
   }
 
   return (
@@ -72,13 +96,18 @@ export function AvailabilityEditor({ rules, blocks }: AvailabilityEditorProps) {
               Horario semanal, rangos y pausas por día.
             </Typography>
           </Stack>
-          <Button variant="primary" onClick={() => setSaved(true)}>
-            Guardar disponibilidad
+          <Button variant="primary" onClick={save} disabled={saving}>
+            {saving ? 'Guardando…' : 'Guardar disponibilidad'}
           </Button>
         </Stack>
       }
     >
       <Stack spacing={1.5}>
+        {error ? (
+          <Typography variant="body2" color="error" role="alert">
+            {error}
+          </Typography>
+        ) : null}
         {days.map((day) => (
           <Stack
             key={day.weekday}
@@ -132,7 +161,11 @@ export function AvailabilityEditor({ rules, blocks }: AvailabilityEditorProps) {
           <Typography variant="body2" color="text.secondary">
             {blocks.length} bloqueo(s) de horario configurados.
           </Typography>
-          {saved ? (
+          {saveError ? (
+            <Badge pill status="negative">
+              {saveError}
+            </Badge>
+          ) : saved ? (
             <Badge pill status="positive">
               Guardado
             </Badge>

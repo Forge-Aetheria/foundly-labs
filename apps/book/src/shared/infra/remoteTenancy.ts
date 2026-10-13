@@ -97,6 +97,39 @@ const CREATE_TENANT = /* GraphQL */ `
   }
 `;
 
+const TENANTS = /* GraphQL */ `
+  query Tenants {
+    tenants {
+      id
+      name
+      category
+      status
+      timezone
+      currency
+      profile {
+        slug
+        bio
+        address
+        phone
+        instagram
+        whatsapp
+        logo
+        cover
+      }
+      services {
+        id
+        name
+        description
+        durationMinutes
+        priceCents
+        currency
+        category
+        active
+      }
+    }
+  }
+`;
+
 /** Public read of a business by slug (tenant(slug)) — portal authoritative fields. */
 export async function fetchTenantBySlug(
   slug: string,
@@ -124,4 +157,14 @@ export async function createRemoteTenant(
     ok: true,
     data: { id: result.data.createTenant.id, slug: result.data.createTenant.profile?.slug ?? '' },
   };
+}
+
+/**
+ * Resolve a tenant by id through the API (admin layout / tenancy). The API has no
+ * `tenantById`, so this lists tenants and finds the match (feature 010).
+ */
+export async function fetchTenantById(id: string): Promise<ActionResult<TenantDto | null>> {
+  const result = await apiRequest<{ tenants: TenantDto[] }, Record<string, never>>(TENANTS, {});
+  if (!result.ok) return result;
+  return { ok: true, data: result.data.tenants.find((tenant) => tenant.id === id) ?? null };
 }

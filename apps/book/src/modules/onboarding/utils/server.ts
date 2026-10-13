@@ -3,17 +3,16 @@
 import { createClient } from '@supabase/supabase-js';
 import { liveAuthEnv, supabaseAdminEnv } from '../../../shared/infra/supabase/env';
 import { createRemoteTenant } from '../../../shared/infra/remoteTenancy';
-import { provisionLocalBusiness } from './provisionLocal';
 import { fail, ok, type ActionResult } from '../../../shared/infra/result';
 import type { CreateBusinessInput } from './schemas';
 import type { CreateBusinessResult } from './actions';
 
 /**
- * Remote onboarding provider (feature 008 — US2 binder, session-auth.contract.md):
+ * Remote onboarding provider (feature 008 — US2 binder, session-auth.contract.md;
+ * feature 010 — server/DB-only, no local mirror):
  *   1. Supabase sign-up
  *   2. createTenant via the API (authoritative business record)
  *   3. bind `tenant_id` into the identity's `app_metadata` (merge, server-only)
- *   4. mirror into the local seam (best-effort, keeps local-only surfaces working)
  *
  * The client (WizardShell → createBusiness) only reaches this when live auth env is
  * configured; `SUPABASE_SERVICE_ROLE_KEY` never leaves the server.
@@ -76,9 +75,6 @@ export async function provisionOnboardingRemote(
   if (bindError) {
     return fail('STATE_ERROR', 'No se pudo vincular el negocio a tu cuenta.');
   }
-
-  // 4) Local mirror (best-effort, FR-007).
-  provisionLocalBusiness(input, { tenantId, userId });
 
   return ok({ tenantId, redirectTo: '/admin/agenda' });
 }

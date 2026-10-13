@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (!auth.ok) {
     redirect(auth.error.code === 'FORBIDDEN' ? REGISTRATION_ROUTE : LOGIN_ROUTE);
   }
-  const tenant = getCurrentTenant(auth.data);
+  const tenant = await getCurrentTenant(auth.data);
   const publicHref = tenant.ok && tenant.data.slug ? `/${tenant.data.slug}` : null;
   return (
     <AdminShell tenantName={tenant.ok ? tenant.data.name : undefined} publicHref={publicHref}>

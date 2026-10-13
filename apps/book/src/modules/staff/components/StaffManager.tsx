@@ -22,10 +22,12 @@ import {
 } from '../../../shared/utils/landingCanon';
 import { createStaff, removeStaff, setStaffActive, updateStaff } from '../utils/actions';
 
-interface StaffManagerProps {
+export interface StaffManagerProps {
   staff: Resource[];
   /** Tenant catalog used for the services multi-select and the card badges. */
   services: Service[];
+  /** Backend error surfaced to the user (FR-010) when the API is unreachable. */
+  error?: string | null;
 }
 
 interface StaffDraft {
@@ -90,7 +92,7 @@ function AvatarBadge({ resource }: { resource: Resource }) {
 }
 
 /** Equipo y Especialistas: glassmorphism member grid + create/edit modal (005). */
-export function StaffManager({ staff, services }: StaffManagerProps) {
+export function StaffManager({ staff, services, error }: StaffManagerProps) {
   const [members, setMembers] = useState<Resource[]>(staff);
   const [draft, setDraft] = useState<{ open: boolean; editing: boolean; value: StaffDraft }>({
     open: false,
@@ -165,7 +167,7 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
     return Object.keys(errors).length === 0;
   }
 
-  function save() {
+  async function save() {
     if (!draft.editing && !validate(draft.value)) return;
     if (draft.editing && !validate(draft.value)) return;
     const input = {
@@ -177,8 +179,8 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
       serviceIds: draft.value.serviceIds,
     };
     const result = draft.editing
-      ? updateStaff({ id: draft.value.id, ...input })
-      : createStaff(input);
+      ? await updateStaff({ id: draft.value.id, ...input })
+      : await createStaff(input);
     if (!result.ok) {
       handleActionFailure(result);
       return;
@@ -193,8 +195,8 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
     close();
   }
 
-  function toggleActive(resource: Resource) {
-    const result = setStaffActive({ id: resource.id, active: !resource.active });
+  async function toggleActive(resource: Resource) {
+    const result = await setStaffActive({ id: resource.id, active: !resource.active });
     if (result.ok) {
       setActionNotice(null);
       setMembers((prev) => prev.map((item) => (item.id === result.data.id ? result.data : item)));
@@ -203,9 +205,9 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
     }
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!deleteTarget) return;
-    const result = removeStaff({ id: deleteTarget.id });
+    const result = await removeStaff({ id: deleteTarget.id });
     if (result.ok) {
       setActionNotice(null);
       setMembers((prev) => prev.filter((item) => item.id !== deleteTarget.id));
@@ -221,6 +223,11 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
 
   return (
     <Stack spacing={3}>
+      {error ? (
+        <Typography variant="body2" color="error" role="alert">
+          {error}
+        </Typography>
+      ) : null}
       {actionNotice ? (
         <Typography variant="body2" color="error" role="alert">
           {actionNotice}

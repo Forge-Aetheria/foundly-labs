@@ -1,44 +1,55 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { cookieStore } = vi.hoisted(() => ({ cookieStore: new Map<string, string>() }));
+const { sessionMock, supabaseMock } = vi.hoisted(() => ({
+  sessionMock: { getEffectiveSession: vi.fn() },
+  supabaseMock: {
+    auth: {
+      getUser: vi.fn(),
+      signInWithPassword: vi.fn(),
+      updateUser: vi.fn(),
+    },
+  },
+}));
 
-vi.mock('next/headers', () => ({
-  cookies: async () => ({
-    get: (name: string) =>
-      cookieStore.has(name) ? { name, value: cookieStore.get(name) } : undefined,
-    set: (name: string, value: string) => {
-      cookieStore.set(name, value);
-    },
-    delete: (name: string) => {
-      cookieStore.delete(name);
-    },
-  }),
+vi.mock('./authServer', () => ({
+  getEffectiveSession: (...args: unknown[]) => sessionMock.getEffectiveSession(...args),
+}));
+
+vi.mock('./supabase/server', () => ({
+  createServerSupabaseClient: vi.fn(async () => supabaseMock),
 }));
 
 import { changePassword } from './securityActions';
-import { getStore, resetStore } from './store';
-import { LOCAL_SESSION_COOKIE } from './authConstants';
 
-describe('changePassword (009 — US5, local mode)', () => {
+function validInput(newPassword = 'nueva1234') {
+  return { currentPassword: 'mock-credential', newPassword, confirmPassword: newPassword };
+}
+
+describe('changePassword (009 — US5, live-only)', () => {
   beforeEach(() => {
-    resetStore();
-    cookieStore.clear();
-    cookieStore.set(LOCAL_SESSION_COOKIE, 'u-owner-ana');
-    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '');
-    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
+    vi.clearAllMocks();
+    sessionMock.getEffectiveSession.mockResolvedValue({
+      userId: 'u-live',
+      role: 'admin',
+      tenantId: 'ten-live',
+    });
+    supabaseMock.auth.getUser.mockResolvedValue({
+      data: { user: { email: 'ana@foundly.dev' } },
+      error: null,
+    });
+    supabaseMock.auth.signInWithPassword.mockResolvedValue({ data: {}, error: null });
+    supabaseMock.auth.updateUser.mockResolvedValue({ data: {}, error: null });
   });
 
   it('rejects an incorrect current password without changing it', async () => {
-    const result = await changePassword({
-      currentPassword: 'wrong',
-      newPassword: 'nueva1234',
-      confirmPassword: 'nueva1234',
+    supabaseMock.auth.signInWithPassword.mockResolvedValue({
+      data: null,
+      error: { message: 'Invalid login credentials' },
     });
+    const result = await changePassword(validInput());
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
-    expect(getStore().users.find((user) => user.id === 'u-owner-ana')?.credential).toBe(
-      'mock-credential',
-    );
+    expect(supabaseMock.auth.updateUser).not.toHaveBeenCalled();
   });
 
   it('rejects a mismatched confirmation with a validation error', async () => {
@@ -52,32 +63,24 @@ describe('changePassword (009 — US5, local mode)', () => {
   });
 
   it('rejects a weak new password', async () => {
-    const result = await changePassword({
-      currentPassword: 'mock-credential',
-      newPassword: 'abcdefgh',
-      confirmPassword: 'abcdefgh',
-    });
+    const result = await changePassword(validInput('abcdefgh'));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('updates the credential on a valid change', async () => {
-    const result = await changePassword({
-      currentPassword: 'mock-credential',
-      newPassword: 'nueva1234',
-      confirmPassword: 'nueva1234',
-    });
+  it('updates the password on a valid change', async () => {
+    const result = await changePassword(validInput());
     expect(result.ok).toBe(true);
-    expect(getStore().users.find((user) => user.id === 'u-owner-ana')?.credential).toBe('nueva1234');
+    expect(supabaseMock.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: 'ana@foundly.dev',
+      password: 'mock-credential',
+    });
+    expect(supabaseMock.auth.updateUser).toHaveBeenCalledWith({ password: 'nueva1234' });
   });
 
   it('rejects when there is no session', async () => {
-    cookieStore.clear();
-    const result = await changePassword({
-      currentPassword: 'mock-credential',
-      newPassword: 'nueva1234',
-      confirmPassword: 'nueva1234',
-    });
+    sessionMock.getEffectiveSession.mockResolvedValue(null);
+    const result = await changePassword(validInput());
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
   });

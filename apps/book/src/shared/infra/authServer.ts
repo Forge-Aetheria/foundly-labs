@@ -1,13 +1,15 @@
 import { createServerSupabaseClient } from './supabase/server';
 import type { Session } from './auth';
 import { requireTenant } from './auth';
-import { readLocalSession } from './session';
 import type { ActionResult } from './result';
 
 /**
- * Server-only session helpers (feature 008 — session-auth.contract.md).
+ * Server-only session helpers (feature 008 — session-auth.contract.md, feature
+ * 010 — server/DB-only).
  * Importing this module pulls `next/headers`; only import from Server
  * Components, Server Actions, Route Handlers or server-side query modules.
+ * Since feature 010, the identity provider is the ONLY session source: the
+ * local cookie seam has been removed and nothing in-memory can authenticate.
  */
 
 /**
@@ -41,15 +43,12 @@ export async function getLiveSession(): Promise<Session | null> {
 }
 
 /**
- * Effective session for server guards (feature 009 — US2).
- * Live Supabase session first, then the local cookie seam. The in-memory
- * `store.sessions` is intentionally NOT consulted here: a user is unauthenticated
- * until they sign in.
+ * Effective session for server guards (feature 009 — US2, feature 010).
+ * Live Supabase claims ONLY — there is no local fallback: a session exists only
+ * when the identity provider authenticates it.
  */
 export async function getEffectiveSession(): Promise<Session | null> {
-  const live = await getLiveSession();
-  if (live) return live;
-  return readLocalSession();
+  return getLiveSession();
 }
 
 /** Access token for GraphQL bearer injection (server-side only). */

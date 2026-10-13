@@ -1,151 +1,43 @@
-import type { DayAvailability } from '../../../shared/types/availability';
-import { computeAvailability } from '../../../shared/utils/computeAvailability';
-import type { Tenant } from '../../../shared/types/tenancy';
-import { GALLERY_CATEGORY_LABELS } from '../../../shared/types/tenancy';
-import { getStore } from '../../../shared/infra/store';
 import { fetchTenantBySlug } from '../../../shared/infra/remoteTenancy';
+import { listPublicSpecialists } from '../../../shared/infra/remoteSpecialists';
+import { listRemoteAvailability, type AvailabilityDto } from '../../../shared/infra/remoteAvailability';
+import type { BusinessHours } from '../../../shared/types/tenancy';
 import type { PublicBusinessProfile, PublicService, PublicSpecialist } from './types';
 
 export type ResolveResult =
   | { status: 'unavailable'; reason: 'not-found' | 'draft' | 'suspended' }
   | { status: 'available'; business: PublicBusinessProfile };
 
-/** Resolve the catalog service names a specialist performs (005-staff-management). */
-function resolveSpecialistServices(
-  store: ReturnType<typeof getStore>,
-  tenantId: string,
-  serviceIds: string[],
-): string[] {
-  const catalog = store.services.filter(
-    (service) => service.tenantId === tenantId && service.active,
-  );
-  return serviceIds
-    .map((id) => catalog.find((service) => service.id === id)?.name)
-    .filter((name): name is string => Boolean(name));
-}
-
-/** Current applicable rate for a service (effective period contains `at`). */
-function currentRate(serviceId: string, at: Date) {
-  const atMs = at.getTime();
-  return getStore()
-    .rates.filter(
-      (rate) =>
-        rate.serviceId === serviceId &&
-        new Date(rate.effectiveFrom).getTime() <= atMs &&
-        (rate.effectiveTo === null || new Date(rate.effectiveTo).getTime() > atMs),
-    )
-    .sort((a, b) => new Date(b.effectiveFrom).getTime() - new Date(a.effectiveFrom).getTime())[0];
-}
-
-/** Resolve the tenant's public mini-site; exposes no data for non-active tenants (FR-016). */
-export function getPublicBusiness(slug: string, now: Date = new Date()): ResolveResult {
-  const store = getStore();
-  const tenant = store.tenants.find((item) => item.slug === slug);
-  if (!tenant) return { status: 'unavailable', reason: 'not-found' };
-  if (tenant.status !== 'active') {
-    return { status: 'unavailable', reason: tenant.status === 'draft' ? 'draft' : 'suspended' };
-  }
-
-  const services: PublicService[] = store.services
-    .filter((service) => service.tenantId === tenant.id && service.active)
-    .map((service) => {
-      const rate = currentRate(service.id, now);
-      return {
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        durationMinutes: service.durationMinutes,
-        priceCents: rate?.amountCents ?? 0,
-        currency: rate?.currency ?? tenant.currency,
-        category: service.category ?? undefined,
-      };
-    });
-
-  const specialists: PublicSpecialist[] = store.resources
-    .filter((resource) => resource.tenantId === tenant.id && resource.active)
-    .map((resource) => ({
-      id: resource.id,
-      name: resource.name,
-      role: resource.role,
-      avatar: resource.avatar,
-      bio: resource.bio,
-      services: resolveSpecialistServices(store, tenant.id, resource.serviceIds ?? []),
-    }));
-
-  const policies = store.portalPolicies
-    .filter((policy) => policy.tenantId === tenant.id)
-    .map((policy) => ({ title: policy.title, body: policy.body }));
-
-  const tenantReviews = store.reviews
-    .filter((review) => review.tenantId === tenant.id)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  const rating =
-    tenantReviews.length === 0
-      ? null
-      : Math.round(
-          (tenantReviews.reduce((sum, review) => sum + review.rating, 0) / tenantReviews.length) *
-            10,
-        ) / 10;
-
-  return {
-    status: 'available',
-    business: {
-      slug: tenant.slug,
-      name: tenant.name,
-      category: tenant.category,
-      avatar: tenant.avatar,
-      cover: tenant.cover,
-      bio: tenant.bio,
-      address: tenant.address,
-      phone: tenant.phone,
-      social: tenant.social,
-      timezone: tenant.timezone,
-      services,
-      specialists,
-      weeklyHours: tenant.businessHours,
-      policies,
-      gallery: (tenant.gallery ?? []).map((photo) => ({
-        id: photo.id,
-        url: photo.url,
-        title: photo.title,
-        description: photo.description,
-        category: photo.category ? GALLERY_CATEGORY_LABELS[photo.category] : undefined,
-      })),
-      rating,
-      reviewCount: tenantReviews.length,
-      reviews: tenantReviews.map((review) => ({
-        id: review.id,
-        author: review.author,
-        rating: review.rating,
-        comment: review.comment,
-        date: review.date,
-      })),
-    },
-  };
+/**
+ * Derive the tenant's weekly opening hours from its tenant-level availability
+ * (`specialistId` null). The API does not expose `businessHours` directly, so
+ * the schedule is the honest source. Empty when there is no availability.
+ */
+export function deriveWeeklyHours(dtos: AvailabilityDto[]): BusinessHours[] {
+  const tenantLevel = dtos.filter((dto) => dto.specialistId === null);
+  if (tenantLevel.length === 0) return [];
+  return [0, 1, 2, 3, 4, 5, 6].map((weekday) => {
+    const rule = tenantLevel.find((item) => item.weekday === weekday);
+    return rule
+      ? { weekday, isOpen: true, startTime: rule.startTime, endTime: rule.endTime }
+      : { weekday, isOpen: false, startTime: '', endTime: '' };
+  });
 }
 
 /**
- * Public mini-site resolution with authoritative backend fields (feature 008 — US1).
- * Reads identity/profile/services from `tenant(slug)` and merges local-only fields
- * (specialists, policies, gallery, reviews, opening hours). Falls back to the local
- * seam when connectivity/config is unavailable (US3).
+ * Public mini-site resolution (feature 008 — US1; feature 010 — T016).
+ * SERVER-ONLY: identity/profile/services/specialists/availability come from the
+ * API. Sections with no backend counterpart (policies, gallery, reviews) render
+ * empty — never mocked (FR-007). No local fallback exists (FR-002).
  */
-export async function getPublicBusinessRemote(
-  slug: string,
-  now: Date = new Date(),
-): Promise<ResolveResult> {
+export async function getPublicBusinessRemote(slug: string): Promise<ResolveResult> {
   const remote = await fetchTenantBySlug(slug);
-  if (!remote.ok) {
-    return getPublicBusiness(slug, now);
-  }
+  if (!remote.ok) return { status: 'unavailable', reason: 'not-found' };
   const tenant = remote.data;
   if (!tenant) return { status: 'unavailable', reason: 'not-found' };
   if (tenant.status !== 'active') {
     return { status: 'unavailable', reason: tenant.status === 'draft' ? 'draft' : 'suspended' };
   }
-
-  const store = getStore();
-  const localTenant = store.tenants.find((item) => item.slug === slug);
 
   const services: PublicService[] = tenant.services
     .filter((service) => service.active)
@@ -159,38 +51,22 @@ export async function getPublicBusinessRemote(
       category: service.category ?? undefined,
     }));
 
-  const resources = localTenant
-    ? store.resources.filter((resource) => resource.tenantId === localTenant.id && resource.active)
-    : [];
-  const specialists: PublicSpecialist[] = resources.map((resource) => ({
-    id: resource.id,
-    name: resource.name,
-    role: resource.role,
-    avatar: resource.avatar,
-    bio: resource.bio,
-    services: localTenant
-      ? resolveSpecialistServices(store, localTenant.id, resource.serviceIds ?? [])
-      : [],
-  }));
-
-  const policies = localTenant
-    ? store.portalPolicies
-        .filter((policy) => policy.tenantId === localTenant.id)
-        .map((policy) => ({ title: policy.title, body: policy.body }))
+  const specialistsResult = await listPublicSpecialists({ tenantSlug: slug });
+  const specialists: PublicSpecialist[] = specialistsResult.ok
+    ? specialistsResult.data
+        .filter((specialist) => specialist.active)
+        .map((specialist) => ({
+          id: specialist.id,
+          name: specialist.name,
+          role: specialist.role,
+          avatar: specialist.avatar,
+          bio: specialist.bio,
+          services: specialist.services.map((service) => service.name),
+        }))
     : [];
 
-  const tenantReviews = localTenant
-    ? store.reviews
-        .filter((review) => review.tenantId === localTenant.id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    : [];
-  const rating =
-    tenantReviews.length === 0
-      ? null
-      : Math.round(
-          (tenantReviews.reduce((sum, review) => sum + review.rating, 0) / tenantReviews.length) *
-            10,
-        ) / 10;
+  const availabilityResult = await listRemoteAvailability({ tenantSlug: slug });
+  const weeklyHours = availabilityResult.ok ? deriveWeeklyHours(availabilityResult.data) : [];
 
   const profile = tenant.profile;
   return {
@@ -211,79 +87,12 @@ export async function getPublicBusinessRemote(
       timezone: tenant.timezone,
       services,
       specialists,
-      weeklyHours: localTenant?.businessHours ?? [],
-      policies,
-      gallery: (localTenant?.gallery ?? []).map((photo) => ({
-        id: photo.id,
-        url: photo.url,
-        title: photo.title,
-        description: photo.description,
-        category: photo.category ? GALLERY_CATEGORY_LABELS[photo.category] : undefined,
-      })),
-      rating,
-      reviewCount: tenantReviews.length,
-      reviews: tenantReviews.map((review) => ({
-        id: review.id,
-        author: review.author,
-        rating: review.rating,
-        comment: review.comment,
-        date: review.date,
-      })),
+      weeklyHours,
+      policies: [],
+      gallery: [],
+      rating: null,
+      reviewCount: 0,
+      reviews: [],
     },
   };
-}
-
-export interface DateRange {
-  startDate: string;
-  endDate: string;
-}
-
-/**
- * Offered slots for a tenant's service by reusing the pure availability engine
- * (research R5). `resourceId` scopes slots to a specialist; defaults to the
- * tenant's first resource. Deterministic when `now` is provided.
- */
-export function getOfferedSlots(
-  tenant: Tenant,
-  serviceId: string,
-  range: DateRange,
-  now: Date = new Date(),
-  resourceId?: string,
-): DayAvailability[] {
-  const service = getStore().services.find(
-    (item) => item.id === serviceId && item.tenantId === tenant.id && item.active,
-  );
-  if (!service) return [];
-
-  const resource = resourceId
-    ? getStore().resources.find((item) => item.tenantId === tenant.id && item.id === resourceId)
-    : getStore().resources.find((item) => item.tenantId === tenant.id);
-  if (!resource) return [];
-
-  const rules = getStore().availabilityRules.filter((rule) => rule.resourceId === resource.id);
-  const blocks = getStore()
-    .timeBlocks.filter((block) => block.resourceId === resource.id)
-    .map((block) => ({
-      startAt: new Date(block.startAt),
-      endAt: new Date(block.endAt),
-      kind: block.kind,
-    }));
-  const appointments = getStore()
-    .appointments.filter((appointment) => appointment.resourceId === resource.id)
-    .map((appointment) => ({
-      startAt: new Date(appointment.startAt),
-      endAt: new Date(appointment.endAt),
-      status: appointment.status,
-    }));
-
-  return computeAvailability({
-    resourceId: resource.id,
-    service: { durationMinutes: service.durationMinutes, bufferMinutes: service.bufferMinutes },
-    range,
-    timezone: tenant.timezone,
-    rules,
-    blocks,
-    appointments,
-    now,
-  });
 }

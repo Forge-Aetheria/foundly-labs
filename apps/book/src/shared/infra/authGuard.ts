@@ -1,5 +1,4 @@
-import type { NextRequest } from 'next/server';
-import { LOCAL_SESSION_COOKIE, LOGIN_ROUTE, POST_LOGIN_ROUTE } from './authConstants';
+import { LOGIN_ROUTE, POST_LOGIN_ROUTE } from './authConstants';
 
 /**
  * Edge-safe route guard helpers (feature 009 — specs/book/009-admin-auth).
@@ -13,11 +12,6 @@ export function isAdminPath(pathname: string): boolean {
 
 export function isLoginPath(pathname: string): boolean {
   return pathname === LOGIN_ROUTE;
-}
-
-/** Coarse presence check used by the middleware (the store cannot be read on Edge). */
-export function hasLocalSessionCookie(request: NextRequest): boolean {
-  return Boolean(request.cookies.get(LOCAL_SESSION_COOKIE)?.value);
 }
 
 /**
