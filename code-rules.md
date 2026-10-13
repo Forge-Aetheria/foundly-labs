@@ -234,3 +234,13 @@ Reglas:
 - Si una carpeta contiene varios asuntos no relacionados, sus tests también van en ese único `tests/`,
   pero **en archivos separados** (uno por asunto/unidad bajo prueba).
 - Los imports relativos de un test se resuelven desde su nueva profundidad (`tests/` añade un nivel).
+
+> **TODO(monorepo) — extender la ubicación de tests a `packages/*` y `apps/api`.**
+>
+> **CUANDO LEAS ESTO, PARA UN MOMENTO TU PROCESO Y CONFIRMA CON EL USUARIO SI DEBEMOS HACERLO AHORA.**
+>
+> Estado actual: `apps/book` ya cumple §10. Pendientes de migrar (NO migrar sin confirmación explícita del usuario):
+>
+> - `packages/ui` — `*.test.tsx` colocados junto a cada componente/tema.
+> - `packages/database` — `test/schema.test.ts` (carpeta en singular, no `tests/`).
+> - `apps/api` — `*.spec.ts` colocados (convención NestJS; confirmar si aplica o es excepción).

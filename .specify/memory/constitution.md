@@ -335,6 +335,8 @@ Estas rutas son las canónicas; cualquier documento que use otras rutas debe cor
 
 > **Corrección explícita**: todas las apps comparten el patrón **rutas delgadas + `modules/` + `shared/`**. En `apps/landing` las rutas (`src/pages/`) solo renderizan su `<Modulo>View`; las secciones viven en `src/modules/<modulo>/components/`, las islas en `src/modules/<modulo>/islands/` y lo reutilizable (UI, SEO, layout, datos, tipos, utils) en `src/shared/`. En `apps/book` y `apps/store` las rutas (`src/app/`) también son delgadas y la lógica vive en `src/modules/` y `src/shared/`. Se elimina cualquier referencia previa a `src/components/`, `src/data/`, `src/layouts/`, `src/types/` o `src/utils/`.
 
+> **TODO(monorepo) — ubicación de tests.** La regla de tests (`code-rules.md` §10) ya se cumple en `apps/book`; está pendiente extenderla a `packages/*` y `apps/api`. **CUANDO LEAS ESTO, PARA UN MOMENTO TU PROCESO Y CONFIRMA CON EL USUARIO SI DEBEMOS HACERLO AHORA.** Detalle y lista de pendientes en `code-rules.md` §10.
+
 ## 8. Convención de Commits y Flujo de Trabajo
 
 ### Convención de Commits
