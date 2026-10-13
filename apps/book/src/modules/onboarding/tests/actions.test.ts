@@ -21,8 +21,8 @@ describe('onboarding actions (contracts/onboarding.contract.md)', () => {
     resetStore();
   });
 
-  it('rejects a registered email with EMAIL_TAKEN', () => {
-    const result = createBusiness({
+  it('rejects a registered email with EMAIL_TAKEN', async () => {
+    const result = await createBusiness({
       ...input,
       draftId: 'd-email',
       account: { ...input.account, email: 'ana@foundly.dev' },
@@ -31,8 +31,8 @@ describe('onboarding actions (contracts/onboarding.contract.md)', () => {
     if (!result.ok) expect(result.error.code).toBe('EMAIL_TAKEN');
   });
 
-  it('rejects an existing slug with SLUG_TAKEN', () => {
-    const result = createBusiness({
+  it('rejects an existing slug with SLUG_TAKEN', async () => {
+    const result = await createBusiness({
       ...input,
       draftId: 'd-slug',
       business: { ...input.business, slug: 'estudio-ana' },
@@ -41,13 +41,13 @@ describe('onboarding actions (contracts/onboarding.contract.md)', () => {
     if (!result.ok) expect(result.error.code).toBe('SLUG_TAKEN');
   });
 
-  it('provisions tenant + owner + defaults and is idempotent per draftId', () => {
-    const first = createBusiness(input);
+  it('provisions tenant + owner + defaults and is idempotent per draftId', async () => {
+    const first = await createBusiness(input);
     expect(first.ok).toBe(true);
     if (!first.ok) return;
     expect(first.data.redirectTo).toBe('/admin/agenda');
 
-    const second = createBusiness(input);
+    const second = await createBusiness(input);
     expect(second.ok).toBe(true);
     if (!second.ok) return;
     expect(second.data.tenantId).toBe(first.data.tenantId);
@@ -56,8 +56,8 @@ describe('onboarding actions (contracts/onboarding.contract.md)', () => {
     expect(tenants).toHaveLength(1);
   });
 
-  it('provisions a default resource, service and availability rules (SC-005)', () => {
-    const result = createBusiness(input);
+  it('provisions a default resource, service and availability rules (SC-005)', async () => {
+    const result = await createBusiness(input);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
@@ -89,8 +89,8 @@ describe('onboarding actions (contracts/onboarding.contract.md)', () => {
     expect(validateSlug('Mi Negocio')).toEqual({ available: false, reason: 'format' });
   });
 
-  it('rejects an invalid draft shape with VALIDATION_ERROR', () => {
-    const result = createBusiness({
+  it('rejects an invalid draft shape with VALIDATION_ERROR', async () => {
+    const result = await createBusiness({
       ...input,
       setup: { ...input.setup, defaultAppointmentDurationMinutes: 0 },
     });

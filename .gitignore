@@ -33,3 +33,7 @@ Thumbs.db
 *.swp
 # code-first auto schema output
 apps/api/src/schema.gql
+
+# Generated GraphQL client artifacts (feature 008) — regenerate via `npm run codegen -w @foundly/book`
+apps/book/src/shared/infra/graphql/generated*.ts
+apps/book/codegen.schema.gql

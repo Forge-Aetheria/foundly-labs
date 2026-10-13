@@ -3,6 +3,7 @@ import { computeAvailability } from '../../../shared/utils/computeAvailability';
 import type { Tenant } from '../../../shared/types/tenancy';
 import { GALLERY_CATEGORY_LABELS } from '../../../shared/types/tenancy';
 import { getStore } from '../../../shared/infra/store';
+import { fetchTenantBySlug } from '../../../shared/infra/remoteTenancy';
 import type { PublicBusinessProfile, PublicService, PublicSpecialist } from './types';
 
 export type ResolveResult =
@@ -104,6 +105,115 @@ export function getPublicBusiness(slug: string, now: Date = new Date()): Resolve
       weeklyHours: tenant.businessHours,
       policies,
       gallery: (tenant.gallery ?? []).map((photo) => ({
+        id: photo.id,
+        url: photo.url,
+        title: photo.title,
+        description: photo.description,
+        category: photo.category ? GALLERY_CATEGORY_LABELS[photo.category] : undefined,
+      })),
+      rating,
+      reviewCount: tenantReviews.length,
+      reviews: tenantReviews.map((review) => ({
+        id: review.id,
+        author: review.author,
+        rating: review.rating,
+        comment: review.comment,
+        date: review.date,
+      })),
+    },
+  };
+}
+
+/**
+ * Public mini-site resolution with authoritative backend fields (feature 008 — US1).
+ * Reads identity/profile/services from `tenant(slug)` and merges local-only fields
+ * (specialists, policies, gallery, reviews, opening hours). Falls back to the local
+ * seam when connectivity/config is unavailable (US3).
+ */
+export async function getPublicBusinessRemote(
+  slug: string,
+  now: Date = new Date(),
+): Promise<ResolveResult> {
+  const remote = await fetchTenantBySlug(slug);
+  if (!remote.ok) {
+    return getPublicBusiness(slug, now);
+  }
+  const tenant = remote.data;
+  if (!tenant) return { status: 'unavailable', reason: 'not-found' };
+  if (tenant.status !== 'active') {
+    return { status: 'unavailable', reason: tenant.status === 'draft' ? 'draft' : 'suspended' };
+  }
+
+  const store = getStore();
+  const localTenant = store.tenants.find((item) => item.slug === slug);
+
+  const services: PublicService[] = tenant.services
+    .filter((service) => service.active)
+    .map((service) => ({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      durationMinutes: service.durationMinutes,
+      priceCents: service.priceCents,
+      currency: service.currency,
+      category: service.category ?? undefined,
+    }));
+
+  const resources = localTenant
+    ? store.resources.filter((resource) => resource.tenantId === localTenant.id && resource.active)
+    : [];
+  const specialists: PublicSpecialist[] = resources.map((resource) => ({
+    id: resource.id,
+    name: resource.name,
+    role: resource.role,
+    avatar: resource.avatar,
+    bio: resource.bio,
+    services: localTenant
+      ? resolveSpecialistServices(store, localTenant.id, resource.serviceIds ?? [])
+      : [],
+  }));
+
+  const policies = localTenant
+    ? store.portalPolicies
+        .filter((policy) => policy.tenantId === localTenant.id)
+        .map((policy) => ({ title: policy.title, body: policy.body }))
+    : [];
+
+  const tenantReviews = localTenant
+    ? store.reviews
+        .filter((review) => review.tenantId === localTenant.id)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    : [];
+  const rating =
+    tenantReviews.length === 0
+      ? null
+      : Math.round(
+          (tenantReviews.reduce((sum, review) => sum + review.rating, 0) / tenantReviews.length) *
+            10,
+        ) / 10;
+
+  const profile = tenant.profile;
+  return {
+    status: 'available',
+    business: {
+      slug: profile?.slug ?? slug,
+      name: tenant.name,
+      category: tenant.category,
+      avatar: profile?.logo ?? null,
+      cover: profile?.cover ?? null,
+      bio: profile?.bio ?? null,
+      address: profile?.address ?? null,
+      phone: profile?.phone ?? null,
+      social: {
+        instagram: profile?.instagram ?? undefined,
+        whatsapp: profile?.whatsapp ?? undefined,
+      },
+      timezone: tenant.timezone,
+      services,
+      specialists,
+      weeklyHours: localTenant?.businessHours ?? [],
+      policies,
+      gallery: (localTenant?.gallery ?? []).map((photo) => ({
         id: photo.id,
         url: photo.url,
         title: photo.title,

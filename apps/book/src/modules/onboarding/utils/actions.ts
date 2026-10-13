@@ -1,10 +1,11 @@
-import type { Tenant, User } from '../../../shared/types/tenancy';
 import * as slugRules from '../../../shared/utils/slug';
-import { provisionDefaults } from '../../../shared/utils/provision';
 import { getStore } from '../../../shared/infra/store';
 import { fail, ok, zodFields, type ActionResult } from '../../../shared/infra/result';
-import { createBusinessSchema } from './schemas';
+import { hasLiveAuth } from '../../../shared/infra/supabase/env';
+import { createBusinessSchema, type CreateBusinessInput } from './schemas';
 import type { SlugReason } from '../../../shared/utils/slug';
+import { provisionLocalBusiness } from './provisionLocal';
+import { provisionOnboardingRemote } from './server';
 
 export type SlugAvailability = { available: true } | { available: false; reason: SlugReason };
 
@@ -18,16 +19,27 @@ export function validateSlug(slug: string): SlugAvailability {
 export type CreateBusinessResult = { tenantId: string; redirectTo: string };
 
 /**
- * Create a tenant + owner and provision the initial configuration.
- * Idempotent per `draftId`: a retry returns the same tenant and never creates
- * a duplicate business (FR-011, FR-012, FR-014).
+ * Create a business for the owner.
+ * - With live Supabase/API configured: remote path (sign-up → createTenant →
+ *   tenant_id binding → refresh) via the `provisionOnboardingRemote` server action.
+ * - Otherwise: local seam (idempotent per draftId). Feature 008 (US2).
  */
-export function createBusiness(input: unknown): ActionResult<CreateBusinessResult> {
+export async function createBusiness(
+  input: unknown,
+): Promise<ActionResult<CreateBusinessResult>> {
   const parsed = createBusinessSchema.safeParse(input);
   if (!parsed.success) {
     return fail('VALIDATION_ERROR', 'Revisa los datos del formulario.', zodFields(parsed.error));
   }
-  const { draftId, account, business, setup } = parsed.data;
+  if (hasLiveAuth()) {
+    return provisionOnboardingRemote(parsed.data);
+  }
+  return createBusinessLocal(parsed.data);
+}
+
+/** Local seam provisioning — idempotent per `draftId` (FR-011, FR-012, FR-014). */
+function createBusinessLocal(parsed: CreateBusinessInput): ActionResult<CreateBusinessResult> {
+  const { draftId } = parsed;
   const store = getStore();
 
   const existingProvision = store.onboardingProvisions.find((item) => item.draftId === draftId);
@@ -35,14 +47,14 @@ export function createBusiness(input: unknown): ActionResult<CreateBusinessResul
     return ok({ tenantId: existingProvision.tenantId, redirectTo: '/admin/agenda' });
   }
 
-  if (store.users.some((user) => user.email.toLowerCase() === account.email.toLowerCase())) {
+  if (store.users.some((user) => user.email.toLowerCase() === parsed.account.email.toLowerCase())) {
     return fail('EMAIL_TAKEN', 'Ese email ya está registrado.', {
       email: 'El email ya está en uso.',
     });
   }
 
   const takenSlugs = store.tenants.map((tenant) => tenant.slug);
-  const slugCheck = slugRules.validateSlug(business.slug, takenSlugs);
+  const slugCheck = slugRules.validateSlug(parsed.business.slug, takenSlugs);
   if (!slugCheck.ok) {
     const message =
       slugCheck.reason === 'format'
@@ -53,48 +65,9 @@ export function createBusiness(input: unknown): ActionResult<CreateBusinessResul
     return fail('SLUG_TAKEN', message, { slug: message });
   }
 
-  const now = new Date().toISOString();
-  const user: User = {
-    id: crypto.randomUUID(),
-    fullName: account.fullName,
-    email: account.email.toLowerCase(),
-    credential: account.password,
-    role: 'owner',
-    tenantId: '',
-    status: 'active',
-    createdAt: now,
-  };
-  const tenant: Tenant = {
-    id: crypto.randomUUID(),
-    name: business.name,
-    slug: business.slug,
-    category: business.category,
-    status: 'active',
-    ownerUserId: user.id,
-    defaultAppointmentDurationMinutes: setup.defaultAppointmentDurationMinutes,
-    businessHours: setup.businessHours,
-    currency: 'EUR',
-    timezone: 'Europe/Madrid',
-    onlineBookingEnabled: true,
-    license: null,
-    avatar: null,
-    cover: null,
-    bio: null,
-    address: null,
-    phone: null,
-    social: null,
-    createdAt: now,
-    updatedAt: now,
-  };
-  user.tenantId = tenant.id;
+  const tenantId = crypto.randomUUID();
+  const userId = crypto.randomUUID();
+  provisionLocalBusiness(parsed, { tenantId, userId });
 
-  const defaults = provisionDefaults(tenant);
-  store.tenants.push(tenant);
-  store.users.push(user);
-  store.resources.push(defaults.resource);
-  store.availabilityRules.push(...defaults.rules);
-  store.services.push(defaults.service);
-  store.onboardingProvisions.push({ draftId, tenantId: tenant.id, userId: user.id });
-
-  return ok({ tenantId: tenant.id, redirectTo: '/admin/agenda' });
+  return ok({ tenantId, redirectTo: '/admin/agenda' });
 }

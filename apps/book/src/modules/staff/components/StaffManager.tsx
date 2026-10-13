@@ -99,6 +99,20 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+
+  /** Transient (network/config) failures surface as a non-destructive banner. */
+  function handleActionFailure(result: {
+    ok: false;
+    error: { code: string; message: string; fields?: Record<string, string> };
+  }) {
+    if (result.error.code === 'STATE_ERROR' || result.error.code === 'UNAUTHENTICATED') {
+      setActionNotice(result.error.message);
+      return;
+    }
+    setActionNotice(null);
+    setFieldErrors(result.error.fields ?? { _: result.error.message });
+  }
 
   function openCreate() {
     setFieldErrors(null);
@@ -166,9 +180,10 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
       ? updateStaff({ id: draft.value.id, ...input })
       : createStaff(input);
     if (!result.ok) {
-      setFieldErrors(result.error.fields ?? { _: result.error.message });
+      handleActionFailure(result);
       return;
     }
+    setActionNotice(null);
     setFieldErrors(null);
     if (draft.editing) {
       setMembers((prev) => prev.map((item) => (item.id === result.data.id ? result.data : item)));
@@ -181,7 +196,10 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
   function toggleActive(resource: Resource) {
     const result = setStaffActive({ id: resource.id, active: !resource.active });
     if (result.ok) {
+      setActionNotice(null);
       setMembers((prev) => prev.map((item) => (item.id === result.data.id ? result.data : item)));
+    } else {
+      handleActionFailure(result);
     }
   }
 
@@ -189,7 +207,10 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
     if (!deleteTarget) return;
     const result = removeStaff({ id: deleteTarget.id });
     if (result.ok) {
+      setActionNotice(null);
       setMembers((prev) => prev.filter((item) => item.id !== deleteTarget.id));
+    } else {
+      handleActionFailure(result);
     }
     setDeleteTarget(null);
   }
@@ -200,6 +221,11 @@ export function StaffManager({ staff, services }: StaffManagerProps) {
 
   return (
     <Stack spacing={3}>
+      {actionNotice ? (
+        <Typography variant="body2" color="error" role="alert">
+          {actionNotice}
+        </Typography>
+      ) : null}
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
         <Stack spacing={0.25}>
           <Typography variant="h5" component="h1">

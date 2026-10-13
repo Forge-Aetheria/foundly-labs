@@ -119,6 +119,16 @@ Notas:
 | ------------------------- | ----------- | ---------------------------------------------- |
 | `NEXT_PUBLIC_SITE_URL`    | landing     | URL canónica para metadatos/SEO                |
 | `FOUNDLY_PASS_*` (futuro) | book, store | Integración con Foundly Pass (SSO / licencias) |
+| `API_URL`                 | book        | Base URL de la API (GraphQL `POST /graphql`) — feature 008 |
+| `NEXT_PUBLIC_API_URL`     | book        | (opcional) URL de la API para diagnósticos client-side — feature 008 |
+| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | book | Auth pública de Supabase (sesión) — feature 008 |
+| `SUPABASE_SERVICE_ROLE_KEY` | book      | **Secreto de servidor**; vinculación `tenant_id` en onboarding — feature 008 |
+| `CORS_ORIGINS`            | api         | Allowlist de orígenes del frontend (dev `http://localhost:3001` + zona `/book`/apex) — feature 008 |
+
+> **Conexión book → API (feature `specs/book/008-api-integration-catalog-sync`):** el frontend consume la
+> API únicamente por HTTP (GraphQL); nunca importa `@foundly/database`. La API habilita CORS con la
+> allowlist de `CORS_ORIGINS` (ver `contracts/api-connectivity.contract.md`). En Vercel, configurar estas
+> variables por proyecto (`foundly-book`, `foundly-api`); ningún secreto se versiona.
 
 > Ninguna variable debe contener secretos en el repositorio; se configuran por proyecto en Vercel.
 
@@ -140,4 +150,8 @@ El enrutado Multi-Zone solo se reproduce en Vercel; en local cada app se ejecuta
 
 Este documento se subordina a `specs/business-model.md` y `constitution.md`. Todo cambio de topología, dominios o Build Settings debe reflejarse aquí y, si afecta al flujo SDD, actualizar la constitución según su procedimiento de enmienda.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08
+**Version**: 1.0.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-12
+
+*Enmienda 2026-10-12 (PATCH): §3.1 documenta `API_URL`, `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (book) y `CORS_ORIGINS` (api), y añade la nota de
+conectividad book→API según `specs/book/008-api-integration-catalog-sync/contracts/api-connectivity.contract.md`.*

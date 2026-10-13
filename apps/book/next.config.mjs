@@ -13,6 +13,23 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  /**
+   * Server Actions desde orígenes distintos al deployment (multi-zone / apex
+   * custom, specs/architecture.md §2) requieren allow al origen emisor.
+   * specs/book/008-api-integration-catalog-sync — api-connectivity.contract.md
+   * (Next 15: `serverActions.allowedOrigins` vive bajo `experimental`).
+   */
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'foundly-book.vercel.app',
+        'book.foundlylabs.com',
+        'foundlylabs.com',
+        'www.foundlylabs.com',
+        'localhost:3001',
+      ],
+    },
+  },
 };
 
 export default nextConfig;
