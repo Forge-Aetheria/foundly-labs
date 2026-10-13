@@ -34,6 +34,7 @@ Thumbs.db
 # code-first auto schema output
 apps/api/src/schema.gql
 
-# Generated GraphQL client artifacts (feature 011) — COMMITTED so CI type-checks
-# without a running API. Schema source: apps/api/src/schema.gql.
-# Regenerate via `npm run codegen -w @foundly/book`.
+# Generated GraphQL client artifacts (feature 011) — NOT versioned.
+# Reproduce via `npm run codegen -w @foundly/book` (auto-run by pretypecheck/prebuild).
+# The schema snapshot (`apps/book/codegen.schema.gql`) IS versioned so codegen runs offline.
+apps/book/src/shared/api/generated.ts

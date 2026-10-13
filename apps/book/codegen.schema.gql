@@ -1,0 +1,359 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type HealthPayload {
+  service: String!
+  status: String!
+  database: String!
+  checkedAt: String!
+}
+
+type BusinessProfileObject {
+  id: ID!
+  slug: String!
+  bio: String
+  address: String
+  phone: String
+  instagram: String
+  whatsapp: String
+  logo: String
+  cover: String
+  brandColors: String
+  policies: String
+}
+
+type ServiceObject {
+  id: ID!
+  name: String!
+  description: String
+  durationMinutes: Int!
+  priceCents: Int!
+  currency: String!
+  category: String
+  active: Boolean!
+}
+
+type TenantObject {
+  id: ID!
+  name: String!
+  category: String!
+  status: String!
+  timezone: String!
+  currency: String!
+  profile: BusinessProfileObject
+  services: [ServiceObject!]!
+}
+
+type SpecialistRef {
+  id: ID!
+  name: String!
+}
+
+type Service {
+  id: ID!
+  tenantId: String!
+  name: String!
+  description: String
+  durationMinutes: Int!
+  bufferMinutes: Int!
+  category: String
+  priceCents: Int!
+  currency: String!
+  active: Boolean!
+  specialists: [SpecialistRef!]!
+}
+
+type ServiceRef {
+  id: ID!
+  name: String!
+}
+
+type Specialist {
+  id: ID!
+  tenantId: String!
+  name: String!
+  role: String
+  avatar: String
+  bio: String
+  active: Boolean!
+  services: [ServiceRef!]!
+}
+
+type Availability {
+  id: ID!
+  tenantId: String!
+  specialistId: String
+  weekday: Int!
+  startTime: String!
+  endTime: String!
+  slotGranularityMinutes: Int!
+  minLeadTimeMinutes: Int!
+  bookingHorizonDays: Int!
+  breaks: String
+}
+
+type AppointmentService {
+  id: ID!
+  name: String!
+}
+
+type AppointmentSpecialist {
+  id: ID!
+  name: String!
+}
+
+type Appointment {
+  id: ID!
+  tenantId: String!
+  serviceId: String!
+  specialistId: String!
+  clientName: String!
+  clientContact: String
+  startAt: DateTime!
+  endAt: DateTime!
+  status: AppointmentStatus!
+  appliedDurationMinutes: Int!
+  appliedAmountCents: Int!
+  appliedCurrency: String!
+  origin: String!
+  notes: String
+  cancellationReason: String
+  service: AppointmentService!
+  specialist: AppointmentSpecialist!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+type CurrentTenant {
+  id: ID!
+  status: String!
+  plan: String
+}
+
+type CurrentUser {
+  userId: ID!
+  role: String!
+  tenant: CurrentTenant!
+}
+
+type BookCapability {
+  tenantId: ID!
+  enabled: Boolean!
+}
+
+type ViewerObject {
+  sub: ID!
+  email: String
+  role: String!
+  aud: String!
+}
+
+type MyService {
+  id: ID!
+  name: String!
+  description: String
+  priceCents: Int!
+  durationMinutes: Int!
+  category: String
+  active: Boolean!
+}
+
+type MySpecialist {
+  id: ID!
+  name: String!
+  role: String
+  bio: String
+  avatar: String
+  active: Boolean!
+}
+
+type Query {
+  health: HealthPayload!
+  tenants: [TenantObject!]!
+  tenant(slug: String!): TenantObject
+  services(tenantId: String, tenantSlug: String, category: String, minDuration: Int, maxDuration: Int): [Service!]!
+  service(id: String!): Service
+  specialists(tenantId: String, tenantSlug: String): [Specialist!]!
+  specialist(id: String!): Specialist
+  serviceSpecialists(serviceId: String!): [Specialist!]!
+  availability(tenantId: String, tenantSlug: String, specialistId: String): [Availability!]!
+  appointments(tenantId: String, tenantSlug: String, startDate: String, endDate: String, specialistId: String, status: AppointmentStatus): [Appointment!]!
+  appointment(id: String!): Appointment
+  me: CurrentUser!
+  currentTenant: CurrentTenant!
+  bookCapability: BookCapability!
+  viewer: ViewerObject!
+  myServices(active: Boolean): [MyService!]!
+  myService(id: ID!): MyService
+  mySpecialists(active: Boolean): [MySpecialist!]!
+  mySpecialist(id: ID!): MySpecialist
+}
+
+type Mutation {
+  createTenant(input: CreateTenantInput!): TenantObject!
+  createService(input: CreateServiceInput!): Service!
+  updateService(id: String!, input: UpdateServiceInput!): Service!
+  removeService(id: String!): Boolean!
+  createSpecialist(input: CreateSpecialistInput!): Specialist!
+  updateSpecialist(id: String!, input: UpdateSpecialistInput!): Specialist!
+  removeSpecialist(id: String!): Boolean!
+  assignServiceToSpecialist(specialistId: String!, serviceId: String!): Specialist!
+  unassignServiceFromSpecialist(specialistId: String!, serviceId: String!): Specialist!
+  createAvailability(input: CreateAvailabilityInput!): Availability!
+  updateAvailability(id: String!, input: UpdateAvailabilityInput!): Availability!
+  removeAvailability(id: String!): Boolean!
+  createAppointment(input: CreateAppointmentInput!): Appointment!
+  updateAppointmentStatus(id: String!, status: AppointmentStatus!): Appointment!
+  cancelAppointment(id: String!, reason: String): Appointment!
+  createMyService(input: CreateMyServiceInput!): MyService!
+  updateMyService(id: ID!, input: UpdateMyServiceInput!): MyService!
+  deleteMyService(id: ID!): Boolean!
+  createMySpecialist(input: CreateMySpecialistInput!): MySpecialist!
+  updateMySpecialist(id: ID!, input: UpdateMySpecialistInput!): MySpecialist!
+  deleteMySpecialist(id: ID!): Boolean!
+}
+
+input CreateTenantInput {
+  name: String!
+  category: String!
+  timezone: String!
+  currency: String
+  profile: BusinessProfileInput!
+}
+
+input BusinessProfileInput {
+  slug: String!
+  bio: String
+  address: String
+  phone: String
+  instagram: String
+  whatsapp: String
+  logo: String
+  cover: String
+  brandColors: String
+  policies: String
+}
+
+input CreateServiceInput {
+  name: String!
+  description: String
+  durationMinutes: Int!
+  bufferMinutes: Int
+  category: String
+  priceCents: Int!
+  currency: String
+  active: Boolean
+  tenantId: String
+  tenantSlug: String
+}
+
+input UpdateServiceInput {
+  name: String
+  description: String
+  durationMinutes: Int
+  bufferMinutes: Int
+  category: String
+  priceCents: Int
+  currency: String
+  active: Boolean
+}
+
+input CreateSpecialistInput {
+  name: String!
+  role: String
+  avatar: String
+  bio: String
+  active: Boolean
+  tenantId: String
+  tenantSlug: String
+}
+
+input UpdateSpecialistInput {
+  name: String
+  role: String
+  avatar: String
+  bio: String
+  active: Boolean
+}
+
+input CreateAvailabilityInput {
+  tenantId: String
+  tenantSlug: String
+  specialistId: String
+  weekday: Int!
+  startTime: String!
+  endTime: String!
+  slotGranularityMinutes: Int
+  minLeadTimeMinutes: Int
+  bookingHorizonDays: Int
+  breaks: String
+}
+
+input UpdateAvailabilityInput {
+  specialistId: String
+  weekday: Int
+  startTime: String
+  endTime: String
+  slotGranularityMinutes: Int
+  minLeadTimeMinutes: Int
+  bookingHorizonDays: Int
+  breaks: String
+}
+
+input CreateAppointmentInput {
+  tenantId: String
+  tenantSlug: String
+  serviceId: ID!
+  specialistId: ID!
+  clientName: String!
+  clientContact: String
+  startAt: String!
+  endAt: String!
+  origin: String
+  notes: String
+}
+
+input CreateMyServiceInput {
+  name: String! = ""
+  description: String
+  priceCents: Int! = 0
+  durationMinutes: Int! = 0
+  category: String
+  active: Boolean
+}
+
+input UpdateMyServiceInput {
+  name: String
+  description: String
+  priceCents: Int
+  durationMinutes: Int
+  category: String
+  active: Boolean
+}
+
+input CreateMySpecialistInput {
+  name: String! = ""
+  role: String
+  bio: String
+  avatar: String
+  active: Boolean
+}
+
+input UpdateMySpecialistInput {
+  name: String
+  role: String
+  bio: String
+  avatar: String
+  active: Boolean
+}

@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint .",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "pretypecheck": "npm run codegen",
+    "prebuild": "npm run codegen"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
