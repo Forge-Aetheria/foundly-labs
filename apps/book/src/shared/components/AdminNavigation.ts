@@ -3,6 +3,7 @@ import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import GroupsIcon from '@mui/icons-material/Groups';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LockIcon from '@mui/icons-material/Lock';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -33,6 +34,7 @@ export const PRIMARY_NAV: AdminNavItem[] = [
 
 /** Secondary, non-core options (placeholder sections for this version). */
 export const SECONDARY_NAV: AdminNavItem[] = [
+  { href: '/admin/seguridad', label: 'Seguridad', icon: LockIcon },
   { href: '/admin/configuracion', label: 'Configuración', icon: SettingsIcon },
   { href: '/admin/soporte', label: 'Ayuda y soporte', icon: SupportAgentIcon },
   { href: '/admin/acerca', label: 'Acerca de Foundly', icon: InfoOutlinedIcon },

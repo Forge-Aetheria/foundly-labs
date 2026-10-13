@@ -36,10 +36,11 @@ export function DataTable<Row>({
     <TableContainer
       component={Paper}
       elevation={0}
-      sx={(theme) => ({
-        border: `1px solid ${theme.palette.border.subtle}`,
+      sx={{
+        border: '1px solid',
+        borderColor: 'border.subtle',
         borderRadius: `${RADIUS.container}px`,
-      })}
+      }}
     >
       <Table size={dense ? 'small' : 'medium'}>
         <TableHead>

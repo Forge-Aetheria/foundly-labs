@@ -38,12 +38,12 @@ export function Modal({
       slotProps={{
         paper: {
           sx: glass
-            ? (theme) => ({
+            ? {
                 borderRadius: `${RADIUS.overlay}px`,
-                backgroundColor: theme.palette.surface.glass,
+                backgroundColor: 'surface.glass',
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
-              })
+              }
             : { borderRadius: `${RADIUS.overlay}px` },
         },
       }}

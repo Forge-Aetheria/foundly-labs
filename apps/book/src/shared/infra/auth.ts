@@ -2,6 +2,12 @@ import type { ErrorCode } from './result';
 import { getStore } from './store';
 import { fail, type ActionResult } from './result';
 
+/**
+ * Client-safe session primitives (feature 008).
+ * Importing this file never pulls `next/headers` into the browser bundle.
+ * Live Supabase sessions live in `./authServer` (server-only).
+ */
+
 export type Role = 'admin' | 'professional';
 
 export interface Session {
@@ -39,9 +45,11 @@ export function requireTenant(session: Session | null): ActionResult<Session> {
 }
 
 /**
- * Active session for the current request (mock seam).
- * Resolves from the store's `sessions` collection; when Foundly Pass SSO ships,
- * only this function changes.
+ * Active session from the in-memory seam — CLIENT-STORE MUTATIONS ONLY.
+ * Used by store-bound surfaces (gallery/profile/staff client actions) to scope
+ * their demo data. Server route guards MUST use `getEffectiveSession()` from
+ * `./authServer` (live session ?? local cookie); this producer never authenticates
+ * a request (feature 009 — US2).
  */
 export function getCurrentSession(): Session | null {
   const session = getStore().sessions[0];

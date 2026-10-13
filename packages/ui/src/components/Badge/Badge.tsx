@@ -4,6 +4,19 @@ import { RADIUS } from '../../theme';
 
 export type BadgeStatus = 'positive' | 'negative' | 'warning' | 'info' | 'neutral';
 
+/**
+ * Palette token paths resolved by the theme at style time (FR-002).
+ * Strings (not functions) keep Badge serializable across the RSC boundary
+ * when rendered from a Server Component.
+ */
+const STATUS_TONES = {
+  positive: { backgroundColor: 'success.light', color: 'success.main' },
+  negative: { backgroundColor: 'error.light', color: 'error.main' },
+  warning: { backgroundColor: 'warning.light', color: 'warning.main' },
+  info: { backgroundColor: 'info.light', color: 'info.main' },
+  neutral: { backgroundColor: 'surface.badgePill', color: 'text.secondary' },
+} as const;
+
 export interface BadgeProps {
   children: ReactNode;
   status?: BadgeStatus;
@@ -15,32 +28,21 @@ export function Badge({ children, status = 'neutral', pill = false, icon }: Badg
   return (
     <Box
       component="span"
-      sx={(theme) => {
-        const palette = {
-          positive: { bg: theme.palette.success.light, fg: theme.palette.success.main },
-          negative: { bg: theme.palette.error.light, fg: theme.palette.error.main },
-          warning: { bg: theme.palette.warning.light, fg: theme.palette.warning.main },
-          info: { bg: theme.palette.info.light, fg: theme.palette.info.main },
-          neutral: { bg: theme.palette.surface.badgePill, fg: theme.palette.text.secondary },
-        } as const;
-        const { bg, fg } = palette[status];
-        return {
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 0.5,
-          px: 1.25,
-          py: 0.25,
-          borderRadius: pill ? `${RADIUS.pill}px` : `${RADIUS.control}px`,
-          backgroundColor: bg,
-          color: fg,
-          fontSize: 12,
-          fontWeight: 600,
-          lineHeight: 1.6,
-          maxWidth: '100%',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        };
+      sx={{
+        ...STATUS_TONES[status],
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 0.5,
+        px: 1.25,
+        py: 0.25,
+        borderRadius: pill ? `${RADIUS.pill}px` : `${RADIUS.control}px`,
+        fontSize: 12,
+        fontWeight: 600,
+        lineHeight: 1.6,
+        maxWidth: '100%',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
       }}
     >
       {icon}

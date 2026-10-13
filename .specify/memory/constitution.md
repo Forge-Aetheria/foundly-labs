@@ -1,18 +1,18 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 5.0.0 -> 5.0.1
-Bump rationale: Enmienda 5.0.1 (PATCH): corrección de una desviación no autorizada. Se elimina
-  toda referencia a un paquete de almacenamiento interno y a tecnologías concretas que nunca
-  fueron ratificadas en `specs/architecture.md`. La estrategia de almacenamiento del ecosistema
-  queda explícitamente NO DEFINIDA; las apps SaaS se mantienen desacopladas mediante
-  tipos/interfaces y estado en memoria. Este documento es un ESPEJO de la constitución canónica
-  de la raíz (`constitution.md` v5.0.1) y debe mantenerse sincronizado con ella.
+Version change: 5.0.1 -> 5.1.0
+Bump rationale: Enmienda 5.1.0 (MINOR): adición material de un principio no negociable. Se
+  incorpora el Principio 5.V "Frontera Server/Client (React Server Components)" para prohibir que
+  los Server Components de `apps/book` y `apps/store` envíen valores no serializables (funciones:
+  `sx`-función, handlers, render props) a Client Components, causa del error "Functions cannot be
+  passed directly to Client Components". Este documento es un ESPEJO de la constitución canónica
+  de la raíz (`constitution.md` v5.1.0) y debe mantenerse sincronizado con ella.
 
 Modified principles: N/A
 Renamed principles: N/A
-Added sections: N/A
-Removed sections: N/A (se eliminan referencias al paquete de almacenamiento y su fila de convenciones)
+Added sections: 5.V Frontera Server/Client (React Server Components)
+Removed sections: N/A
 
 Deferred TODOs:
   - TODO(PERSISTENCE): definir y ratificar la estrategia de almacenamiento en specs/architecture.md.
@@ -21,7 +21,7 @@ Deferred TODOs:
 
 # Foundly Labs — Constitución de Desarrollo
 
-**Versión:** 5.0.1
+**Versión:** 5.1.0
 **Estado:** Binding
 **Ámbito:** Monorepo del ecosistema Foundly Labs (landing, book, store)
 **Stack Base:** Astro 5 (SSG, Server-First Islands) · Next.js / React 19 (SaaS) · Tailwind CSS v4 · TypeScript estricto
@@ -206,6 +206,16 @@ Reglas de los paquetes:
 - Se prohíbe el uso de `any` y los casteos implícitos (`as targetType`); todo prop, estado o contrato de datos debe estar tipado mediante interfaces o schemas de Zod.
 - Los tipos globales compartidos viven en `packages/*` o en `src/shared/types/` según su alcance.
 
+### V. Frontera Server/Client (React Server Components)
+
+Aplica a `apps/book` y `apps/store` (Next.js App Router, React 19).
+
+- Un archivo **sin** `'use client'` es un Server Component. Los Server Components **NUNCA** pueden pasar valores no serializables a Client Components: las **funciones** (`sx`-función, `onClick`/`onChange`/`onClose`, render props, etc.) cruzan la frontera RSC y provocan el error `Functions cannot be passed directly to Client Components`.
+- Los primitivos de `packages/ui` DEBEN permanecer serializables y renderizables desde servidor; solo `FoundlyThemeProvider` es `'use client'`. Su JSX interno no puede contener funciones.
+- Los estilos dependientes del tema en un Server Component se expresan con **rutas de token** (p. ej. `sx={{ backgroundColor: 'surface.badgePill' }}`) o valores resueltos desde el tema, nunca con callbacks.
+- Si se requiere interacción o un `sx` dinámico con callback, el componente que lo declara DEBE ser `'use client'` y consumirse desde otro cliente.
+- Detalle operativo, ejemplos y verificación: `code-rules.md` §8.
+
 ## 6. Guía de Diseño, Estética & Sistema de Tokens (Clean Light UI)
 
 La interfaz hereda la línea de diseño limpia, clara y de alto contraste de Foundly POS, proyectando una marca unificada (Lavender-to-White Body) en todas las apps.
@@ -321,4 +331,4 @@ Estas rutas son las canónicas; cualquier documento que use otras rutas debe cor
 
 Foundly Labs Constitution — "Local-First, Agile Commerce, Zero Compromise."
 
-**Version**: 5.0.1 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-08
+**Version**: 5.1.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-12

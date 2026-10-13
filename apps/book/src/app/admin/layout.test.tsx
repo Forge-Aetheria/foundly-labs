@@ -1,32 +1,42 @@
-import { render } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { resetStore } from '../../shared/infra/store';
+import { requireTenant } from '../../shared/infra/auth';
+import { resolveLocalSession } from '../../shared/infra/session';
 
-const redirectMock = vi.hoisted(() => vi.fn());
-vi.mock('next/navigation', () => ({
-  redirect: redirectMock,
-  usePathname: () => '/admin/agenda',
-}));
-vi.mock('next/image', () => ({
-  default: ({ src, alt }: { src: string; alt?: string }) => <img src={src} alt={alt ?? ''} />,
-}));
-
-import AdminLayout from './layout';
-
-describe('admin layout guard (FR-016, contracts/routes.contract.md)', () => {
+/**
+ * Admin layout guard (FR-016 + feature 009 US2).
+ * The layout is an async Server Component (not serially renderable in RTL); this
+ * test verifies the guard decision it depends on:
+ *  - no session ⇒ UNAUTHENTICATED (→ redirect `/login`)
+ *  - local session bound to a tenant ⇒ ok with `tenantId`
+ *  - session without a tenant ⇒ FORBIDDEN (→ redirect `/onboarding`)
+ */
+describe('admin layout guard (FR-016, 009-US2)', () => {
   beforeEach(() => {
-    redirectMock.mockClear();
-    resetStore({ seed: false });
-  });
-
-  it('redirects to /onboarding without a session', () => {
-    render(<AdminLayout>contenido</AdminLayout>);
-    expect(redirectMock).toHaveBeenCalledWith('/onboarding');
-  });
-
-  it('renders the shell when a tenant session exists', () => {
     resetStore();
-    render(<AdminLayout>contenido</AdminLayout>);
-    expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it('fails UNAUTHENTICATED without a session (redirects to /login)', () => {
+    const auth = requireTenant(null);
+    expect(auth.ok).toBe(false);
+    if (!auth.ok) expect(auth.error.code).toBe('UNAUTHENTICATED');
+  });
+
+  it('resolves the tenant session from the local seam', () => {
+    const auth = requireTenant(resolveLocalSession('u-owner-ana'));
+    expect(auth.ok).toBe(true);
+    if (auth.ok) expect(auth.data.tenantId).toBe('ten-ana');
+  });
+
+  it('fails UNAUTHENTICATED for an unknown local user', () => {
+    const auth = requireTenant(resolveLocalSession('missing-user'));
+    expect(auth.ok).toBe(false);
+    if (!auth.ok) expect(auth.error.code).toBe('UNAUTHENTICATED');
+  });
+
+  it('fails FORBIDDEN for a session without a tenant (redirects to onboarding)', () => {
+    const auth = requireTenant({ userId: 'u-x', role: 'professional' });
+    expect(auth.ok).toBe(false);
+    if (!auth.ok) expect(auth.error.code).toBe('FORBIDDEN');
   });
 });

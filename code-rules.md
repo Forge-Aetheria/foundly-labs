@@ -1,8 +1,8 @@
 # Foundly Labs — Code & TypeScript Standards
 
-**Version:** 2.0.0 (Monorepo — Landing Web Domain)
+**Version:** 2.1.0 (Monorepo — Landing Web Domain)
 **Scope:** `apps/landing` (Astro 5 + TypeScript + Tailwind CSS v4). Sirve además como **base de los estándares de TypeScript** para los paquetes compartidos (`packages/ui`) y las apps (`apps/book`, `apps/store`).
-**Authority:** Inviolable — subordinado a `specs/business-model.md`, `constitution.md` (v4.1.0) y `specs/architecture.md`.
+**Authority:** Inviolable — subordinado a `specs/business-model.md`, `constitution.md` (v5.1.0) y `specs/architecture.md`.
 **Design source of truth:** `specs/system-design.md` v3.0.0 y `packages/ui/src/styles/tokens.css`.
 
 ## 1. Strict Typing Policy
@@ -105,3 +105,47 @@ Cards representing features, testimonials, or pricing tiers must strictly follow
 - **Interactive Forms**: Forms (e.g., lead generation, demo request, newsletter) must use client-side React islands or lightweight vanilla JS.
 - **Feedback UI**: Success and error notifications must follow the visual identity (floating toast or clean lavender alert box with #6C5CE7 accents).
 - **No Page Reloads**: Form submissions must be handled asynchronously (fetch API) with clear visual pending states.
+
+## 8. Next.js Server/Client Boundary (RSC)
+
+Aplica a `apps/book` y `apps/store` (App Router, React 19). Un archivo **sin** `'use client'` es un **Server Component** por defecto. React solo serializa datos simples a través de la frontera Server → Client (`string`, `number`, `boolean`, `null`, `undefined`, `Date`, arrays, objetos planos y `ReactNode`). Una **función** no es serializable y provoca el error:
+
+```text
+Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server".
+Or maybe you meant to call this function rather than return it. <... sx={function sx} ...>
+```
+
+### 8.1 Rule: no functions from Server Components to Client Components
+
+Un Server Component **NUNCA** debe pasar a un Client Component (MUI, `@foundly/ui`, o cualquier componente `'use client'`):
+
+- `sx` como función: `sx={(theme) => ({ ... })}`, `sx={[(theme) => ({ ... })]}`.
+- Handlers: `onClick`, `onChange`, `onClose`, `onDelete`, `onRowClick`, etc.
+- Render props / callbacks: `render={(row) => ...}`, `component={(props) => ...}`.
+- En general, **cualquier prop cuyo valor sea una función**.
+
+Si se necesita interacción o un `sx` dinámico con callback, el componente que lo declara **DEBE** llevar `'use client'` y consumirse desde otro componente cliente.
+
+### 8.2 Design-system primitives stay server-safe
+
+- Los primitivos de `packages/ui` **NO** llevan `'use client'` a propósito: deben poder renderizarse desde Server Components. Solo `FoundlyThemeProvider` es cliente.
+- Por tanto, el JSX interno de `packages/ui` **no** puede contener funciones (`sx`-función, handlers internos incondicionales, etc.); solo props serializables.
+- Para estilos dependientes del tema en un Server Component, usa **rutas de token** que MUI resuelve contra `theme.palette` en tiempo de estilo, o valores directos resueltos desde el tema:
+
+```tsx
+// ❌ MAL — la función cruza la frontera RSC (Server Component)
+<Box component="span" sx={(theme) => ({ backgroundColor: theme.palette.surface.badgePill })} />
+
+// ✅ BIEN — ruta de token resuelta por el tema (serializable)
+<Box component="span" sx={{ backgroundColor: 'surface.badgePill' }} />
+
+// ✅ BIEN — valor directo para lo que no tiene ruta de paleta (p. ej. sombras)
+boxShadow: elevated ? foundlyTheme.palette.shadow.fab : foundlyTheme.palette.shadow.card,
+```
+
+- `'use client'` **no** exime del tipado estricto ni del uso de tokens (§1 y §4).
+
+### 8.3 Verification
+
+- Al renderizar cualquier ruta en `next dev`, la consola y la respuesta HTTP **NO** deben mostrar `Functions cannot be passed directly to Client Components`.
+- Todo cambio en un Server Component o en `packages/ui` debe probarse cargando las rutas afectadas, además de pasar `tsc`, ESLint y la suite de tests.

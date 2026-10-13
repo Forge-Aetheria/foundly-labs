@@ -1,8 +1,11 @@
 'use client';
 
 import MenuIcon from '@mui/icons-material/Menu';
+import LogoutIcon from '@mui/icons-material/Logout';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -15,6 +18,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
+import { signOut } from '../infra/sessionActions';
 import { PRIMARY_NAV, SECONDARY_NAV, type AdminNavItem } from './AdminNavigation';
 
 /** Width of the persistent sidebar, shared by the drawer and the content offset. */
@@ -24,6 +28,8 @@ export interface AdminShellProps {
   children: ReactNode;
   /** The active business shown in the footer user profile (US3). */
   tenantName?: string;
+  /** Public booking page path for the owner's slug (feature 009 — US4); null hides the link. */
+  publicHref?: string | null;
 }
 
 /**
@@ -31,7 +37,7 @@ export interface AdminShellProps {
  * drawer on small viewports), the module navigation and the Clean Light UI
  * lavender canvas for the routed screens.
  */
-export function AdminShell({ children, tenantName }: AdminShellProps) {
+export function AdminShell({ children, tenantName, publicHref }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleOpen = () => setMobileOpen(true);
   const handleClose = () => setMobileOpen(false);
@@ -55,7 +61,7 @@ export function AdminShell({ children, tenantName }: AdminShellProps) {
           },
         }}
       >
-        <DrawerContent tenantName={tenantName} />
+        <DrawerContent tenantName={tenantName} publicHref={publicHref} />
       </Drawer>
 
       <Drawer
@@ -68,7 +74,7 @@ export function AdminShell({ children, tenantName }: AdminShellProps) {
           '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
         }}
       >
-        <DrawerContent tenantName={tenantName} onNavigate={handleClose} />
+        <DrawerContent tenantName={tenantName} publicHref={publicHref} onNavigate={handleClose} />
       </Drawer>
 
       <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -141,9 +147,11 @@ function MobileBar({ onOpen }: { onOpen: () => void }) {
 function DrawerContent({
   onNavigate,
   tenantName,
+  publicHref,
 }: {
   onNavigate?: () => void;
   tenantName?: string;
+  publicHref?: string | null;
 }) {
   const pathname = usePathname();
 
@@ -159,6 +167,7 @@ function DrawerContent({
           <Image src="/branding-logo.png" alt="Foundly Book" width={168} height={84} priority />
         </Link>
       </Stack>
+      {publicHref ? <PublicPageLink href={publicHref} onNavigate={onNavigate} /> : null}
       <Divider />
 
       <List component="nav" aria-label="Navegación principal" sx={{ px: 1.5, py: 1.5 }}>
@@ -229,6 +238,27 @@ function NavListItem({
   );
 }
 
+function PublicPageLink({ href, onNavigate }: { href: string; onNavigate?: () => void }) {
+  return (
+    <Box sx={{ px: 2, pb: 2 }}>
+      <Button
+        component={Link}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="outlined"
+        size="small"
+        fullWidth
+        startIcon={<OpenInNewIcon fontSize="small" />}
+        onClick={onNavigate}
+        aria-label="Ver página pública de reservas"
+      >
+        Ver página pública
+      </Button>
+    </Box>
+  );
+}
+
 function UserFooter({ tenantName }: { tenantName?: string }) {
   return (
     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 2.5, py: 2 }}>
@@ -244,7 +274,7 @@ function UserFooter({ tenantName }: { tenantName?: string }) {
       >
         RG
       </Avatar>
-      <Stack sx={{ minWidth: 0 }}>
+      <Stack sx={{ minWidth: 0, flexGrow: 1 }}>
         <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
           Raúl Gómez
         </Typography>
@@ -257,6 +287,9 @@ function UserFooter({ tenantName }: { tenantName?: string }) {
           Administrador
         </Typography>
       </Stack>
+      <IconButton onClick={() => void signOut()} aria-label="Cerrar sesión" size="small">
+        <LogoutIcon fontSize="small" />
+      </IconButton>
     </Stack>
   );
 }

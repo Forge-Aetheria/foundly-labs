@@ -96,6 +96,31 @@ The repo is a **npm workspaces monorepo** (`apps/*`, `packages/*`):
 | `packages/ui`       | MUI v6 (design system) | `@foundly/ui`                               | `/specs/shared-ui/` |
 | `packages/database` | Prisma + PostgreSQL    | `@foundly/database` (persistencia DB-First) | `/specs/api/`       |
 
+### Atajos por proyecto (desde la raíz)
+
+| Comando            | Projecto      | Delega en                                         |
+| ------------------ | ------------- | ------------------------------------------------- |
+| `dev:landing`      | landing       | `npm run dev -w @foundly/landing` (puerto 4321)   |
+| `build:landing`    | landing       | `npm run build -w @foundly/landing`               |
+| `preview:landing`  | landing       | `npm run preview -w @foundly/landing`             |
+| `check:landing`    | landing       | `npm run check -w @foundly/landing`               |
+| `dev:book`         | book          | `npm run dev -w @foundly/book` (puerto 3001)      |
+| `build:book`       | book          | `npm run build -w @foundly/book`                  |
+| `start:book`       | book          | `npm run start -w @foundly/book`                  |
+| `typecheck:book`   | book          | `npm run typecheck -w @foundly/book`              |
+| `test:book`        | book          | `npm run test -w @foundly/book`                   |
+| `lint:book`        | book          | `npm run lint -w @foundly/book`                   |
+| `codegen:book`     | book          | `npm run codegen -w @foundly/book`                |
+| `dev:api`          | api           | `npm run dev -w @foundly/api` (puerto 3002)       |
+| `build:api`        | api           | `npm run build -w @foundly/api`                   |
+| `start:api`        | api           | `npm run start -w @foundly/api`                   |
+| `typecheck:api`    | api           | `npm run typecheck -w @foundly/api`               |
+| `test:api`         | api           | `npm run test -w @foundly/api`                    |
+| `lint:api`         | api           | `npm run lint -w @foundly/api`                    |
+
+> Los alias cortos de la raíz (`dev`, `build`, `start`, `preview`, `check`, `astro`) siguen apuntando a la
+> landing (compatibilidad con la tabla Scripts de arriba). Database ya se expone vía `db:*`.
+
 Comandos de la API (`@foundly/api`) y la base de datos (`@foundly/database`):
 
 ```bash
