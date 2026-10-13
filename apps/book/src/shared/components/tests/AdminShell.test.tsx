@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/admin/agenda' }));
-vi.mock('../../modules/auth/hooks', () => ({ useSignOut: () => vi.fn() }));
+vi.mock('../../../modules/auth/hooks', () => ({ useSignOut: () => vi.fn() }));
 
-import { AdminShell } from './AdminShell';
+import { AdminShell } from '../AdminShell';
 
 function renderShell(props: { publicHref?: string | null } = {}) {
   return render(

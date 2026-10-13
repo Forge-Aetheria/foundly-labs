@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { requireRole, requireTenant } from './auth';
+import { requireRole, requireTenant } from '../auth';
 
 describe('auth seam (feature 008/010 — session-auth.contract.md, live-only)', () => {
   it('accepts a tenant-bound session', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateRedirect, isAdminPath, isLoginPath } from './authGuard';
+import { evaluateRedirect, isAdminPath, isLoginPath } from '../authGuard';
 
 describe('authGuard (009 — US2)', () => {
   it('detects admin paths', () => {

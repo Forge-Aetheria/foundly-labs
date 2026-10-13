@@ -217,3 +217,20 @@ interface MyServiceDto { id: string; name: string; /* ... */ }
 contenido transversal se reubica en carpetas de propósito claro: `shared/api/` (transporte + codegen),
 `shared/types/` (resultados/contratos de dominio), `shared/auth/` (sesión). Plan de migración:
 `specs/book/011-module-data-layer/`.
+
+## 10. Test Location (monorepo)
+
+Todo test DEBE vivir dentro de una carpeta **`tests/`** de la carpeta a la que pertenece su dominio.
+Nunca se colocan como hermanos del código fuente.
+
+- **Módulos (Next)**: `src/modules/<modulo>/tests/*.test.ts(x)`.
+- **Código compartido (Next)**: `src/shared/<área>/tests/*.test.ts(x)` (p. ej. `shared/tenancy/tests/queries.test.ts`).
+- **Rutas (Next)**: `src/app/tests/*.test.tsx` y `src/app/<segmento>/tests/*.test.tsx`.
+- **Paquetes**: `packages/<pkg>/src/<componente>/tests/*.test.tsx`.
+
+Reglas:
+
+- Un `tests/` agrupa **todos** los tests de su carpeta de dominio.
+- Si una carpeta contiene varios asuntos no relacionados, sus tests también van en ese único `tests/`,
+  pero **en archivos separados** (uno por asunto/unidad bajo prueba).
+- Los imports relativos de un test se resuelven desde su nueva profundidad (`tests/` añade un nivel).

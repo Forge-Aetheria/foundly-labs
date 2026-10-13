@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { requireTenant } from '../../shared/auth/auth';
+import { requireTenant } from '../../../shared/auth/auth';
 
 /**
  * Admin layout guard (FR-016 + feature 009 US2, feature 010 — live-only).

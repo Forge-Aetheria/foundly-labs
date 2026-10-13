@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Session } from '../auth/auth';
-import { getCurrentTenant } from './queries';
+import type { Session } from '../../auth/auth';
+import { getCurrentTenant } from '../queries';
 
 const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));
 
-vi.mock('../api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
+vi.mock('../../api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
 
 function makeTenant(id: string, slug: string) {
   return {

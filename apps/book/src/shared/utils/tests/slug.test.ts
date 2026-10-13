@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeSlug, RESERVED_SLUGS, SLUG_PATTERN, suggestSlug, validateSlug } from './slug';
+import { normalizeSlug, RESERVED_SLUGS, SLUG_PATTERN, suggestSlug, validateSlug } from '../slug';
 
 describe('tenancy slug rules (contracts/tenancy.contract.md)', () => {
   it('normalizes names into kebab-case slugs', () => {

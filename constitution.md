@@ -303,6 +303,8 @@ Estas rutas son las canónicas; cualquier documento que use otras rutas debe cor
 | Módulos de dominio (Next)     | `apps/{book,store}/src/modules/<modulo>/`                            | kebab-case              |
 | Acciones de servidor (Next)   | `apps/{book,store}/src/modules/<modulo>/actions.ts`                  | camelCase (`.ts`)       |
 | Hooks de cliente (Next)       | `apps/{book,store}/src/modules/<modulo>/hooks.ts`                    | `use*` (`.ts`)          |
+| Operaciones GraphQL (Next)    | `apps/{book,store}/src/modules/<modulo>/<modulo>.graphql`            | kebab-case (`.graphql`) |
+| Tests (Next)                  | `apps/{book,store}/src/**/tests/`                                    | `*.test.ts(x)`          |
 | Código compartido (Next)      | `apps/{book,store}/src/shared/`                                      | kebab-case / PascalCase |
 | Componentes compartidos       | `packages/ui/`                                                       | PascalCase              |
 | Configuración compartida      | `packages/config/`                                                   | kebab-case              |

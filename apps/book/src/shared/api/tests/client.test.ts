@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { apiRequest, mapActionError, resolveApiUrl } from './client';
-import { MyServicesDocument } from './generated';
-import type { ActionResult, ErrorCode } from '../types/result';
+import { apiRequest, mapActionError, resolveApiUrl } from '../client';
+import { MyServicesDocument } from '../generated';
+import type { ActionResult, ErrorCode } from '../../types/result';
 
 function jsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { computeAvailability } from './computeAvailability';
-import type { AvailabilityRequest } from '../types/availability';
+import { computeAvailability } from '../computeAvailability';
+import type { AvailabilityRequest } from '../../types/availability';
 
 const DATE = '2026-06-03';
 const WEEKDAY = new Date(`${DATE}T00:00:00Z`).getUTCDay();
