@@ -32,9 +32,9 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
   `/admin/staff` ("Equipo y Especialistas") muestra el roster como un grid de tarjetas glassmorphism con
   badges de servicios y estado, y su modal valida nombre/cargo (requeridos), avisa si no hay servicios
   asignados y deja activar/desactivar cada profesional (`005-staff-management`).
-  `/admin/gallery` ("Galería") gestiona el portfolio visual: grid de tarjetas glass con título, descripción
+  `/admin/gallery` ("Galería") gestiona el portfolio real: grid de tarjetas glass con título, descripción
   y categoría (Local/Trabajos/Equipo), alta validando URL, lightbox de previsualización y borrado con
-  confirmación; cualquier cambio se refleja al instante en `#galeria` del mini-sitio (`006-gallery-management`).
+  confirmación; todo se persiste en el backend y se refleja en `#galeria` del mini-sitio (`013-gallery-integration`).
   `/admin/profile` ("Perfil y Acerca de") edita la identidad del comercio (nombre, categoría, URL pública con
   validación, logo/portada con preview), contacto y redes, la bio, las políticas de reserva/cancelación y un
   resumen del horario sincronizado con disponibilidad; todo se refleja en el header, la tarjeta sticky,
@@ -69,9 +69,9 @@ equipo) y la **tenancy** (onboarding → creación de negocio + vinculación `te
    resuelve la identidad (claims `sub` + `app_metadata.tenant_id`).
 
 Sin entorno remoto configurado, `signIn`/`signOut` fallan **visiblemente** (la autenticación es solo del
-proveedor; no hay seam local). Las secciones aún no migradas al backend (galería, reseñas, políticas,
-agenda/disponibilidad) siguen leyendo del store en memoria de forma transitoria; se migran en las fases
-del feature `010-remove-local-store`. Escenarios de validación en el `quickstart.md` de la spec del feature.
+proveedor; no hay seam local). Las secciones sin contraparte en el backend (reseñas y políticas) siguen
+mostrando un estado vacío limpio; el resto (servicios, equipo, disponibilidad, agenda, galería, tenancy y
+perfil) se sirve desde la API. Escenarios de validación en el `quickstart.md` de cada spec.
 
 ## Autenticación (feature `009-admin-auth`)
 
@@ -123,5 +123,7 @@ rechazado como problema de sesión. Al iniciar sesión se valida además que la 
 - `specs/book/010-remove-local-store/` — eliminación del store en memoria; todo servido desde la API/DB (o estado vacío limpio).
 - `specs/book/011-module-data-layer/` — capa de datos por módulo (`actions.ts`/`hooks.ts`), codegen y disolución de `shared/infra`.
 - `specs/book/012-centralized-api-errors/` — manejo centralizado de errores de API, expiración de sesión global y consistencia login↔API.
+- `specs/book/013-gallery-integration/` — galería conectada al backend (admin `/admin/gallery` + `#galeria` del mini-sitio).
+- `specs/api/012-gallery-management/` — superficie GraphQL de la galería (lectura pública + add/remove autenticados y por tenant).
 
 > Pendiente: paginación/windowing de la agenda (T039 de `001`) y suite Playwright E2E (`e2e/`).
