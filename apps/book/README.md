@@ -90,6 +90,18 @@ Ciclo de acceso completo del propietario:
 (`sub` + `app_metadata.tenant_id`); el store en memoria **no** autentica por sí solo y la cookie local
 fue eliminada. Detalles: `specs/book/009-admin-auth/` y `specs/book/010-remove-local-store/`.
 
+## Errores y sesión (feature `012-centralized-api-errors`)
+
+Los errores de la API ya no se pintan crudos en las vistas. Un clasificador central
+(`shared/api/error-surface.ts`) decide el tratamiento por código: **sesión** (`UNAUTHENTICATED`) → limpieza
+de sesión y redirección global a `/login?reason=session-expired` (ruta `app/auth/session-expired`); **transitorio**
+(conexión/recurso ausente) → modal limpio (`ApiErrorDialog`); **inline** (validación/conflicto) → feedback en el
+formulario. Los mensajes se localizan en español; nunca se muestra el texto del proveedor. El transporte
+autenticado (`shared/api/admin-request.ts`, `apiRequestAdmin`) inyecta el bearer y trata un token ausente o
+rechazado como problema de sesión. Al iniciar sesión se valida además que la API acepta el token (query
+`Viewer`), por lo que un desajuste de autenticación se ve en `/login`, no repartido por el panel. Detalle:
+`specs/book/012-centralized-api-errors/` y `specs/api/011-jwt-algorithm-support/`.
+
 ## Dominio y datos
 
 - **Estructura modular**: `src/app/` es la capa delgada de rutas App Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `dialogs/`, `hooks/`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (types, utils, componentes, `infra/` con el seam de sesión/results, `tenancy/`).
@@ -108,5 +120,8 @@ fue eliminada. Detalles: `specs/book/009-admin-auth/` y `specs/book/010-remove-l
 - `specs/book/007-business-profile/` — perfil público, contacto y políticas.
 - `specs/book/008-api-integration-catalog-sync/` — integración front-to-back con la API y catálogo admin.
 - `specs/book/009-admin-auth/` — autenticación admin, protección de rutas, enlace público y cambio de contraseña.
+- `specs/book/010-remove-local-store/` — eliminación del store en memoria; todo servido desde la API/DB (o estado vacío limpio).
+- `specs/book/011-module-data-layer/` — capa de datos por módulo (`actions.ts`/`hooks.ts`), codegen y disolución de `shared/infra`.
+- `specs/book/012-centralized-api-errors/` — manejo centralizado de errores de API, expiración de sesión global y consistencia login↔API.
 
 > Pendiente: paginación/windowing de la agenda (T039 de `001`) y suite Playwright E2E (`e2e/`).
