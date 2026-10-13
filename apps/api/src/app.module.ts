@@ -16,6 +16,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { GalleryModule } from './modules/gallery/gallery.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { TimeBlockModule } from './modules/time-block/time-block.module';
 import { SharedPrismaModule } from './shared/prisma/prisma.module';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -41,6 +42,7 @@ const isProduction = process.env.NODE_ENV === 'production';
     CatalogModule,
     GalleryModule,
     ReviewsModule,
+    TimeBlockModule,
   ],
   controllers: [AppController],
   providers: [HealthResolver],

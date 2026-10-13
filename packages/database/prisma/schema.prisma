@@ -29,6 +29,7 @@ model Tenant {
   gallery      GalleryPhoto[]
   availability Availability[]
   reviews      Review[]
+  timeBlocks   TimeBlock[]
 }
 
 model BusinessProfile {
@@ -84,6 +85,7 @@ model Specialist {
   assignments  SpecialistService[]
   appointments Appointment[]
   availability Availability[]
+  timeBlocks   TimeBlock[]
 }
 
 model SpecialistService {
@@ -162,4 +164,19 @@ model Review {
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId, createdAt])
+}
+
+model TimeBlock {
+  id           String   @id @default(cuid())
+  tenantId     String
+  specialistId String?
+  startAt      DateTime
+  endAt        DateTime
+  reason       String?
+  createdAt    DateTime @default(now())
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  specialist Specialist? @relation(fields: [specialistId], references: [id])
+
+  @@index([tenantId, startAt])
 }
