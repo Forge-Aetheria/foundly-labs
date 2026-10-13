@@ -205,6 +205,7 @@ Aplica a `apps/book` y `apps/store`. La lógica de datos de cada módulo de domi
 src/modules/<modulo>/
 ├── actions.ts     # Funciones de servidor: lecturas (fetches) y Server Actions
 ├── hooks.ts       # Hooks de cliente que envuelven las interacciones
+├── <modulo>.graphql  # Operaciones GraphQL del módulo (input de codegen)
 ├── components/    # Vistas y componentes de UI
 ├── dialogs/       # (cuando aplique) flujos modales
 ├── utils/         # Helpers puros, schemas, mappers
@@ -213,6 +214,7 @@ src/modules/<modulo>/
 ```
 
 - **`actions.ts`**: única puerta de acceso a la API para el módulo. Contiene las funciones de servidor (lecturas y Server Actions). Los Server Components las consumen para el render inicial.
+- **`<modulo>.graphql`**: las operaciones GraphQL (queries/mutations) del módulo viven dentro del módulo; el `codegen` las recolecta (`src/modules/**/*.graphql`). Las operaciones transversales viven en su carpeta `shared/<área>/` (p. ej. `shared/tenancy/`).
 - **`hooks.ts`**: hooks de cliente (`'use client'`), único punto desde el que los componentes interactivos disparan acciones. Envuelven las Server Actions de `actions.ts`.
 - **Prohibición en UI**: los componentes/vistas (cualquier `components/`, `dialogs/` o `<Modulo>View`) NO pueden llamar directamente a `useQuery`, `useMutation`, `apiRequest` ni a Server Actions. Toda interacción pasa por un hook de `hooks.ts`.
 - **Nomenclatura obligatoria**: `use<Acción><Entidad|Módulo>` (p. ej. `useFetchProfile`, `useCreateService`, `useUpdateAvailability`, `useCancelAppointment`).

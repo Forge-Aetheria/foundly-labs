@@ -1,4 +1,4 @@
-# Availability operations — feature 011.
+# Availability module operations — feature 011 (colocated with the module).
 
 query Availability($tenantId: String, $tenantSlug: String, $specialistId: String) {
   availability(tenantId: $tenantId, tenantSlug: $tenantSlug, specialistId: $specialistId) {

@@ -1,0 +1,82 @@
+# Staff module operations — feature 011 (colocated with the module).
+
+query MySpecialists($active: Boolean) {
+  mySpecialists(active: $active) {
+    id
+    name
+    role
+    bio
+    avatar
+    active
+  }
+}
+
+query MySpecialist($id: ID!) {
+  mySpecialist(id: $id) {
+    id
+    name
+    role
+    bio
+    avatar
+    active
+  }
+}
+
+mutation CreateMySpecialist($input: CreateMySpecialistInput!) {
+  createMySpecialist(input: $input) {
+    id
+    name
+    role
+    bio
+    avatar
+    active
+  }
+}
+
+mutation UpdateMySpecialist($id: ID!, $input: UpdateMySpecialistInput!) {
+  updateMySpecialist(id: $id, input: $input) {
+    id
+    name
+    role
+    bio
+    avatar
+    active
+  }
+}
+
+mutation DeleteMySpecialist($id: ID!) {
+  deleteMySpecialist(id: $id)
+}
+
+# Public reads (used by the public booking portal via the shared generated docs).
+query Specialists($tenantId: String, $tenantSlug: String) {
+  specialists(tenantId: $tenantId, tenantSlug: $tenantSlug) {
+    id
+    tenantId
+    name
+    role
+    avatar
+    bio
+    active
+    services {
+      id
+      name
+    }
+  }
+}
+
+query ServiceSpecialists($serviceId: String!) {
+  serviceSpecialists(serviceId: $serviceId) {
+    id
+    tenantId
+    name
+    role
+    avatar
+    bio
+    active
+    services {
+      id
+      name
+    }
+  }
+}

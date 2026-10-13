@@ -1,4 +1,4 @@
-# Appointment operations — feature 011.
+# Agenda module operations — feature 011 (colocated with the module).
 
 query Appointments(
   $tenantId: String

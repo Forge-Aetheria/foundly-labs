@@ -160,12 +160,15 @@ Norma obligatoria (constitución §5.VI). La lógica de datos vive **dentro del 
 src/modules/<modulo>/
 ├── actions.ts     # Funciones de servidor: lecturas (fetches) y Server Actions
 ├── hooks.ts       # Hooks de cliente que envuelven las interacciones
+├── <modulo>.graphql  # Operaciones GraphQL del módulo (input de codegen)
 ├── components/    # Vistas y componentes de UI
 ├── dialogs/       # (cuando aplique)
 ├── utils/         # Helpers puros, schemas, mappers
 ├── tests/
 └── <Modulo>View.tsx
 ```
+
+- **`<modulo>.graphql`** — las operaciones GraphQL (queries/mutations) del módulo viven **dentro del módulo**. El `codegen` las recolecta (`documents: ['src/modules/**/*.graphql', 'src/shared/**/*.graphql']`) y genera `shared/api/generated.ts`. Las operaciones transversales (p. ej. `tenancy`) viven en su carpeta `shared/<área>/`.
 
 - **`actions.ts`** — única puerta a la API para el módulo. Server-only: lecturas y `'use server'` actions. Consumido por Server Components (render inicial) y por `hooks.ts`.
 - **`hooks.ts`** — `'use client'`; único punto desde el que la UI interactiva dispara acciones. Envuelve las Server Actions de `actions.ts`.

@@ -1,4 +1,4 @@
-# Tenancy operations — feature 008 (tenancy.contract.md).
+# Tenancy operations — feature 011 (cross-cutting reads owned by shared/tenancy).
 
 query TenantBySlug($slug: String!) {
   tenant(slug: $slug) {
@@ -58,16 +58,6 @@ query Tenants {
       currency
       category
       active
-    }
-  }
-}
-
-mutation CreateTenant($input: CreateTenantInput!) {
-  createTenant(input: $input) {
-    id
-    status
-    profile {
-      slug
     }
   }
 }

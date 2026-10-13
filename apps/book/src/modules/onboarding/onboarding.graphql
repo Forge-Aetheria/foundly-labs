@@ -1,0 +1,11 @@
+# Onboarding module operations — feature 011 (colocated with the module).
+
+mutation CreateTenant($input: CreateTenantInput!) {
+  createTenant(input: $input) {
+    id
+    status
+    profile {
+      slug
+    }
+  }
+}
