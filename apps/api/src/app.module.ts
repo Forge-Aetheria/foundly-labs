@@ -14,6 +14,7 @@ import { AvailabilityModule } from './modules/availability/availability.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
+import { GalleryModule } from './modules/gallery/gallery.module';
 import { SharedPrismaModule } from './shared/prisma/prisma.module';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -37,6 +38,7 @@ const isProduction = process.env.NODE_ENV === 'production';
     AppointmentsModule,
     AuthModule,
     CatalogModule,
+    GalleryModule,
   ],
   controllers: [AppController],
   providers: [HealthResolver],
