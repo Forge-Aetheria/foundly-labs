@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AvailabilityDocument,
+  GalleryDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
 } from '../../../shared/api/generated';
@@ -89,6 +90,22 @@ describe('public-booking queries (feature 011 — server-only)', () => {
       if (document === TenantBySlugDocument) return { ok: true, data: { tenant: makeTenant() } };
       if (document === SpecialistsDocument) return { ok: true, data: { specialists: [makeSpecialist()] } };
       if (document === AvailabilityDocument) return { ok: true, data: { availability: [makeRule()] } };
+      if (document === GalleryDocument)
+        return {
+          ok: true,
+          data: {
+            gallery: [
+              {
+                id: 'gal-1',
+                url: 'https://example.com/1.jpg',
+                title: 'Fachada',
+                description: null,
+                category: 'local',
+                order: 0,
+              },
+            ],
+          },
+        };
       return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected' } };
     });
   });
@@ -102,7 +119,9 @@ describe('public-booking queries (feature 011 — server-only)', () => {
     expect(result.business.specialists[0]?.services).toEqual(['Corte de cabello']);
     expect(result.business.weeklyHours).toHaveLength(7);
     expect(result.business.policies).toEqual([]);
-    expect(result.business.gallery).toEqual([]);
+    expect(result.business.gallery).toEqual([
+      { id: 'gal-1', url: 'https://example.com/1.jpg', title: 'Fachada', category: 'Local' },
+    ]);
     expect(result.business.reviews).toEqual([]);
     expect(result.business.rating).toBeNull();
   });

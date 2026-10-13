@@ -178,6 +178,15 @@ type MySpecialist {
   active: Boolean!
 }
 
+type GalleryItem {
+  id: ID!
+  url: String!
+  title: String
+  description: String
+  category: String
+  order: Int!
+}
+
 type Query {
   health: HealthPayload!
   tenants: [TenantObject!]!
@@ -198,6 +207,7 @@ type Query {
   myService(id: ID!): MyService
   mySpecialists(active: Boolean): [MySpecialist!]!
   mySpecialist(id: ID!): MySpecialist
+  gallery(tenantId: ID, tenantSlug: String): [GalleryItem!]!
 }
 
 type Mutation {
@@ -222,6 +232,8 @@ type Mutation {
   createMySpecialist(input: CreateMySpecialistInput!): MySpecialist!
   updateMySpecialist(id: ID!, input: UpdateMySpecialistInput!): MySpecialist!
   deleteMySpecialist(id: ID!): Boolean!
+  addGalleryItem(input: AddGalleryItemInput!): GalleryItem!
+  removeGalleryItem(id: ID!): Boolean!
 }
 
 input CreateTenantInput {
@@ -356,4 +368,11 @@ input UpdateMySpecialistInput {
   bio: String
   avatar: String
   active: Boolean
+}
+
+input AddGalleryItemInput {
+  url: String! = ""
+  title: String
+  description: String
+  category: String
 }

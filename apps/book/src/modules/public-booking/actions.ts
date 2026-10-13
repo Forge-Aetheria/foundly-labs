@@ -7,15 +7,24 @@ import {
   AppointmentsDocument,
   AvailabilityDocument,
   CreateAppointmentDocument,
+  GalleryDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
   type AppointmentsQuery,
+  type GalleryQuery,
   type SpecialistsQuery,
 } from '../../shared/api/generated';
 import { computeAvailability } from '../../shared/utils/computeAvailability';
 import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
 import type { Appointment } from '../../shared/types/appointments';
-import type { PublicBusinessProfile, PublicService, PublicSpecialist } from './utils/types';
+import { GALLERY_CATEGORIES, GALLERY_CATEGORY_LABELS } from '../../shared/types/tenancy';
+import type { GalleryCategory } from '../../shared/types/tenancy';
+import type {
+  PublicBusinessProfile,
+  PublicGalleryPhoto,
+  PublicService,
+  PublicSpecialist,
+} from './utils/types';
 import { deriveWeeklyHours } from './utils/availability';
 
 /**
@@ -108,6 +117,21 @@ function mapSpecialist(dto: SpecialistsQuery['specialists'][number]): PublicSpec
   };
 }
 
+function mapGalleryPhoto(dto: GalleryQuery['gallery'][number]): PublicGalleryPhoto {
+  const category =
+    typeof dto.category === 'string' &&
+    (GALLERY_CATEGORIES as readonly string[]).includes(dto.category)
+      ? GALLERY_CATEGORY_LABELS[dto.category as GalleryCategory]
+      : undefined;
+  return {
+    id: dto.id,
+    url: dto.url,
+    title: dto.title ?? undefined,
+    description: dto.description ?? undefined,
+    category,
+  };
+}
+
 interface Resolved {
   tenantId: string;
   timezone: string;
@@ -173,6 +197,11 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
   });
   const weeklyHours = availabilityResult.ok ? deriveWeeklyHours(availabilityResult.data.availability) : [];
 
+  const galleryResult = await apiRequest(GalleryDocument, { tenantId: null, tenantSlug: slug });
+  const gallery: PublicGalleryPhoto[] = galleryResult.ok
+    ? galleryResult.data.gallery.map(mapGalleryPhoto)
+    : [];
+
   const profile = tenant.profile;
   return {
     status: 'available',
@@ -194,7 +223,7 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
       specialists,
       weeklyHours,
       policies: [],
-      gallery: [],
+      gallery,
       rating: null,
       reviewCount: 0,
       reviews: [],

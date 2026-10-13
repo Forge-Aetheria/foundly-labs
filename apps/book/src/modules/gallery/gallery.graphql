@@ -1,0 +1,25 @@
+query Gallery($tenantId: ID, $tenantSlug: String) {
+  gallery(tenantId: $tenantId, tenantSlug: $tenantSlug) {
+    id
+    url
+    title
+    description
+    category
+    order
+  }
+}
+
+mutation AddGalleryItem($input: AddGalleryItemInput!) {
+  addGalleryItem(input: $input) {
+    id
+    url
+    title
+    description
+    category
+    order
+  }
+}
+
+mutation RemoveGalleryItem($id: ID!) {
+  removeGalleryItem(id: $id)
+}
