@@ -1,6 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { SubscriptionService } from '../subscription/subscription.service';
+import { createMemorySubscriptionStore } from '../subscription/subscription.test-store';
+import { SubscriptionPlan, SubscriptionStatus } from '../subscription/subscription.types';
 import { ServicesService } from './services.service';
 import { CreateServiceInput } from './services.types';
 
@@ -50,9 +53,13 @@ const fakeClient = {
   },
   service: {
     findMany: vi.fn(async (): Promise<FakeService[]> => [seededService]),
-    findUnique: vi.fn(async (args: { where: { id: string } }): Promise<FakeService | null> =>
-      args.where.id === 's1' ? seededService : null,
-    ),
+    findUnique: vi.fn(async (args: { where: { id: string } }): Promise<FakeService | null> => {
+      if (args.where.id === 's1') return seededService;
+      if (args.where.id === 's3') {
+        return { ...seededService, id: 's3', name: 'Tinte', active: false };
+      }
+      return null;
+    }),
     create: vi.fn(
       async (args: { data: Omit<FakeService, 'id' | 'assignments'> }): Promise<FakeService> => ({
         ...args.data,
@@ -79,13 +86,16 @@ const fakeClient = {
 
 describe('ServicesService (unit, 004-services-specialists-availability)', () => {
   let service: ServicesService;
+  let subscriptionStore: ReturnType<typeof createMemorySubscriptionStore>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    subscriptionStore = createMemorySubscriptionStore();
     const moduleRef = await Test.createTestingModule({
       providers: [
         ServicesService,
         { provide: PrismaService, useValue: { client: fakeClient } as unknown as PrismaService },
+        { provide: SubscriptionService, useValue: new SubscriptionService(subscriptionStore) },
       ],
     }).compile();
     service = moduleRef.get(ServicesService);
@@ -190,6 +200,57 @@ describe('ServicesService (unit, 004-services-specialists-availability)', () => 
 
     await expect(service.removeService('no-ida')).rejects.toMatchObject({
       extensions: { code: 'NOT_FOUND' },
+    });
+  });
+
+  describe('Free plan limits (017-subscription-plans)', () => {
+    it('blocks a second active service on Free before writing', async () => {
+      subscriptionStore.seedService('t1', true);
+      await expect(
+        service.createService({
+          tenantSlug: 'estudio-ana',
+          name: 'Tinte',
+          durationMinutes: 60,
+          priceCents: 4500,
+        }),
+      ).rejects.toMatchObject({ extensions: { code: 'PLAN_LIMIT_REACHED' } });
+      expect(fakeClient.service.create).not.toHaveBeenCalled();
+    });
+
+    it('allows an inactive service on Free', async () => {
+      subscriptionStore.seedService('t1', true);
+      const created = await service.createService({
+        tenantSlug: 'estudio-ana',
+        name: 'Tinte',
+        durationMinutes: 60,
+        priceCents: 4500,
+        active: false,
+      });
+      expect(created.id).toBe('s2');
+    });
+
+    it('allows an active service on an effective Pro plan', async () => {
+      subscriptionStore.seedTenant({
+        tenantId: 't1',
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.active,
+        expiresAt: null,
+      });
+      subscriptionStore.seedService('t1', true);
+      const created = await service.createService({
+        tenantSlug: 'estudio-ana',
+        name: 'Tinte',
+        durationMinutes: 60,
+        priceCents: 4500,
+      });
+      expect(created.id).toBe('s2');
+    });
+
+    it('blocks activating a second service on Free', async () => {
+      subscriptionStore.seedService('t1', true);
+      await expect(service.updateService('s3', { active: true })).rejects.toMatchObject({
+        extensions: { code: 'PLAN_LIMIT_REACHED' },
+      });
     });
   });
 });

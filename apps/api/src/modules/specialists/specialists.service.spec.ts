@@ -1,6 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { SubscriptionService } from '../subscription/subscription.service';
+import { createMemorySubscriptionStore } from '../subscription/subscription.test-store';
+import { SubscriptionPlan, SubscriptionStatus } from '../subscription/subscription.types';
 import { SpecialistsService } from './specialists.service';
 import { CreateSpecialistInput } from './specialists.types';
 
@@ -44,9 +47,13 @@ const fakeClient = {
   },
   specialist: {
     findMany: vi.fn(async (): Promise<FakeSpecialist[]> => [seededSpecialist]),
-    findUnique: vi.fn(async (args: { where: { id: string } }): Promise<FakeSpecialist | null> =>
-      args.where.id === 'sp1' ? seededSpecialist : null,
-    ),
+    findUnique: vi.fn(async (args: { where: { id: string } }): Promise<FakeSpecialist | null> => {
+      if (args.where.id === 'sp1') return seededSpecialist;
+      if (args.where.id === 'sp3') {
+        return { ...seededSpecialist, id: 'sp3', name: 'Rona', active: false };
+      }
+      return null;
+    }),
     create: vi.fn(
       async (args: {
         data: Omit<FakeSpecialist, 'id' | 'assignments'>;
@@ -87,15 +94,18 @@ const fakeClient = {
 
 describe('SpecialistsService (unit, 004-services-specialists-availability)', () => {
   let service: SpecialistsService;
+  let subscriptionStore: ReturnType<typeof createMemorySubscriptionStore>;
 
   beforeEach(async () => {
     vi.clearAllMocks();
     fakeClient.specialistService.create.mockResolvedValue({ specialistId: 'sp1' });
     fakeClient.specialistService.deleteMany.mockResolvedValue({ count: 1 });
+    subscriptionStore = createMemorySubscriptionStore();
     const moduleRef = await Test.createTestingModule({
       providers: [
         SpecialistsService,
         { provide: PrismaService, useValue: { client: fakeClient } as unknown as PrismaService },
+        { provide: SubscriptionService, useValue: new SubscriptionService(subscriptionStore) },
       ],
     }).compile();
     service = moduleRef.get(SpecialistsService);
@@ -192,5 +202,47 @@ describe('SpecialistsService (unit, 004-services-specialists-availability)', () 
     fakeClient.specialistService.deleteMany.mockResolvedValueOnce({ count: 1 });
     const result = await service.unassignServiceFromSpecialist('sp1', 's1');
     expect(result.id).toBe('sp1');
+  });
+
+  describe('Free plan limits (017-subscription-plans)', () => {
+    it('blocks a second active specialist on Free before writing', async () => {
+      subscriptionStore.seedSpecialist('t1', true);
+      await expect(
+        service.createSpecialist({ tenantSlug: 'estudio-ana', name: 'Rona' }),
+      ).rejects.toMatchObject({ extensions: { code: 'PLAN_LIMIT_REACHED' } });
+      expect(fakeClient.specialist.create).not.toHaveBeenCalled();
+    });
+
+    it('allows an inactive specialist on Free', async () => {
+      subscriptionStore.seedSpecialist('t1', true);
+      const created = await service.createSpecialist({
+        tenantSlug: 'estudio-ana',
+        name: 'Rona',
+        active: false,
+      });
+      expect(created.id).toBe('sp2');
+    });
+
+    it('allows an active specialist on an effective Pro plan', async () => {
+      subscriptionStore.seedTenant({
+        tenantId: 't1',
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.active,
+        expiresAt: null,
+      });
+      subscriptionStore.seedSpecialist('t1', true);
+      const created = await service.createSpecialist({
+        tenantSlug: 'estudio-ana',
+        name: 'Rona',
+      });
+      expect(created.id).toBe('sp2');
+    });
+
+    it('blocks activating a second specialist on Free', async () => {
+      subscriptionStore.seedSpecialist('t1', true);
+      await expect(service.updateSpecialist('sp3', { active: true })).rejects.toMatchObject({
+        extensions: { code: 'PLAN_LIMIT_REACHED' },
+      });
+    });
   });
 });

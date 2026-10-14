@@ -7,6 +7,7 @@ import {
   validationError,
 } from '../../shared/tenant-scope';
 import { AdvanceKind } from '../payments/payments.types';
+import { SubscriptionService } from '../subscription/subscription.service';
 import type {
   CreateMyServiceInput,
   CreateMySpecialistInput,
@@ -33,7 +34,10 @@ function isNonEmptyString(value: unknown): boolean {
 /** Authenticated, tenant-scoped CRUD for the core catalog entities. */
 @Injectable()
 export class CatalogService {
-  constructor(@Inject(CATALOG_STORE) private readonly store: CatalogStore) {}
+  constructor(
+    @Inject(CATALOG_STORE) private readonly store: CatalogStore,
+    private readonly subscription: SubscriptionService,
+  ) {}
 
   /** Resolve the authoritative tenant scope from the authenticated identity (never client input). */
   requireTenant(user: Pick<AuthUser, 'tenantId'> | undefined): string {
@@ -68,6 +72,9 @@ export class CatalogService {
     if (existing) {
       throw conflictError('A service with this name already exists');
     }
+    if (input.active ?? true) {
+      await this.subscription.assertCanAddActiveService(tenantId);
+    }
     return this.store.createService(tenantId, input);
   }
 
@@ -76,13 +83,16 @@ export class CatalogService {
     tenantId: string,
     input: UpdateMyServiceInput,
   ): Promise<ServiceRow> {
-    await this.getService(id, tenantId);
+    const current = await this.getService(id, tenantId);
     assertServiceUpdate(input);
     if (input.name !== undefined && input.name !== null) {
       const existing = await this.store.findServiceByName(tenantId, input.name);
       if (existing && existing.id !== id) {
         throw conflictError('A service with this name already exists');
       }
+    }
+    if (input.active === true && !current.active) {
+      await this.subscription.assertCanActivateService(tenantId);
     }
     const updated = await this.store.updateService(id, tenantId, input);
     return updated ?? this.getService(id, tenantId);
@@ -116,6 +126,9 @@ export class CatalogService {
     if (!isNonEmptyString(input.name)) {
       throw validationError('Specialist name is required');
     }
+    if (input.active ?? true) {
+      await this.subscription.assertCanAddActiveSpecialist(tenantId);
+    }
     return this.store.createSpecialist(tenantId, input);
   }
 
@@ -124,9 +137,12 @@ export class CatalogService {
     tenantId: string,
     input: UpdateMySpecialistInput,
   ): Promise<SpecialistRow> {
-    await this.getSpecialist(id, tenantId);
+    const current = await this.getSpecialist(id, tenantId);
     if (input.name !== undefined && input.name !== null && !isNonEmptyString(input.name)) {
       throw validationError('Specialist name, when provided, must not be empty');
+    }
+    if (input.active === true && !current.active) {
+      await this.subscription.assertCanActivateSpecialist(tenantId);
     }
     const updated = await this.store.updateSpecialist(id, tenantId, input);
     return updated ?? this.getSpecialist(id, tenantId);

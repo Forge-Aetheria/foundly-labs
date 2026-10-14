@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { SubscriptionService } from '../subscription/subscription.service';
+import { createMemorySubscriptionStore } from '../subscription/subscription.test-store';
+import type { SubscriptionStore } from '../subscription/subscription.store';
+import { SubscriptionPlan, SubscriptionStatus } from '../subscription/subscription.types';
 import { createMemoryCatalogStore, type MemoryCatalogStore } from './catalog.test-store';
 import { CatalogService } from './catalog.service';
 import type { CreateMyServiceInput, CreateMySpecialistInput } from './catalog.types';
@@ -22,11 +26,24 @@ function expectCode(promise: Promise<unknown>, code: string): Promise<void> {
 
 describe('CatalogService (010-domain-mvp-module)', () => {
   let store: MemoryCatalogStore;
+  let subscriptionStore: ReturnType<typeof createMemorySubscriptionStore>;
   let service: CatalogService;
 
   beforeEach(() => {
     store = createMemoryCatalogStore();
-    service = new CatalogService(store);
+    subscriptionStore = createMemorySubscriptionStore();
+    // Count the catalog store's rows so create/activation flows are exercised end-to-end.
+    const subStore: SubscriptionStore = {
+      getTenantSubscription: (tenantId) => subscriptionStore.getTenantSubscription(tenantId),
+      countActive: async (tenantId, kind) => {
+        const rows =
+          kind === 'services'
+            ? await store.listServices(tenantId)
+            : await store.listSpecialists(tenantId);
+        return rows.filter((row) => row.active).length;
+      },
+    };
+    service = new CatalogService(store, new SubscriptionService(subStore));
   });
 
   describe('US1 — tenant-scoped CRUD round-trip', () => {
@@ -121,6 +138,70 @@ describe('CatalogService (010-domain-mvp-module)', () => {
       // same name allowed in another tenant
       const other = await service.createService(T2, serviceInput());
       expect(other.tenantId).toBe(T2);
+    });
+  });
+
+  describe('US2/US3 — Free plan limits (017-subscription-plans)', () => {
+    it('blocks a second active service on Free and creates nothing', async () => {
+      await service.createService(T1, serviceInput());
+      await expectCode(
+        service.createService(T1, { ...serviceInput(), name: 'Tinte' }),
+        'PLAN_LIMIT_REACHED',
+      );
+      expect(await service.listServices(T1)).toHaveLength(1);
+    });
+
+    it('allows an inactive service on Free', async () => {
+      await service.createService(T1, serviceInput());
+      const inactive = await service.createService(T1, {
+        ...serviceInput(),
+        name: 'Tinte',
+        active: false,
+      });
+      expect(inactive.active).toBe(false);
+    });
+
+    it('blocks activating a second service on Free', async () => {
+      await service.createService(T1, serviceInput());
+      const inactive = await service.createService(T1, {
+        ...serviceInput(),
+        name: 'Tinte',
+        active: false,
+      });
+      await expectCode(service.updateService(inactive.id, T1, { active: true }), 'PLAN_LIMIT_REACHED');
+      expect((await service.getService(inactive.id, T1)).active).toBe(false);
+    });
+
+    it('frees capacity when the active service is deactivated', async () => {
+      const first = await service.createService(T1, serviceInput());
+      const inactive = await service.createService(T1, {
+        ...serviceInput(),
+        name: 'Tinte',
+        active: false,
+      });
+      await service.updateService(first.id, T1, { active: false });
+      const activated = await service.updateService(inactive.id, T1, { active: true });
+      expect(activated.active).toBe(true);
+    });
+
+    it('blocks a second active specialist on Free', async () => {
+      await service.createSpecialist(T1, specialistInput());
+      await expectCode(service.createSpecialist(T1, { name: 'Rona' }), 'PLAN_LIMIT_REACHED');
+    });
+
+    it('is unlimited on an effective Pro plan', async () => {
+      subscriptionStore.seedTenant({
+        tenantId: T1,
+        plan: SubscriptionPlan.PRO,
+        status: SubscriptionStatus.active,
+        expiresAt: null,
+      });
+      await service.createService(T1, serviceInput());
+      const second = await service.createService(T1, { ...serviceInput(), name: 'Tinte' });
+      expect(second.active).toBe(true);
+      await service.createSpecialist(T1, specialistInput());
+      await service.createSpecialist(T1, { name: 'Rona' });
+      expect(await service.listSpecialists(T1)).toHaveLength(2);
     });
   });
 });

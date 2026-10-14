@@ -12,6 +12,8 @@ import {
   TEST_AUTH_URL,
   type TestJwk,
 } from '../auth/jwt.test-helper';
+import { SUBSCRIPTION_STORE } from '../subscription/subscription.store';
+import { createMemorySubscriptionStore } from '../subscription/subscription.test-store';
 import { CATALOG_STORE } from './catalog.store';
 import { createMemoryCatalogStore, type MemoryCatalogStore } from './catalog.test-store';
 
@@ -37,6 +39,8 @@ describe('Catalog e2e (010-domain-mvp-module)', () => {
     })
       .overrideProvider(CATALOG_STORE)
       .useValue(store)
+      .overrideProvider(SUBSCRIPTION_STORE)
+      .useValue(createMemorySubscriptionStore())
       .overrideProvider(JWT_JWKS)
       .useValue(makeLocalJwks(publicJwk))
       .overrideProvider(PrismaService)

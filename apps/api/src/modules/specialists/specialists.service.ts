@@ -9,6 +9,7 @@ import {
   validationError,
 } from '../../shared/tenant-scope';
 import { TenantScopeInput } from '../../shared/tenant-scope';
+import { SubscriptionService } from '../subscription/subscription.service';
 import {
   CreateSpecialistInput,
   SpecialistObject,
@@ -27,7 +28,10 @@ type SpecialistWithServices = Prisma.SpecialistGetPayload<{
 
 @Injectable()
 export class SpecialistsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly subscription: SubscriptionService,
+  ) {}
 
   async findSpecialists(scope: TenantScopeInput): Promise<SpecialistObject[]> {
     const tenantId = await resolveTenantId(this.prismaService.client, scope);
@@ -66,6 +70,9 @@ export class SpecialistsService {
     if (tenantId === null) {
       throw notFoundError('Business not found');
     }
+    if (input.active ?? true) {
+      await this.subscription.assertCanAddActiveSpecialist(tenantId);
+    }
     const data = {
       tenantId,
       name: input.name.trim(),
@@ -88,10 +95,13 @@ export class SpecialistsService {
     }
     const existing = await this.prismaService.client.specialist.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, tenantId: true, active: true },
     });
     if (!existing) {
       throw notFoundError('Specialist not found');
+    }
+    if (input.active === true && !existing.active) {
+      await this.subscription.assertCanActivateSpecialist(existing.tenantId);
     }
     const data: Prisma.SpecialistUpdateInput = {
       ...(input.name != null ? { name: input.name.trim() } : {}),

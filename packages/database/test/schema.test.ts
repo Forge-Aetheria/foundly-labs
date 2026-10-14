@@ -55,4 +55,19 @@ describe('@foundly/database schema (DB-First, 003-db-first-graphql-core)', () =>
     const content = schema();
     expect(content).toMatch(/model Tenant \{[\s\S]*?plan\s+String\?/);
   });
+
+  it('models the subscription tier on tenants (017-subscription-plans)', () => {
+    const content = schema();
+    expect(content).toMatch(/enum SubscriptionPlan \{[\s\S]*?FREE[\s\S]*?PRO[\s\S]*?\}/);
+    expect(content).toMatch(
+      /enum SubscriptionStatus \{[\s\S]*?active[\s\S]*?past_due[\s\S]*?expired[\s\S]*?canceled[\s\S]*?\}/,
+    );
+    expect(content).toMatch(
+      /model Tenant \{[\s\S]*?subscriptionPlan\s+SubscriptionPlan\s+@default\(FREE\)/,
+    );
+    expect(content).toMatch(
+      /model Tenant \{[\s\S]*?subscriptionStatus\s+SubscriptionStatus\s+@default\(active\)/,
+    );
+    expect(content).toMatch(/model Tenant \{[\s\S]*?subscriptionExpiresAt\s+DateTime\?/);
+  });
 });

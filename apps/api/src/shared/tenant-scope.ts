@@ -25,6 +25,13 @@ export function conflictError(message = 'Conflict'): GraphQLError {
   });
 }
 
+/** Domain error raised when a subscription plan boundary (limit or Pro gate) is exceeded. */
+export function planLimitError(message = 'Plan limit reached'): GraphQLError {
+  return new GraphQLError(message, {
+    extensions: { code: 'PLAN_LIMIT_REACHED' },
+  });
+}
+
 export function isUniqueViolation(error: unknown): boolean {
   if (typeof error !== 'object' || error === null) {
     return false;

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { AuthUser } from '../auth/jwt.types';
+import { SubscriptionService } from '../subscription/subscription.service';
+import { createMemorySubscriptionStore } from '../subscription/subscription.test-store';
 import { createMemoryCatalogStore } from './catalog.test-store';
 import { CatalogService } from './catalog.service';
 import { CatalogResolver } from './catalog.resolver';
@@ -9,7 +11,10 @@ function user(tenantId?: string): AuthUser {
 }
 
 function setup(): { resolver: CatalogResolver; service: CatalogService } {
-  const service = new CatalogService(createMemoryCatalogStore());
+  const service = new CatalogService(
+    createMemoryCatalogStore(),
+    new SubscriptionService(createMemorySubscriptionStore()),
+  );
   return { resolver: new CatalogResolver(service), service };
 }
 

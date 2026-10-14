@@ -4,6 +4,8 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AppModule } from '../../app.module';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { createMemorySubscriptionStore } from '../subscription/subscription.test-store';
+import { SUBSCRIPTION_STORE } from '../subscription/subscription.store';
 
 interface FakeService {
   id: string;
@@ -80,6 +82,8 @@ describe('ServicesResolver (GraphQL e2e, 004-services-specialists-availability)'
     })
       .overrideProvider(PrismaService)
       .useValue({ client: fakeClient } as unknown as PrismaService)
+      .overrideProvider(SUBSCRIPTION_STORE)
+      .useValue(createMemorySubscriptionStore())
       .compile();
     app = moduleRef.createNestApplication();
     await app.init();

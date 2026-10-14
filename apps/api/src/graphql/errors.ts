@@ -7,6 +7,7 @@ export const KNOWN_CODES = [
   'NOT_FOUND',
   'CONFLICT',
   'VALIDATION_ERROR',
+  'PLAN_LIMIT_REACHED',
 ] as const;
 
 export const INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR';

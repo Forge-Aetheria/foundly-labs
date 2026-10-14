@@ -3,6 +3,7 @@ import type { Prisma } from '@foundly/database';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { notFoundError, resolveTenantId, validationError } from '../../shared/tenant-scope';
 import { AdvanceKind } from '../payments/payments.types';
+import { SubscriptionService } from '../subscription/subscription.service';
 import { CreateServiceInput, ServiceObject, UpdateServiceInput } from './services.types';
 
 const ADVANCE_KINDS = new Set<string>(Object.values(AdvanceKind));
@@ -91,7 +92,10 @@ function validateUpdate(input: UpdateServiceInput): void {
 
 @Injectable()
 export class ServicesService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly subscription: SubscriptionService,
+  ) {}
 
   async findServices(filter: ServicesFilter): Promise<ServiceObject[]> {
     const tenantId = await resolveTenantId(this.prismaService.client, filter);
@@ -132,6 +136,9 @@ export class ServicesService {
     if (tenantId === null) {
       throw notFoundError('Business not found');
     }
+    if (input.active ?? true) {
+      await this.subscription.assertCanAddActiveService(tenantId);
+    }
     const data = {
       tenantId,
       name: input.name.trim(),
@@ -158,10 +165,13 @@ export class ServicesService {
     validateUpdate(input);
     const existing = await this.prismaService.client.service.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, tenantId: true, active: true },
     });
     if (!existing) {
       throw notFoundError('Service not found');
+    }
+    if (input.active === true && !existing.active) {
+      await this.subscription.assertCanActivateService(existing.tenantId);
     }
     const data: Prisma.ServiceUpdateInput = {
       ...(input.name != null ? { name: input.name.trim() } : {}),
