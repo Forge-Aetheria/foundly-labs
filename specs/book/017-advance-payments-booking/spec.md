@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-13
 
-**Status**: Draft
+**Status**: Draft _(payment-method configuration amended by `specs/book/022-admin-payments-schedules-refactor`)_
 
 **Input**: User description: "@apps/book @packages/database
 
@@ -38,7 +38,7 @@ _This spec is governed by `constitution.md` v5.2.0, `specs/business-model.md` an
 
 ### User Story 1 - Configure the business payment methods (Priority: P1)
 
-As a business owner, I want to configure my active payment methods (Pago Móvil, bank transfer, Binance) with the receiving details and instructions, so my clients know exactly how to pay an advance.
+As a business owner, I want to configure my active payment methods (Pago Móvil, Binance Pay, Zelle, Transferencia, Efectivo) with their structured receiving details and instructions, so my clients know exactly how to pay an advance.
 
 **Why this priority**: Without configured payment methods the advance flow cannot exist; it is the monetization foundation.
 
@@ -156,7 +156,7 @@ As a business owner, I want to see the payment information the client submitted 
 
 ### Functional Requirements
 
-- **FR-001**: The business MUST be able to store a set of configured payment methods, each with a type (at least: mobile payment, bank transfer, Binance), receiving details/instructions and an active flag.
+- **FR-001**: The business MUST be able to store a set of configured payment methods, each with a type (the closed set Pago Móvil · Binance Pay · Zelle · Transferencia · Efectivo, per `022-admin-payments-schedules-refactor`), a `title`, **structured receiving details** (titular, cédula/RIF, teléfono, banco, Pay ID, email, cuenta) and instructions, plus an active flag; at most one method per type per business.
 - **FR-002**: The configuration view at `/admin/configuracion` MUST be unlocked and MUST allow the owner to view, edit, enable/disable and save the business payment methods; the current "coming soon" notice MUST be removed.
 - **FR-003**: Only active payment methods MUST be offered in the public booking advance step.
 - **FR-004**: A service MUST be able to be marked as requiring an advance, and MUST optionally define the advance as a fixed amount or a percentage of its price.

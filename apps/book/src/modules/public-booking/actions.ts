@@ -23,7 +23,7 @@ import {
 import { computeAvailability } from '../../shared/utils/computeAvailability';
 import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
 import type { Appointment } from '../../shared/types/appointments';
-import type { PaymentMethod } from '../../shared/types/payments';
+import { parsePaymentDetails, type PaymentMethod } from '../../shared/types/payments';
 import { GALLERY_CATEGORIES, GALLERY_CATEGORY_LABELS } from '../../shared/types/tenancy';
 import type { GalleryCategory } from '../../shared/types/tenancy';
 import type {
@@ -60,7 +60,7 @@ const bookSchema = z.object({
     .max(20)
     .regex(/^[0-9+\- ]+$/),
   notes: z.string().max(2000).optional(),
-  paymentMethodType: z.enum(['mobile_payment', 'bank_transfer', 'binance']).optional(),
+  paymentMethodType: z.enum(['pago_movil', 'binance', 'zelle', 'transfer', 'cash']).optional(),
   advanceAmountCents: z.number().int().positive().optional(),
   paymentReference: z.string().min(1).max(200).optional(),
   paymentProofUrl: z.string().url().optional(),
@@ -141,8 +141,8 @@ function mapPaymentMethod(dto: PublicPaymentMethodsQuery['paymentMethods'][numbe
     id: dto.id,
     tenantId: dto.tenantId,
     type: dto.type,
-    label: dto.label ?? null,
-    details: dto.details ?? null,
+    title: dto.title ?? null,
+    details: parsePaymentDetails(dto.details),
     instructions: dto.instructions ?? null,
     active: dto.active,
   };

@@ -29,7 +29,7 @@ query PublicPaymentMethods($tenantId: ID, $tenantSlug: String) {
     id
     tenantId
     type
-    label
+    title
     details
     instructions
     active

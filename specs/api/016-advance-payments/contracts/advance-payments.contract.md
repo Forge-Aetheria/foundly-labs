@@ -7,14 +7,14 @@ Public reads/booking stay credential-free; admin reads/writes require a Supabase
 ## Types
 
 ```graphql
-enum PaymentMethodType { mobile_payment bank_transfer binance }
+enum PaymentMethodType { pago_movil binance zelle transfer cash }
 enum AdvanceKind { fixed percent }
 
 type PaymentMethodObject {
   id: ID!
   tenantId: String!
   type: PaymentMethodType!
-  label: String
+  title: String
   details: String
   instructions: String
   active: Boolean!
@@ -24,7 +24,7 @@ type PaymentMethodObject {
 
 input UpsertPaymentMethodInput {
   type: PaymentMethodType!
-  label: String
+  title: String
   details: String
   instructions: String
   active: Boolean
@@ -53,7 +53,7 @@ input RescheduleAppointmentInput { id: ID! startAt: String! specialistId: ID }
 
 ### `mutation upsertPaymentMethod(input: UpsertPaymentMethodInput!): PaymentMethodObject!` — authenticated
 
-- **Behavior**: creates or replaces the method for `(tenant, type)`; `active` defaults to false; details/instructions free-form.
+- **Behavior**: creates or replaces the method for `(tenant, type)`; `active` defaults to false; `title` is the display title and `details` a JSON-encoded structured object.
 - **Errors**: `UNAUTHENTICATED` · `VALIDATION_ERROR` (unknown type).
 
 ### `mutation deletePaymentMethod(id: ID!): Boolean!` — authenticated

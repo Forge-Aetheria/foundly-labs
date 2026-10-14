@@ -8,6 +8,7 @@ import {
   expectedAdvance,
   PAYMENT_METHOD_LABELS,
   PAYMENT_METHOD_ORDER,
+  paymentDetailSummary,
   type PaymentMethod,
 } from '../../../shared/types/payments';
 import { useFetchPublicPaymentMethods, useUploadPaymentProof } from '../hooks';
@@ -153,10 +154,10 @@ export function PaymentStep({
         ))}
       </Stack>
 
-      {selectedMethod?.details ? (
+      {selectedMethod && paymentDetailSummary(selectedMethod.details) ? (
         <Stack spacing={0.5}>
           <Typography variant="caption" color="text.secondary">
-            Datos de recepción: {selectedMethod.details}
+            Datos de recepción: {paymentDetailSummary(selectedMethod.details)}
           </Typography>
           {selectedMethod.instructions ? (
             <Typography variant="caption" color="text.secondary">

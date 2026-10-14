@@ -31,9 +31,9 @@ const { fetchSlotsMock, bookMock, methodsMock, uploadMock } = vi.hoisted(() => (
       {
         id: 'pm1',
         tenantId: 'ten-ana',
-        type: 'mobile_payment',
-        label: null,
-        details: 'Banco X · 0414',
+        type: 'pago_movil',
+        title: 'Pago Móvil',
+        details: JSON.stringify({ bank: 'Banco X', phone: '0414' }),
         instructions: null,
         active: true,
       },
@@ -166,7 +166,7 @@ describe('BookingFlow (FR-009…FR-015 + advance 017)', () => {
     await waitFor(() =>
       expect(bookMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          paymentMethodType: 'mobile_payment',
+          paymentMethodType: 'pago_movil',
           advanceAmountCents: 1000,
           paymentReference: 'REF-1',
           paymentProofUrl: 'https://x.test/proof.png',

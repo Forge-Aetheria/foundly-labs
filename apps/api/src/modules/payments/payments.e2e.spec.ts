@@ -63,26 +63,26 @@ describe('Payments e2e (016-advance-payments)', () => {
     expect(empty.body.data.paymentMethods).toEqual([]);
 
     const created = await gql(
-      `mutation { upsertPaymentMethod(input: { type: mobile_payment, label: "Pago Móvil", details: "Banco X", active: true }) { id type active details } }`,
+      `mutation { upsertPaymentMethod(input: { type: pago_movil, title: "Pago Móvil", details: "Banco X", active: true }) { id type active details } }`,
       tokenT1,
     ).expect(200);
     expect(created.body.errors).toBeUndefined();
     expect(created.body.data.upsertPaymentMethod).toMatchObject({
-      type: 'mobile_payment',
+      type: 'pago_movil',
       active: true,
       details: 'Banco X',
     });
 
     const mine = await gql('{ myPaymentMethods { type active } }', tokenT1).expect(200);
-    expect(mine.body.data.myPaymentMethods).toEqual([{ type: 'mobile_payment', active: true }]);
+    expect(mine.body.data.myPaymentMethods).toEqual([{ type: 'pago_movil', active: true }]);
 
     const publicList = await gql(`{ paymentMethods(tenantSlug: "${SLUG}") { type } }`).expect(200);
-    expect(publicList.body.data.paymentMethods).toEqual([{ type: 'mobile_payment' }]);
+    expect(publicList.body.data.paymentMethods).toEqual([{ type: 'pago_movil' }]);
   });
 
   it('disabling a method removes it from the public read', async () => {
     await gql(
-      `mutation { upsertPaymentMethod(input: { type: mobile_payment, active: false }) { id active } }`,
+      `mutation { upsertPaymentMethod(input: { type: pago_movil, active: false }) { id active } }`,
       tokenT1,
     ).expect(200);
     const publicList = await gql(`{ paymentMethods(tenantSlug: "${SLUG}") { type } }`).expect(200);

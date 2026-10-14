@@ -10,7 +10,7 @@ import {
 } from '../../shared/api/generated';
 import { getEffectiveSession } from '../../shared/auth/authServer';
 import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
-import type { PaymentMethod } from '../../shared/types/payments';
+import { parsePaymentDetails, serializePaymentDetails, type PaymentMethod } from '../../shared/types/payments';
 import { deletePaymentMethodSchema, paymentMethodSchema } from './utils/schemas';
 
 /**
@@ -29,8 +29,8 @@ function mapPaymentMethod(dto: ApiPaymentMethod, tenantId: string): PaymentMetho
     id: dto.id,
     tenantId: dto.tenantId || tenantId,
     type: dto.type,
-    label: dto.label ?? null,
-    details: dto.details ?? null,
+    title: dto.title ?? null,
+    details: parsePaymentDetails(dto.details),
     instructions: dto.instructions ?? null,
     active: dto.active,
   };
@@ -57,8 +57,8 @@ export async function upsertPaymentMethod(input: unknown): Promise<ActionResult<
   const result = await apiRequestAdmin(UpsertPaymentMethodDocument, {
     input: {
       type: parsed.data.type as ApiPaymentMethodType,
-      label: toNullableText(parsed.data.label),
-      details: toNullableText(parsed.data.details),
+      title: toNullableText(parsed.data.title),
+      details: serializePaymentDetails(parsed.data.details),
       instructions: toNullableText(parsed.data.instructions),
       active: parsed.data.active,
     },

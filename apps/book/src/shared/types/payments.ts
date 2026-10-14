@@ -1,22 +1,64 @@
 /**
- * Domain types for advance payments (feature 017).
+ * Domain types for advance payments (feature 017, extended by 022).
  * Pure TypeScript — no persistence technology is defined or implied here.
  */
 
 /** Closed set of payment method kinds (mirrors the API `PaymentMethodType`). */
-export type PaymentMethodType = 'mobile_payment' | 'bank_transfer' | 'binance';
+export type PaymentMethodType = 'pago_movil' | 'binance' | 'zelle' | 'transfer' | 'cash';
 
-/** Display order and labels for the three configured methods. */
+/** Display order and labels for the configured methods (feature 022). */
 export const PAYMENT_METHOD_ORDER: PaymentMethodType[] = [
-  'mobile_payment',
-  'bank_transfer',
+  'pago_movil',
   'binance',
+  'zelle',
+  'transfer',
+  'cash',
 ];
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
-  mobile_payment: 'Pago Móvil',
-  bank_transfer: 'Transferencia bancaria',
-  binance: 'Binance',
+  pago_movil: 'Pago Móvil',
+  binance: 'Binance Pay',
+  zelle: 'Zelle',
+  transfer: 'Transferencia',
+  cash: 'Efectivo',
+};
+
+/** Structured receiving data persisted as a flexible JSON object (feature 022). */
+export interface PaymentMethodDetails {
+  /** Titular de la cuenta / beneficiario. */
+  holder?: string;
+  /** Cédula / RIF (Pago Móvil). */
+  cedula?: string;
+  /** Teléfono (Pago Móvil). */
+  phone?: string;
+  /** Banco (Pago Móvil / transferencia). */
+  bank?: string;
+  /** Binance Pay ID. */
+  payId?: string;
+  /** Email (Zelle). */
+  email?: string;
+  /** Cuenta / número de cuenta (transferencia). */
+  account?: string;
+}
+
+/** Human labels for every structured detail field. */
+export const PAYMENT_DETAIL_LABELS: Record<keyof PaymentMethodDetails, string> = {
+  holder: 'Titular',
+  cedula: 'Cédula / RIF',
+  phone: 'Teléfono',
+  bank: 'Banco',
+  payId: 'Pay ID',
+  email: 'Email',
+  account: 'Cuenta',
+};
+
+/** Which structured fields apply to each method type. */
+export const PAYMENT_TYPE_FIELDS: Record<PaymentMethodType, (keyof PaymentMethodDetails)[]> = {
+  pago_movil: ['holder', 'cedula', 'phone', 'bank'],
+  binance: ['payId', 'holder'],
+  zelle: ['email', 'holder'],
+  transfer: ['account', 'holder'],
+  cash: ['holder'],
 };
 
 /** How a service advance is expressed. */
@@ -27,15 +69,13 @@ export const ADVANCE_KIND_LABELS: Record<AdvanceKind, string> = {
   percent: 'Porcentaje',
 };
 
-/** A way the business receives an advance (feature 017). */
+/** A way the business receives an advance (features 017/022). */
 export interface PaymentMethod {
   id: string;
   tenantId: string;
   type: PaymentMethodType;
-  label: string | null;
-  /** Free-form receiving data. */
-  details: string | null;
-  /** Free-form instructions shown to the client. */
+  title: string | null;
+  details: PaymentMethodDetails | null;
   instructions: string | null;
   active: boolean;
 }
@@ -55,6 +95,42 @@ export function isPaymentMethodType(value: string): value is PaymentMethodType {
 
 export function isAdvanceKind(value: string): value is AdvanceKind {
   return value === 'fixed' || value === 'percent';
+}
+
+/** Parse the API `details` JSON string into the structured object (legacy text → `account`). */
+export function parsePaymentDetails(raw: string | null | undefined): PaymentMethodDetails | null {
+  if (!raw) return null;
+  const text = raw.trim();
+  if (!text) return null;
+  try {
+    const value: unknown = JSON.parse(text);
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return value as PaymentMethodDetails;
+    }
+    return { account: text };
+  } catch {
+    // Backward-compatible: previous free-form receiving data.
+    return { account: text };
+  }
+}
+
+/** Serialize a structured object to the JSON string stored on `PaymentMethod.details`. */
+export function serializePaymentDetails(
+  details: PaymentMethodDetails | null | undefined,
+): string | null {
+  if (!details) return null;
+  const entries = Object.entries(details).filter(([, value]) => value != null && String(value).trim());
+  if (entries.length === 0) return null;
+  return JSON.stringify(Object.fromEntries(entries));
+}
+
+/** One-line summary of the configured structured data (used in cards and the booking step). */
+export function paymentDetailSummary(details: PaymentMethodDetails | null): string {
+  if (!details) return '';
+  return (Object.keys(PAYMENT_DETAIL_LABELS) as (keyof PaymentMethodDetails)[])
+    .filter((key) => details[key])
+    .map((key) => `${PAYMENT_DETAIL_LABELS[key]}: ${details[key]}`)
+    .join(' · ');
 }
 
 /** Compute the expected advance (cents) from a service rule, or null when undefined. */

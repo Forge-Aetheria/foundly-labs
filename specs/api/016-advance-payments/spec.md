@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-13
 
-**Status**: Draft
+**Status**: Draft _(payment-method enum, `title` and structured `details` amended by `specs/book/022-admin-payments-schedules-refactor`)_
 
 **Input**: User description: "El negocio necesita configurar sus métodos de pago (Pago Móvil, Transferencia, Binance), marcar qué servicios requieren adelanto, guardar el adelanto que envía el cliente al reservar, y controlar la agenda por rango de fechas (aceptar/rechazar/reagendar) con notificación al cliente. Ajustar el backend/schema y la superficie GraphQL para soportarlo."
 
@@ -99,7 +99,7 @@ As an authenticated business owner, I want to read my appointments in a `from`/`
 
 ### Functional Requirements
 
-- **FR-001**: The API MUST persist payment methods per business, each with a **type** (at least mobile payment, bank transfer, Binance), free-form **details**, free-form **instructions** and an **active** flag; at most one method per type per business.
+- **FR-001**: The API MUST persist payment methods per business, each with a **type** (the closed set `pago_movil`, `binance`, `zelle`, `transfer`, `cash`), a **title**, **structured `details`** (JSON-encoded receiving object: holder, cedula, phone, bank, payId, email, account), free-form **instructions** and an **active** flag; at most one method per type per business.
 - **FR-002**: The API MUST expose an authenticated, tenant-scoped read and upsert for the caller's payment methods; the tenant MUST be derived from the authenticated identity, never from client input.
 - **FR-003**: The API MUST expose a public read of a business's **active** payment methods only, scoped by `tenantId` or public slug; unknown slug → empty list.
 - **FR-004**: The API MUST persist an optional per-service advance rule: `requiresAdvance` plus, when true, a kind (`fixed` | `percent`) and a positive value (cents when fixed; 1–100 when percent).
@@ -138,7 +138,7 @@ As an authenticated business owner, I want to read my appointments in a `from`/`
 
 - **Advance payment as an embedded value object**: the payment (method type, amount, reference, proof URL, submitted-at) is stored on the appointment row (a set of nullable columns) rather than a separate table, because it is a 1:1, non-recurring attribute in v1. A future re-submission history would be a separate feature.
 - **Proof image = uploaded file**: this feature stores only the resulting **URL**; the upload itself (format/size validation + storage) is performed by the `book` app against Supabase Storage (`specs/book/017-advance-payments-booking`). The API validates that the URL is an absolute `http(s)` URL.
-- **Method details/instructions are free-form**: the type is the requested closed set; the receiving data and instructions are free-form strings so each business can express its own requirements without schema churn.
+- **Method types are a closed set**: `pago_movil`, `binance`, `zelle`, `transfer`, `cash` (amended by `specs/book/022-admin-payments-schedules-refactor`). `details` is a JSON-encoded object stored on the existing string column; `title` replaced the previous `label`.
 - **Notifications are simulated**: no email/SMS/WhatsApp provider in this phase; a `client notification` record exists so a real channel can be wired later without changing the flow.
 - **Amount must match the rule**: the server recomputes the expected advance (fixed value, or `round(priceCents * percent / 100)`) and rejects a mismatch; this protects the monetization invariant.
 - **Agenda read remains dual**: the unauthenticated appointment read used by the public availability engine stays public; the admin range read is authenticated and tenant-scoped. The share of work is defined in `plan.md`.

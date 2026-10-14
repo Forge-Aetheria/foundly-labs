@@ -13,7 +13,7 @@ type PaymentMethodObject {
   id: ID!
   tenantId: String!
   type: PaymentMethodType!
-  label: String
+  title: String
   details: String
   instructions: String
   active: Boolean!
@@ -22,9 +22,11 @@ type PaymentMethodObject {
 }
 
 enum PaymentMethodType {
-  mobile_payment
-  bank_transfer
+  pago_movil
   binance
+  zelle
+  transfer
+  cash
 }
 
 type BusinessProfileObject {
@@ -638,7 +640,7 @@ input AddTimeBlockInput {
 
 input UpsertPaymentMethodInput {
   type: PaymentMethodType!
-  label: String
+  title: String
   details: String
   instructions: String
   active: Boolean

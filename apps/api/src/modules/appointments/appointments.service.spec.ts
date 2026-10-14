@@ -300,7 +300,7 @@ describe('AppointmentsService (unit, 005-appointments + 016-advance-payments)', 
     await expect(
       service.createAppointment(
         baseInput({
-          paymentMethodType: 'mobile_payment',
+          paymentMethodType: 'pago_movil',
           advanceAmountCents: 1000,
           paymentReference: 'REF-1',
           paymentProofUrl: 'https://x.test/proof.png',
@@ -317,7 +317,7 @@ describe('AppointmentsService (unit, 005-appointments + 016-advance-payments)', 
     await expect(
       service.createAppointment(
         baseInput({
-          paymentMethodType: 'bank_transfer',
+          paymentMethodType: 'transfer',
           advanceAmountCents: 999,
           paymentReference: 'REF-1',
           paymentProofUrl: 'https://x.test/proof.png',
@@ -333,14 +333,14 @@ describe('AppointmentsService (unit, 005-appointments + 016-advance-payments)', 
     fakeClient.paymentMethod.findFirst.mockResolvedValueOnce({ id: 'pm1' });
     const created = await service.createAppointment(
       baseInput({
-        paymentMethodType: 'mobile_payment',
+        paymentMethodType: 'pago_movil',
         advanceAmountCents: 1250,
         paymentReference: 'REF-1',
         paymentProofUrl: 'https://x.test/proof.png',
       }),
     );
     expect(created.status).toBe('PENDING');
-    expect(created.paymentMethodType).toBe('mobile_payment');
+    expect(created.paymentMethodType).toBe('pago_movil');
     expect(created.advanceAmountCents).toBe(1250);
     expect(created.paymentReference).toBe('REF-1');
   });

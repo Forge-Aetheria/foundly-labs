@@ -1,20 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertDialog, Badge, Button, Card, Chip, Stack, TextField, Typography } from '@foundly/ui';
+import { AlertDialog, Badge, Button, Card, Chip, Stack, Switch, TextField, Typography } from '@foundly/ui';
 import type { AvailabilityRule, TimeBlock } from '../../../shared/types/appointments';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { useAddTimeBlock, useRemoveTimeBlock, useSaveAvailability } from '../hooks';
 
-const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+/** Sunday-first weekday labels (index = weekday). */
+const WEEKDAY_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+/** Rendered Monday-first, while keeping `weekday` indices. */
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 interface DayConfig {
   weekday: number;
   isOpen: boolean;
   startTime: string;
   endTime: string;
-  breakStart: string;
-  breakEnd: string;
 }
 
 const EMPTY_DAY = (weekday: number): DayConfig => ({
@@ -22,37 +23,41 @@ const EMPTY_DAY = (weekday: number): DayConfig => ({
   isOpen: false,
   startTime: '09:00',
   endTime: '18:00',
-  breakStart: '',
-  breakEnd: '',
 });
 
 function initialDays(rules: AvailabilityRule[]): DayConfig[] {
   return [0, 1, 2, 3, 4, 5, 6].map((weekday) => {
     const rule = rules.find((item) => item.weekday === weekday);
     return rule
-      ? {
-          weekday,
-          isOpen: true,
-          startTime: rule.startTime,
-          endTime: rule.endTime,
-          breakStart: '',
-          breakEnd: '',
-        }
+      ? { weekday, isOpen: true, startTime: rule.startTime, endTime: rule.endTime }
       : EMPTY_DAY(weekday);
   });
 }
 
+type BlockMode = 'range' | 'fullday';
+
 interface BlockDraft {
+  mode: BlockMode;
   date: string;
   startTime: string;
   endTime: string;
   reason: string;
 }
 
-const EMPTY_BLOCK: BlockDraft = { date: '', startTime: '09:00', endTime: '13:00', reason: '' };
+const EMPTY_BLOCK: BlockDraft = {
+  mode: 'range',
+  date: '',
+  startTime: '09:00',
+  endTime: '13:00',
+  reason: '',
+};
 
 function formatBlock(block: TimeBlock): string {
   return `${block.startAt.slice(0, 10)} · ${block.startAt.slice(11, 16)}–${block.endAt.slice(11, 16)}`;
+}
+
+function isFullDay(block: TimeBlock): boolean {
+  return block.startAt.slice(11, 16) === '00:00' && block.endAt.slice(11, 16) === '23:59';
 }
 
 export interface AvailabilityEditorProps {
@@ -62,11 +67,12 @@ export interface AvailabilityEditorProps {
   error?: string | null;
 }
 
-/** Weekly availability + concrete time blocks (Clean Light UI). */
+/** Weekly schedule + concrete time blocks (features 015/022; Clean Light UI). */
 export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorProps) {
   const saveAvailability = useSaveAvailability();
   const addTimeBlock = useAddTimeBlock();
   const removeTimeBlock = useRemoveTimeBlock();
+
   const [days, setDays] = useState<DayConfig[]>(() => initialDays(rules));
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -83,9 +89,8 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
     setDays((prev) => prev.map((day) => (day.weekday === weekday ? { ...day, ...patch } : day)));
   }
 
-  function toggle(weekday: number) {
-    const day = days.find((item) => item.weekday === weekday);
-    update(weekday, { isOpen: !(day?.isOpen ?? false) });
+  function toggle(weekday: number, checked: boolean) {
+    update(weekday, { isOpen: checked });
   }
 
   async function save() {
@@ -110,18 +115,16 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
   async function addBlock() {
     setBlockErrors(null);
     setBlockNotice(null);
+    const fullDay = draft.mode === 'fullday';
     const result = await addTimeBlock({
       date: draft.date,
-      startTime: draft.startTime,
-      endTime: draft.endTime,
+      startTime: fullDay ? '00:00' : draft.startTime,
+      endTime: fullDay ? '23:59' : draft.endTime,
       reason: draft.reason,
     });
     if (!result.ok) {
-      if (result.error.fields) {
-        setBlockErrors(result.error.fields);
-      } else {
-        setBlockNotice(result.error.message);
-      }
+      if (result.error.fields) setBlockErrors(result.error.fields);
+      else setBlockNotice(result.error.message);
       return;
     }
     setItems((prev) => [...prev, result.data]);
@@ -149,71 +152,61 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <Stack spacing={0.25}>
               <Typography variant="h5" component="h1">
-                Disponibilidad
+                Horario y disponibilidad
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Horario semanal, rangos y pausas por día.
+                Horario semanal de atención y bloqueos puntuales.
               </Typography>
             </Stack>
             <Button variant="primary" onClick={save} disabled={saving}>
-              {saving ? 'Guardando…' : 'Guardar disponibilidad'}
+              {saving ? 'Guardando…' : 'Guardar horario semanal'}
             </Button>
           </Stack>
         }
       >
         <Stack spacing={1.5}>
-          {days.map((day) => (
-            <Stack
-              key={day.weekday}
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={1.5}
-              alignItems="center"
-              sx={{ borderBottom: 1, borderColor: 'divider', pb: 1.5 }}
-            >
-              <Chip
-                label={WEEKDAYS[day.weekday]}
-                selectable
-                selected={day.isOpen}
-                onClick={() => toggle(day.weekday)}
-              />
-              {day.isOpen ? (
-                <>
-                  <TextField
-                    label="Inicio"
-                    type="time"
-                    value={day.startTime}
-                    onChange={(value) => update(day.weekday, { startTime: value })}
-                  />
-                  <TextField
-                    label="Fin"
-                    type="time"
-                    value={day.endTime}
-                    onChange={(value) => update(day.weekday, { endTime: value })}
-                  />
-                  <TextField
-                    label="Pausa inicio"
-                    type="time"
-                    value={day.breakStart}
-                    onChange={(value) => update(day.weekday, { breakStart: value })}
-                  />
-                  <TextField
-                    label="Pausa fin"
-                    type="time"
-                    value={day.breakEnd}
-                    onChange={(value) => update(day.weekday, { breakEnd: value })}
-                  />
-                </>
-              ) : (
-                <Typography variant="caption" color="text.secondary">
-                  Cerrado
-                </Typography>
-              )}
-            </Stack>
-          ))}
+          {WEEKDAY_ORDER.map((weekday) => {
+            const day = days.find((item) => item.weekday === weekday) ?? EMPTY_DAY(weekday);
+            return (
+              <Stack
+                key={weekday}
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1.5}
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                sx={{ borderBottom: 1, borderColor: 'divider', pb: 1.5 }}
+              >
+                <Switch
+                  checked={day.isOpen}
+                  onChange={(checked) => toggle(weekday, checked)}
+                  label={WEEKDAY_LABELS[weekday]}
+                />
+                {day.isOpen ? (
+                  <>
+                    <TextField
+                      label="Inicio"
+                      type="time"
+                      value={day.startTime}
+                      onChange={(value) => update(weekday, { startTime: value })}
+                    />
+                    <TextField
+                      label="Fin"
+                      type="time"
+                      value={day.endTime}
+                      onChange={(value) => update(weekday, { endTime: value })}
+                    />
+                  </>
+                ) : (
+                  <Typography variant="caption" color="text.secondary">
+                    Cerrado
+                  </Typography>
+                )}
+              </Stack>
+            );
+          })}
 
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="body2" color="text.secondary">
-              {items.length} bloqueo(s) de horario configurados.
+              {items.length} bloqueo(s) configurados.
             </Typography>
             {saveError ? (
               <Badge pill status="negative">
@@ -232,16 +225,35 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
         header={
           <Stack spacing={0.25}>
             <Typography variant="h6" component="h2">
-              Bloqueos de horario
+              Bloqueos de disponibilidad
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Franjas concretas en las que el negocio no está disponible (festivos, pausas, tiempo
-              personal).
+              Bloquea un rango de horas o un día completo (festivos, pausas, tiempo personal).
             </Typography>
           </Stack>
         }
       >
         <Stack spacing={2}>
+          <Stack spacing={1}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Tipo de bloqueo
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+              <Chip
+                label="Rango de horas"
+                selectable
+                selected={draft.mode === 'range'}
+                onClick={() => setDraft((prev) => ({ ...prev, mode: 'range' }))}
+              />
+              <Chip
+                label="Días completos"
+                selectable
+                selected={draft.mode === 'fullday'}
+                onClick={() => setDraft((prev) => ({ ...prev, mode: 'fullday' }))}
+              />
+            </Stack>
+          </Stack>
+
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={1.5}
@@ -255,20 +267,28 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
               error={Boolean(blockErrors?.date)}
               helperText={blockErrors?.date}
             />
-            <TextField
-              label="Inicio"
-              type="time"
-              value={draft.startTime}
-              onChange={(value) => setDraft((prev) => ({ ...prev, startTime: value }))}
-            />
-            <TextField
-              label="Fin"
-              type="time"
-              value={draft.endTime}
-              onChange={(value) => setDraft((prev) => ({ ...prev, endTime: value }))}
-              error={Boolean(blockErrors?.endTime)}
-              helperText={blockErrors?.endTime}
-            />
+            {draft.mode === 'range' ? (
+              <>
+                <TextField
+                  label="Hora de inicio"
+                  type="time"
+                  value={draft.startTime}
+                  onChange={(value) => setDraft((prev) => ({ ...prev, startTime: value }))}
+                />
+                <TextField
+                  label="Hora de fin"
+                  type="time"
+                  value={draft.endTime}
+                  onChange={(value) => setDraft((prev) => ({ ...prev, endTime: value }))}
+                  error={Boolean(blockErrors?.endTime)}
+                  helperText={blockErrors?.endTime}
+                />
+              </>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                Se bloqueará todo el día.
+              </Typography>
+            )}
             <TextField
               label="Motivo (opcional)"
               value={draft.reason}
@@ -293,10 +313,15 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
                   spacing={2}
                   sx={{ borderBottom: 1, borderColor: 'divider', pb: 1 }}
                 >
-                  <Stack spacing={0.25}>
+                  <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {formatBlock(block)}
                     </Typography>
+                    {isFullDay(block) ? (
+                      <Badge pill status="neutral">
+                        Día completo
+                      </Badge>
+                    ) : null}
                     {block.reason ? (
                       <Typography variant="caption" color="text.secondary">
                         {block.reason}

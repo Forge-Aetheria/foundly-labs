@@ -30,7 +30,7 @@ useDeletePaymentMethod(): (input: unknown) => Promise<ActionResult<{ id: string 
 
 - **Server view**: resolves the tenant and calls `listPaymentMethods()`, passing methods + error.
 - **`PaymentsConfig` props**: `{ methods: PaymentMethod[]; error?: string | null }`.
-- **Behaviors**: three method cards (Pago Móvil / Transferencia / Binance) with an `active` `Switch`, `details` and `instructions` fields, a pending save, success toast + `router.refresh()`, and a clean error surface.
+- **Behaviors**: a card per configured method with a structured create/edit modal (five types, type-specific fields), toggle and delete — amended by `022-admin-payments-schedules-refactor`.
 
 ## 2. Services module — `modules/services/` (advance rule)
 

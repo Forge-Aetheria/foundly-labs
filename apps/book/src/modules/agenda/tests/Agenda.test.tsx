@@ -54,7 +54,7 @@ const pendingRow: AgendaRow = {
   clientName: 'Marta',
   status: 'pending',
   payment: {
-    methodType: 'mobile_payment',
+    methodType: 'pago_movil',
     amountCents: 1000,
     reference: 'REF-9',
     proofUrl: 'https://x.test/proof.png',

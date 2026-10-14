@@ -1,11 +1,11 @@
-# Configuration (payment methods) operations — feature 017.
+# Configuration (payment methods) operations — feature 017 / 022.
 
 query MyPaymentMethods {
   myPaymentMethods {
     id
     tenantId
     type
-    label
+    title
     details
     instructions
     active
@@ -17,7 +17,7 @@ mutation UpsertPaymentMethod($input: UpsertPaymentMethodInput!) {
     id
     tenantId
     type
-    label
+    title
     details
     instructions
     active

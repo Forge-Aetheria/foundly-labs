@@ -52,19 +52,19 @@ function renderEditor(initialBlocks: TimeBlock[] = blocks) {
   );
 }
 
-describe('AvailabilityEditor (admin availability, feature 015)', () => {
+describe('AvailabilityEditor (admin schedules, features 015/022)', () => {
   beforeEach(() => {
     saveMock.mockReset();
     addMock.mockReset();
     removeMock.mockReset();
   });
 
-  it('renders the weekly config, the real blocks and the save button', async () => {
+  it('renders the weekly schedule, the real blocks and the save button', async () => {
     const { container } = renderEditor();
 
-    expect(screen.getByText('Disponibilidad')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Guardar disponibilidad' })).toBeInTheDocument();
-    expect(screen.getByText('1 bloqueo(s) de horario configurados.')).toBeInTheDocument();
+    expect(screen.getByText('Horario y disponibilidad')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Guardar horario semanal' })).toBeInTheDocument();
+    expect(screen.getByText('1 bloqueo(s) configurados.')).toBeInTheDocument();
     expect(screen.getByText('2026-12-24 · 09:00–13:00')).toBeInTheDocument();
     expect(screen.getByText('Nochebuena')).toBeInTheDocument();
 
@@ -74,11 +74,26 @@ describe('AvailabilityEditor (admin availability, feature 015)', () => {
 
   it('shows a clean empty state when there are no blocks', () => {
     renderEditor([]);
-    expect(screen.getByText('0 bloqueo(s) de horario configurados.')).toBeInTheDocument();
+    expect(screen.getByText('0 bloqueo(s) configurados.')).toBeInTheDocument();
     expect(screen.getByText(/No hay bloqueos/)).toBeInTheDocument();
   });
 
-  it('adds a block through the server action', async () => {
+  it('saves the weekly schedule through the server action', async () => {
+    saveMock.mockResolvedValue({ ok: true, data: { updated: true } });
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(screen.getByRole('button', { name: 'Guardar horario semanal' }));
+
+    expect(saveMock).toHaveBeenCalledWith({
+      days: expect.arrayContaining([
+        { weekday: 1, isOpen: true, startTime: '09:00', endTime: '18:00' },
+      ]),
+    });
+    expect(await screen.findByText('Guardado')).toBeInTheDocument();
+  });
+
+  it('adds a time-range block through the server action', async () => {
     addMock.mockResolvedValue({
       ok: true,
       data: {
@@ -106,6 +121,36 @@ describe('AvailabilityEditor (admin availability, feature 015)', () => {
       reason: 'Fin de año',
     });
     expect(await screen.findByText('2026-12-31 · 09:00–13:00')).toBeInTheDocument();
+  });
+
+  it('blocks a full day when "Días completos" is selected', async () => {
+    addMock.mockResolvedValue({
+      ok: true,
+      data: {
+        id: 'tb3',
+        resourceId: 'ten-ana',
+        startAt: '2027-01-01T00:00:00',
+        endAt: '2027-01-01T23:59:00',
+        kind: 'block',
+        recurrence: 'none',
+        recurrenceUntil: null,
+        reason: 'Año nuevo',
+      },
+    });
+    const user = userEvent.setup();
+    renderEditor([]);
+
+    await user.click(screen.getByText('Días completos'));
+    await user.type(screen.getByLabelText(/Fecha/), '2027-01-01');
+    await user.click(screen.getByRole('button', { name: 'Bloquear' }));
+
+    expect(addMock).toHaveBeenCalledWith({
+      date: '2027-01-01',
+      startTime: '00:00',
+      endTime: '23:59',
+      reason: '',
+    });
+    expect(await screen.findByText('Día completo')).toBeInTheDocument();
   });
 
   it('surfaces an inline error returned by the add action', async () => {

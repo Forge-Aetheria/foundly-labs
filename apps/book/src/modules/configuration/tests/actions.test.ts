@@ -18,19 +18,19 @@ vi.mock('../../../shared/auth/authServer', () => ({
 const dto = {
   id: 'pm1',
   tenantId: 'ten-ana',
-  type: 'mobile_payment',
-  label: null,
-  details: 'Banco X',
+  type: 'pago_movil',
+  title: 'Pago Móvil Banesco',
+  details: JSON.stringify({ holder: 'Ana', cedula: 'V-123', phone: '0412', bank: 'Banesco' }),
   instructions: null,
   active: true,
 };
 
-describe('configuration actions (feature 017, US1)', () => {
+describe('configuration actions (feature 022)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('lists the payment methods and maps them to the domain', async () => {
+  it('lists the payment methods and maps structured details', async () => {
     adminMock.mockResolvedValue({ ok: true, data: { myPaymentMethods: [dto] } });
     const result = await listPaymentMethods();
     expect(adminMock).toHaveBeenCalledWith(MyPaymentMethodsDocument, {});
@@ -38,8 +38,9 @@ describe('configuration actions (feature 017, US1)', () => {
     if (result.ok) {
       expect(result.data[0]).toMatchObject({
         id: 'pm1',
-        type: 'mobile_payment',
-        details: 'Banco X',
+        type: 'pago_movil',
+        title: 'Pago Móvil Banesco',
+        details: { holder: 'Ana', bank: 'Banesco' },
         active: true,
       });
     }
@@ -52,18 +53,20 @@ describe('configuration actions (feature 017, US1)', () => {
     expect(adminMock).not.toHaveBeenCalled();
   });
 
-  it('upserts a method through the API', async () => {
+  it('upserts a method, serializing the structured details', async () => {
     adminMock.mockResolvedValue({ ok: true, data: { upsertPaymentMethod: dto } });
     const result = await upsertPaymentMethod({
-      type: 'mobile_payment',
-      details: '  Banco X  ',
+      type: 'pago_movil',
+      title: '  Pago Móvil Banesco  ',
+      details: { bank: 'Banesco', holder: '' },
+      instructions: '',
       active: true,
     });
     expect(adminMock).toHaveBeenCalledWith(UpsertPaymentMethodDocument, {
       input: {
-        type: 'mobile_payment',
-        label: null,
-        details: 'Banco X',
+        type: 'pago_movil',
+        title: 'Pago Móvil Banesco',
+        details: JSON.stringify({ bank: 'Banesco' }),
         instructions: null,
         active: true,
       },

@@ -9,7 +9,7 @@ export interface PaymentMethodRow {
   id: string;
   tenantId: string;
   type: PaymentMethodType;
-  label: string | null;
+  title: string | null;
   details: string | null;
   instructions: string | null;
   active: boolean;
@@ -18,7 +18,7 @@ export interface PaymentMethodRow {
 }
 
 export interface UpsertPaymentMethodData {
-  label?: string | null;
+  title?: string | null;
   details?: string | null;
   instructions?: string | null;
   active?: boolean | null;
@@ -68,7 +68,7 @@ function toRow(row: PaymentMethodSelectRow): PaymentMethodRow {
     id: row.id,
     tenantId: row.tenantId,
     type: row.type,
-    label: row.label,
+    title: row.label,
     details: row.details,
     instructions: row.instructions,
     active: row.active,
@@ -124,13 +124,13 @@ export class PrismaPaymentsStore implements PaymentsStore {
       create: {
         tenantId,
         type,
-        label: data.label ?? null,
+        label: data.title ?? null,
         details: data.details ?? null,
         instructions: data.instructions ?? null,
         active: data.active ?? false,
       },
       update: {
-        ...(data.label !== undefined ? { label: data.label } : {}),
+        ...(data.title !== undefined ? { label: data.title } : {}),
         ...(data.details !== undefined ? { details: data.details } : {}),
         ...(data.instructions !== undefined ? { instructions: data.instructions } : {}),
         ...(data.active !== undefined && data.active !== null ? { active: data.active } : {}),

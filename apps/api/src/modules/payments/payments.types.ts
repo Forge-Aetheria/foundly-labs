@@ -2,9 +2,11 @@ import { Field, ID, InputType, ObjectType, registerEnumType } from '@nestjs/grap
 
 /** Closed set of payment method kinds (mirrors the API contract, lower-case like `ReviewState`). */
 export const PaymentMethodType = {
-  mobile_payment: 'mobile_payment',
-  bank_transfer: 'bank_transfer',
+  pago_movil: 'pago_movil',
   binance: 'binance',
+  zelle: 'zelle',
+  transfer: 'transfer',
+  cash: 'cash',
 } as const;
 export type PaymentMethodType =
   (typeof PaymentMethodType)[keyof typeof PaymentMethodType];
@@ -32,7 +34,7 @@ export class PaymentMethodObject {
   type!: PaymentMethodType;
 
   @Field(() => String, { nullable: true })
-  label?: string | null;
+  title?: string | null;
 
   @Field(() => String, { nullable: true })
   details?: string | null;
@@ -56,7 +58,7 @@ export class UpsertPaymentMethodInput {
   type!: PaymentMethodType;
 
   @Field(() => String, { nullable: true })
-  label?: string | null;
+  title?: string | null;
 
   @Field(() => String, { nullable: true })
   details?: string | null;

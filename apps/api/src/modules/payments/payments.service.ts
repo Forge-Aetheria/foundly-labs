@@ -73,7 +73,7 @@ export class PaymentsService {
       throw validationError('Unknown payment method type');
     }
     const data: UpsertPaymentMethodData = {
-      label: normalizeText(input.label, 'label'),
+      title: normalizeText(input.title, 'title'),
       details: normalizeText(input.details, 'details'),
       instructions: normalizeText(input.instructions, 'instructions'),
       active: input.active ?? false,

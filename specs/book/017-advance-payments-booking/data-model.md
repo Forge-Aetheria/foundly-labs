@@ -9,17 +9,21 @@ The client does not own persistence; it models UI state, the API `016` surface a
 ### `PaymentMethodType` / `AdvanceKind`
 
 ```ts
-export type PaymentMethodType = 'mobile_payment' | 'bank_transfer' | 'binance';
+export type PaymentMethodType = 'pago_movil' | 'binance' | 'zelle' | 'transfer' | 'cash';
 export type AdvanceKind = 'fixed' | 'percent';
 
-export const PAYMENT_METHOD_ORDER: PaymentMethodType[] = ['mobile_payment', 'bank_transfer', 'binance'];
+export const PAYMENT_METHOD_ORDER: PaymentMethodType[] = ['pago_movil', 'binance', 'zelle', 'transfer', 'cash'];
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethodType, string> = {
-  mobile_payment: 'Pago Móvil',
-  bank_transfer: 'Transferencia bancaria',
-  binance: 'Binance',
+  pago_movil: 'Pago Móvil',
+  binance: 'Binance Pay',
+  zelle: 'Zelle',
+  transfer: 'Transferencia',
+  cash: 'Efectivo',
 };
 export const ADVANCE_KIND_LABELS: Record<AdvanceKind, string> = { fixed: 'Importe fijo', percent: 'Porcentaje' };
 ```
+
+> Amended by `022-admin-payments-schedules-refactor`: the type set is the five values above and `details` is a structured object.
 
 ### `PaymentMethod`
 
@@ -28,8 +32,8 @@ export const ADVANCE_KIND_LABELS: Record<AdvanceKind, string> = { fixed: 'Import
 | `id` | `string` | — |
 | `tenantId` | `string` | — |
 | `type` | `PaymentMethodType` | one per type |
-| `label` | `string \| null` | display label |
-| `details` | `string \| null` | free-form receiving data |
+| `title` | `string \| null` | display title (was `label`) |
+| `details` | `PaymentMethodDetails \| null` | structured receiving data (JSON on the wire) |
 | `instructions` | `string \| null` | free-form instructions |
 | `active` | `boolean` | offered in the public flow only when true |
 
@@ -122,7 +126,7 @@ Steps (`requiresAdvance` ⇒ 5, else 4):
 
 | API | Domain | Rule |
 |---|---|---|
-| `PaymentMethodObject` | `PaymentMethod` | 1:1 (type/label/details/instructions/active) |
+| `PaymentMethodObject` | `PaymentMethod` | 1:1 (type/title/details/instructions/active); `details` string ⇄ structured object |
 | `MyService.requiresAdvance/advanceKind/advanceValue` | `Service.*` | 1:1 (nulls preserved) |
 | `Appointment.paymentMethodType/advanceAmountCents/...` | `Appointment.payment` | present only when `paymentMethodType != null`; else `null` |
 | `Appointment.notifications[]` | `Appointment.notifications` | 1:1 |

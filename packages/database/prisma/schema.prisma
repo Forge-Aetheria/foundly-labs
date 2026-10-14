@@ -204,9 +204,11 @@ model TimeBlock {
 }
 
 enum PaymentMethodType {
-  mobile_payment
-  bank_transfer
+  pago_movil
   binance
+  zelle
+  transfer
+  cash
 }
 
 enum AdvanceKind {

@@ -51,7 +51,7 @@ export function createMemoryPaymentsStore(): MemoryPaymentsStore {
       if (existing) {
         const next: PaymentMethodRow = {
           ...existing,
-          ...(data.label !== undefined ? { label: data.label } : {}),
+          ...(data.title !== undefined ? { title: data.title } : {}),
           ...(data.details !== undefined ? { details: data.details } : {}),
           ...(data.instructions !== undefined ? { instructions: data.instructions } : {}),
           ...(data.active !== undefined && data.active !== null ? { active: data.active } : {}),
@@ -64,7 +64,7 @@ export function createMemoryPaymentsStore(): MemoryPaymentsStore {
         id: nextId(),
         tenantId,
         type,
-        label: data.label ?? null,
+        title: data.title ?? null,
         details: data.details ?? null,
         instructions: data.instructions ?? null,
         active: data.active ?? false,

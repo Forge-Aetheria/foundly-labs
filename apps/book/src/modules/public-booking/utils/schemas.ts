@@ -15,7 +15,7 @@ export type ClientDetails = z.infer<typeof clientDetailsSchema>;
 
 /** Advance payment draft collected by the mandatory payment step (feature 017). */
 export const advancePaymentSchema = z.object({
-  methodType: z.enum(['mobile_payment', 'bank_transfer', 'binance'], {
+  methodType: z.enum(['pago_movil', 'binance', 'zelle', 'transfer', 'cash'], {
     message: 'Selecciona un método de pago.',
   }),
   amountCents: z

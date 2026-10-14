@@ -8,9 +8,11 @@
 
 | Value | Meaning |
 |---|---|
-| `mobile_payment` | Pago Móvil |
-| `bank_transfer` | Transferencia bancaria |
-| `binance` | Binance |
+| `pago_movil` | Pago Móvil |
+| `binance` | Binance Pay |
+| `zelle` | Zelle |
+| `transfer` | Transferencia |
+| `cash` | Efectivo |
 
 ### `enum AdvanceKind` (NEW)
 
@@ -26,8 +28,8 @@
 | `id` | `String @id @default(cuid())` | Primary key |
 | `tenantId` | `String` | Owner business (FK → `Tenant.id`) |
 | `type` | `PaymentMethodType` | Method kind |
-| `label` | `String?` | Optional display label |
-| `details` | `String?` | Free-form receiving data |
+| `label` | `String?` | Display title (GraphQL `title`) |
+| `details` | `String?` | Structured receiving data (JSON-encoded) |
 | `instructions` | `String?` | Free-form instructions for the client |
 | `active` | `Boolean @default(false)` | Offered in the public flow only when true |
 | `createdAt` | `DateTime @default(now())` | — |
@@ -74,14 +76,14 @@
 ## GraphQL types (code-first)
 
 ```graphql
-enum PaymentMethodType { mobile_payment bank_transfer binance }
+enum PaymentMethodType { pago_movil binance zelle transfer cash }
 enum AdvanceKind { fixed percent }
 
 type PaymentMethodObject {
   id: ID!
   tenantId: String!
   type: PaymentMethodType!
-  label: String
+  title: String
   details: String
   instructions: String
   active: Boolean!
@@ -91,7 +93,7 @@ type PaymentMethodObject {
 
 input UpsertPaymentMethodInput {
   type: PaymentMethodType!
-  label: String
+  title: String
   details: String
   instructions: String
   active: Boolean
@@ -139,9 +141,9 @@ type AppointmentNotificationObject { id: ID! kind: String! message: String! chan
 |---|---|
 | `id` | `string` |
 | `tenantId` | `string` |
-| `type` | `'mobile_payment' \| 'bank_transfer' \| 'binance'` |
-| `label` | `string \| null` |
-| `details` | `string \| null` |
+| `type` | `'pago_movil' \| 'binance' \| 'zelle' \| 'transfer' \| 'cash'` |
+| `title` | `string \| null` |
+| `details` | `string \| null` (JSON-encoded object) |
 | `instructions` | `string \| null` |
 | `active` | `boolean` |
 | `createdAt` | `string` (ISO) |
@@ -167,7 +169,7 @@ Adds `requiresAdvance: boolean`, `advanceKind: AdvanceKind | null`, `advanceValu
 
 ## Validation rules (from requirements)
 
-- **FR-001/FR-002** — `upsertPaymentMethod` requires `type ∈ {mobile_payment, bank_transfer, binance}`; one row per `(tenantId, type)`; tenant from `ctx.user`.
+- **FR-001/FR-002** — `upsertPaymentMethod` requires `type ∈ {pago_movil, binance, zelle, transfer, cash}`; one row per `(tenantId, type)`; tenant from `ctx.user`; `title` is the display title and `details` a JSON-encoded object.
 - **FR-003** — public `paymentMethods` lists `active = true` only; unknown slug → `[]`.
 - **FR-004/FR-005** — `requiresAdvance: true` ⇒ `advanceKind` set and `advanceValue` an integer ≥ 1 (percent ≤ 100); `requiresAdvance: false` ⇒ clear kind/value.
 - **FR-006/FR-007** — public `createAppointment` for an advance service requires a complete payload, an **active** method of the given type and `advanceAmountCents === expected` where `expected = advanceValue` (fixed) or `round(priceCents * advanceValue / 100)` (percent, must be > 0).

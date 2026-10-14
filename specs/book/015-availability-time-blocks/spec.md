@@ -8,7 +8,7 @@
 
 **Input**: User description: "Crear los documentos GraphQL necesarios para la gestión de bloqueos, regenerar los tipos con codegen, estructurar las acciones y hooks dentro del módulo de disponibilidad, y conectar la interfaz visual en `/admin/availability` para que deje de arrojar arrays vacíos y permita bloquear/desbloquear franjas horarias de forma real."
 
-_This spec is governed by `constitution.md` v5.2.0, `specs/business-model.md` (Foundly Book, §2.3) and `specs/architecture.md`. It lives in the `book` domain. It supersedes the "time blocks have no backend" state of `specs/book/010-remove-local-store`/`011-module-data-layer`. Its backend counterpart is `specs/api/014-availability-time-blocks`._
+_This spec is governed by `constitution.md` v5.2.0, `specs/business-model.md` (Foundly Book, §2.3) and `specs/architecture.md`. It lives in the `book` domain. It supersedes the "time blocks have no backend" state of `specs/book/010-remove-local-store`/`011-module-data-layer`. Its backend counterpart is `specs/api/014-availability-time-blocks`. The admin layout and the "range / full-day" block model are amended by `specs/book/022-admin-payments-schedules-refactor`._
 
 ## User Scenarios & Testing _(mandatory)_
 
@@ -23,7 +23,7 @@ As a business owner, I want `/admin/availability` to list my real time blocks an
 **Acceptance Scenarios**:
 
 1. **Given** the availability section, **When** it loads, **Then** it shows the business's real time blocks (or a clean empty state), not a hardcoded zero.
-2. **Given** the add-block form, **When** I submit a valid range with an optional reason, **Then** the block is persisted and appears in the list.
+2. **Given** the add-block form, **When** I submit a valid time range (or a full-day block) with an optional reason, **Then** the block is persisted and appears in the list.
 3. **Given** the add-block form, **When** the end is not after the start (or required fields are missing), **Then** the save is blocked with an inline error.
 4. **Given** a block, **When** I confirm removal, **Then** it is removed on the server and disappears from the list.
 5. **Given** the server is unreachable or the session expired, **When** the section loads or a write runs, **Then** the failure is surfaced cleanly (no raw text, no false success).
@@ -72,9 +72,9 @@ As a maintainer, I want the availability module to follow the canonical data lay
 ### Functional Requirements
 
 - **FR-001**: `/admin/availability` MUST list the business's real time blocks (start, end, optional reason) read from the backend, with a clean empty state when there are none, replacing the previous hardcoded zero.
-- **FR-002**: The section MUST allow adding a block (required date + start/end times, optional reason) that persists on the server and reflects the result.
+- **FR-002**: The section MUST allow adding a block — either a **time range** (required date + start/end times) or a **full day** (required date) — with an optional reason; the block MUST persist on the server and reflect the result.
 - **FR-003**: Removing a block MUST require confirmation and MUST delete it on the server.
-- **FR-004**: Invalid ranges (end not after start) or missing required fields MUST be blocked with an inline error and MUST NOT persist.
+- **FR-004**: Invalid time ranges (end not after start, range mode) or missing required fields MUST be blocked with an inline error and MUST NOT persist.
 - **FR-005**: Failures on load/add/remove MUST be surfaced cleanly (localized messages; no raw provider text, no false success).
 - **FR-006**: The public booking flow MUST exclude time ranges covered by active blocks (business-wide and, when computing for a specialist, that specialist's blocks) when computing offered slots.
 - **FR-007**: Block data access MUST live in the module's `actions.ts` (server reads + add/remove Server Actions) and interactive mutations MUST be exposed through `hooks.ts`; the UI MUST NOT call the transport or Server Actions directly.
