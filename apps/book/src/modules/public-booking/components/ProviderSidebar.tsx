@@ -1,11 +1,7 @@
 'use client';
 
 import { Button, Card, Stack, Typography } from '@foundly/ui';
-import {
-  GLASS_CARD_SX,
-  PRIMARY_BUTTON_SX,
-  SECONDARY_BUTTON_SX,
-} from '../../../shared/utils/landingCanon';
+import { PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from '../../../shared/utils/landingCanon';
 import { WEEKDAY_LABELS, formatRating } from '../../../shared/utils/format';
 import type { PublicBusinessProfile } from '../utils/types';
 import { RatingStars } from './RatingStars';
@@ -28,7 +24,14 @@ export function ProviderSidebar({
   onReserve: () => void;
 }) {
   return (
-    <Card sx={GLASS_CARD_SX}>
+    <Card
+      sx={{
+        // Solid, elevated surface so the card reads as a layer floating over the hero photo.
+        backgroundColor: 'surface.cardLight',
+        boxShadow: (theme) => theme.shadows[8],
+        borderColor: 'border.subtle',
+      }}
+    >
       <Stack spacing={2}>
         <Stack direction="row" spacing={1.5} alignItems="center">
           {profile.avatar ? (

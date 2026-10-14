@@ -1,6 +1,6 @@
 # Contract: Portal UI (provider landing — nav, two columns and sections)
 
-**Feature**: `specs/book/003-public-portal-minisite/` | **Date**: 2026-10-09 | **Amended**: 2026-10-10
+**Feature**: `specs/book/003-public-portal-minisite/` | **Date**: 2026-10-09 | **Amended**: 2026-10-14
 
 Fixes the visual structure and accessibility contract of the public provider landing. It is a UI
 contract for `apps/book`; all primitives come from `@foundly/ui` (C1, FR-018) plus the landing-canonic
@@ -23,13 +23,21 @@ overrides in `apps/book/src/shared/utils/landingCanon.ts`.
 
 - Desktop: `<Stack direction="row">` with **`alignItems: flex-start`** so the sticky card tracks the full
   height of the main column; main column (flex-grow) + right column fixed at `340px`.
-- The right column wrapper MUST use `position: sticky; top: 1.5rem` (Tailwind `sticky top-6`) on desktop
+- The right column wrapper MUST use `position: sticky; top: 5.5rem` (Tailwind `sticky top-22`) on desktop
   so the provider card follows the whole vertical scroll of the left column (services, policies, team,
   reviews).
-- Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints).
+- **Overlap**: the right column MUST apply a **negative top margin on desktop** (`mt: { md: -10 }`, ≈ −80px)
+  so the solid info card rises over the lower edge of the hero banner, creating a floating layer. The
+  card MUST use a solid surface (`surface.cardLight`) with a soft elevated shadow (`theme.shadows[8]`)
+  and no translucent backdrop, so the photo behind stays decorative and metadata stays legible.
+- Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints) and the
+  negative margin is **disabled** (`mt: { xs: 0 }`) so the card stacks below the banner without covering
+  any button or text (FR-022).
 
-> A **full-width cover banner** (business cover, `width: 100%`, responsive height) renders **below the
-> header and above the two-column layout**; it is not part of the main column.
+> A **contained, rounded hero banner** (business cover, `width: 100%` inside the page `Container`,
+> ≈16px radius, capped height ≈320–360px, `object-fit: cover`) renders **below the header and above the
+> two-column layout**; it is not part of the main column. With no cover it falls back to the first
+> gallery photo or a branded gradient (feature `021`).
 
 | Column           | Sections / content                                                                                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -39,7 +47,9 @@ overrides in `apps/book/src/shared/utils/landingCanon.ts`.
 ## Cards and tokens
 
 - All cards use the landing-canonic **glass surface** (`GLASS_CARD_SX`: `--book-glass-card` at 60% white +
-  backdrop blur over `border.subtle`/`shadow.card`, 16px radius).
+  backdrop blur over `border.subtle`/`shadow.card`, 16px radius), **except the sidebar info card**, which
+  is intentionally a **solid, elevated surface** (`surface.cardLight` + `theme.shadows[8]`) so it reads
+  as a layer floating over the hero photo (FR-021).
 - The sidebar Reservar and every service Reservar are accent pills (`PRIMARY_BUTTON_SX`, `#6C5CE7`).
 - `RatingStars` renders a five-star row with the `primary.main` accent and `border.lavender` empty stars.
 - The guided booking checkout keeps its own contract (`booking-flow.contract.md`) inside the

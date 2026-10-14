@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-09
 
-**Status**: Implemented (two-column provider landing added 2026-10-10)
+**Status**: Implemented (two-column provider landing added 2026-10-10; hero-overlap layout refinement 2026-10-14)
 
 **Input**: User description: "Implementar la landing pública del proveedor en `apps/book` -> `/book/[tenantSlug]`: layout de dos columnas con sidebar sticky, header de navegación interna por secciones (Servicios, Equipo, Acerca de, Galería, Reseñas, Dirección), data mock de un negocio de prueba (rona-piercing) con galería, catálogo por categorías, equipo, políticas y reseñas, y CTA de reserva pill #6C5CE7 que abre el checkout guiado. Reutiliza el flujo de reserva guiado existente y los tokens canónicos de la landing (`@foundly/ui`)."
 
@@ -99,7 +99,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 **Provider identity & landing**
 
-- **FR-001**: The public page MUST render the business cover photo as a **full-width hero banner** (`width: 100%`) placed **below the header and above the profile/two-column content** (not a reduced/floating container).
+- **FR-001**: The public page MUST render the business cover as a **rounded hero banner** (≈16px radius) with **contained lateral margins** (page padding) and a **capped height** (≈320–360px on desktop) using `object-fit: cover`, placed **below the header and above the two-column content**. When no cover is configured it MUST fall back to the first gallery photo, or a branded gradient otherwise (feature `021-tenant-media-uploads`).
 - **FR-002**: The public page MUST show the business avatar/logo, commercial name, category and its rating (average, one decimal) with a five-star row when reviews exist.
 - **FR-003**: The public page MUST include an "Acerca de" section with the business biography when configured.
 - **FR-004**: The public page MUST expose contact data when configured: physical address, phone and social links (Instagram, WhatsApp).
@@ -112,8 +112,8 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 **Two-column layout & sticky sidebar**
 
-- **FR-021**: The provider landing MUST use a two-column layout on desktop: a main column (gallery, policies, catalog, team, about, gallery, reviews, direction) and a right column with a **sticky** sidebar (`position: sticky; top: 1.5rem`, `align-items: flex-start` on the row) that accompanies the full vertical scroll of the main column (brand, rating, Reservar CTA, hours disclosure, address/contact).
-- **FR-022**: On small viewports the sticky sidebar MUST collapse into a compact header card rendered above the content (responsive, no horizontal overflow).
+- **FR-021**: The provider landing MUST use a two-column layout on desktop: a main column (gallery, policies, catalog, team, about, gallery, reviews, direction) and a right column with a **sticky** sidebar (`position: sticky; top: 5.5rem`, `align-items: flex-start` on the row) that accompanies the full vertical scroll of the main column (brand, rating, Reservar CTA, hours disclosure, address/contact). The sidebar info card MUST be a **solid surface** with a soft, elevated shadow and MUST **overlap the lower part of the hero banner** on desktop via a negative top margin (floating-card layer effect).
+- **FR-022**: On small viewports the sidebar MUST collapse into a compact header card rendered above the content, with the **overlap disabled** (no negative top margin) so no button or text is hidden and there is no horizontal overflow.
 - **FR-025**: The sidebar Reservar CTA MUST be the accent pill (`#6C5CE7`) and MUST open the guided booking checkout preselected with the first bookable service.
 
 **Guided booking flow**
@@ -158,6 +158,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 - **SC-006**: 100% of the provider landing uses the shared design system components and tokens (glass cards, pill buttons, `#6C5CE7`).
 - **SC-007**: 0 horizontal overflow on mobile viewports; the sticky sidebar collapses into a compact header card.
 - **SC-008**: The seeded `rona-piercing` business renders the full landing (gallery, categories, team, policies, reviews and rating) with the existing booking actions green.
+- **SC-009**: 100% of provider pages render the info card overlapping the hero banner on desktop and stacked (no overlap, no hidden controls) on mobile; the hero keeps a capped height with `object-fit: cover` so no cover image is distorted.
 
 ## Assumptions
 

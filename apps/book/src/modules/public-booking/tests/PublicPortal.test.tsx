@@ -117,6 +117,18 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
     expect(hero).toHaveTextContent('Estudio Ana');
   });
 
+  it('renders the contained hero and the floating info card that overlaps it (FR-021)', () => {
+    renderPortal();
+
+    const hero = screen.getByTestId('portal-hero');
+    const sidebar = screen.getByTestId('provider-sidebar');
+    expect(hero).toBeInTheDocument();
+    expect(sidebar).toBeInTheDocument();
+    // The banner and the two-column row now share the same content container so the
+    // right info card can float over the banner on desktop.
+    expect(hero.parentElement).toBe(sidebar.parentElement?.parentElement);
+  });
+
   it('shows assigned service badges on the team section', async () => {
     const withServices = {
       ...profile,
