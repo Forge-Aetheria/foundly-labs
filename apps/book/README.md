@@ -120,6 +120,30 @@ rechazado como problema de sesión. Al iniciar sesión se valida además que la 
 - **Acciones antes huérfanas**: `/admin/services` crea/edita/elimina servicios de verdad (antes era un placeholder)
   y `/admin/agenda` "Nueva cita" compone un instante ISO con offset (antes fallaba la validación y no persistía).
 
+## Reserva con adelanto, calendario y control de agenda (feature `017-advance-payments-booking`)
+
+- **Configuración de pagos** (`/admin/configuracion`): la vista dejó de ser un placeholder. El módulo
+  `configuration` permite configurar los tres métodos (Pago Móvil, Transferencia bancaria, Binance) con sus
+  datos de recepción, instrucciones y un interruptor de activo. Solo los métodos activos se ofrecen en la
+  reserva pública. Backend: `specs/api/016-advance-payments`.
+- **Calendario real**: el paso "Fecha y hora" del booking público (`dialogs/CalendarStep.tsx`) sustituye las
+  píldoras de fecha por un calendario mensual real; al elegir un día se muestran sus huecos debajo y la
+  disponibilidad se consulta por todo el mes visible.
+- **Paso de adelanto obligatorio**: si el servicio tiene `requiresAdvance`, el flujo inserta un paso
+  (`dialogs/PaymentStep.tsx`) donde el cliente elige método, importe, referencia y **sube el comprobante**.
+  El importe se precarga según la regla (importe fijo o porcentaje) y el servidor vuelve a validarlo.
+- **Subida del comprobante (Supabase Storage)**: `public-booking/utils/uploadProof.ts` sube la captura al
+  bucket **`payment-proofs`** (PNG/JPG/WEBP, máx. 5 MB) y devuelve su URL pública. **Prerrequisito de operación**:
+  crear el bucket `payment-proofs` (lectura pública) con una policy de `INSERT` para el booking. El API solo
+  persiste y valida la URL.
+- **Agenda por rango**: `/admin/agenda` usa dos inputs `desde`/`hasta` (por defecto hoy → último día del mes
+  actual) y consulta la agenda autenticada por rango. El detalle permite **Aceptar** (→ Confirmada),
+  **Rechazar** (→ Cancelada) y **Reagendar**, y muestra el **adelanto** recibido (método, importe, referencia y
+  previsualización del comprobante con enlace de respaldo). Cada acción registra una notificación al cliente
+  (canal simulado).
+- **Regla de adelanto por servicio**: `/admin/services` permite marcar un servicio como "Requiere adelanto"
+  (importe fijo o porcentaje) y muestra el adelanto en la tabla.
+
 ## Dominio y datos
 
 - **Estructura modular**: `src/app/` es la capa delgada de rutas App Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `dialogs/`, `hooks/`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (types, utils, componentes, `infra/` con el seam de sesión/results, `tenancy/`).
@@ -145,9 +169,11 @@ rechazado como problema de sesión. Al iniciar sesión se valida además que la 
 - `specs/book/014-profile-policies-reviews/` — perfil editable + políticas y reseñas reales (admin `/admin/profile` + mini-sitio).
 - `specs/book/015-availability-time-blocks/` — bloqueos de disponibilidad reales (admin `/admin/availability`) y su exclusión del booking público.
 - `specs/book/016-admin-ux-hardening/` — toasts, estados de carga/anti-doble-envío, moderación de reseñas, reglas de imagen del perfil y activación de acciones huérfanas (servicios + nueva cita).
+- `specs/book/017-advance-payments-booking/` — métodos de pago configurables, calendario real, paso de adelanto con subida de comprobante (Supabase Storage) y control de agenda por rango con accept/reject/reschedule.
 - `specs/api/012-gallery-management/` — superficie GraphQL de la galería (lectura pública + add/remove autenticados y por tenant).
 - `specs/api/013-profile-policies-reviews/` — superficie GraphQL del perfil (update autenticado) y de reseñas (lectura + alta públicas).
 - `specs/api/014-availability-time-blocks/` — superficie GraphQL de bloqueos de disponibilidad (lectura pública + add/remove autenticados y por tenant).
 - `specs/api/015-review-moderation/` — superficie GraphQL de moderación de reseñas (estado pending/approved/rejected, lectura admin y aprobar/rechazar/eliminar autenticados).
+- `specs/api/016-advance-payments/` — métodos de pago por negocio, regla de adelanto por servicio, adelanto embebido en la cita y control de agenda autenticado (rango, accept/reject/reschedule + notificaciones).
 
 > Pendiente: paginación/windowing de la agenda (T039 de `001`) y suite Playwright E2E (`e2e/`).

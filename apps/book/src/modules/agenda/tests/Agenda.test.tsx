@@ -7,10 +7,20 @@ import { ToastProvider } from '../../../shared/components/Toaster';
 import type { Resource, Service } from '../../../shared/types/appointments';
 import { Agenda, type AgendaProps, type AgendaRow } from '../components/Agenda';
 
-const { createMock } = vi.hoisted(() => ({ createMock: vi.fn() }));
+const { createMock, statusMock, cancelMock, rescheduleMock } = vi.hoisted(() => ({
+  createMock: vi.fn(),
+  statusMock: vi.fn(),
+  cancelMock: vi.fn(),
+  rescheduleMock: vi.fn(),
+}));
 
-vi.mock('../hooks', () => ({ useCreateAppointment: () => createMock }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+vi.mock('../hooks', () => ({
+  useCreateAppointment: () => createMock,
+  useChangeAppointmentStatus: () => statusMock,
+  useCancelAppointment: () => cancelMock,
+  useRescheduleAppointment: () => rescheduleMock,
+}));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
 
 function dateKey(date: Date): string {
   const year = date.getFullYear();
@@ -32,19 +42,39 @@ const rows: AgendaRow[] = [
     durationMinutes: 30,
     resourceName: 'Ana Profesional',
     status: 'confirmed',
+    currency: 'EUR',
+    payment: null,
+    notifications: [],
   },
 ];
+
+const pendingRow: AgendaRow = {
+  ...rows[0]!,
+  id: 'a2',
+  clientName: 'Marta',
+  status: 'pending',
+  payment: {
+    methodType: 'mobile_payment',
+    amountCents: 1000,
+    reference: 'REF-9',
+    proofUrl: 'https://x.test/proof.png',
+    submittedAt: '2026-10-13T10:00:00.000Z',
+  },
+};
 
 describe('Agenda (admin appointments)', () => {
   beforeEach(() => {
     createMock.mockReset();
+    statusMock.mockReset();
+    cancelMock.mockReset();
+    rescheduleMock.mockReset();
   });
 
-  function renderAgenda(props: AgendaProps) {
+  function renderAgenda(props: Omit<AgendaProps, 'range'> & { range?: AgendaProps['range'] }) {
     return render(
       <FoundlyThemeProvider>
         <ToastProvider>
-          <Agenda {...props} />
+          <Agenda range={{ from: TODAY, to: TODAY }} {...props} />
         </ToastProvider>
       </FoundlyThemeProvider>,
     );
@@ -55,7 +85,8 @@ describe('Agenda (admin appointments)', () => {
 
     expect(screen.getByText('Agenda de citas')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '+ Nueva cita' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hoy' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Desde')).toBeInTheDocument();
+    expect(screen.getByLabelText('Hasta')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Pendientes' })).toBeInTheDocument();
 
     expect(screen.getByText('Luis')).toBeInTheDocument();
@@ -99,6 +130,60 @@ describe('Agenda (admin appointments)', () => {
     expect(dialog.getByText('Confirmada')).toBeInTheDocument();
   });
 
+  it('shows the advance payment in the detail and omits it otherwise', async () => {
+    const user = userEvent.setup();
+    renderAgenda({ appointments: [pendingRow] });
+
+    await user.click(screen.getByRole('button', { name: 'Detalles' }));
+    const dialog = within(screen.getByRole('dialog'));
+    expect(dialog.getByText('Adelanto')).toBeInTheDocument();
+    expect(dialog.getByText(/REF-9/)).toBeInTheDocument();
+    expect(dialog.getByText(/Pago Móvil/)).toBeInTheDocument();
+  });
+
+  it('accepts a pending appointment', async () => {
+    statusMock.mockResolvedValue({ ok: true, data: { ...pendingRow, status: 'confirmed' } });
+    const user = userEvent.setup();
+    renderAgenda({ appointments: [pendingRow] });
+
+    await user.click(screen.getByRole('button', { name: 'Aceptar' }));
+    expect(statusMock).toHaveBeenCalledWith({ appointmentId: 'a2', status: 'confirmed' });
+    expect(await screen.findByText('Cita confirmada.')).toBeInTheDocument();
+  });
+
+  it('rejects a pending appointment with a reason', async () => {
+    cancelMock.mockResolvedValue({ ok: true, data: { ...pendingRow, status: 'cancelled' } });
+    const user = userEvent.setup();
+    renderAgenda({ appointments: [pendingRow] });
+
+    await user.click(screen.getByRole('button', { name: 'Detalles' }));
+    const dialog = within(screen.getByRole('dialog'));
+    await user.click(dialog.getByRole('button', { name: 'Rechazar' }));
+    await user.click(screen.getByRole('button', { name: 'Rechazar' }));
+
+    expect(cancelMock).toHaveBeenCalledWith({ appointmentId: 'a2', reason: 'No disponible' });
+    expect(await screen.findByText('Cita rechazada.')).toBeInTheDocument();
+  });
+
+  it('reschedules an appointment', async () => {
+    rescheduleMock.mockResolvedValue({
+      ok: true,
+      data: { ...pendingRow, startAt: '2026-11-01T11:00:00.000Z' },
+    });
+    const user = userEvent.setup();
+    renderAgenda({ appointments: [pendingRow] });
+
+    await user.click(screen.getByRole('button', { name: 'Detalles' }));
+    const dialog = within(screen.getByRole('dialog'));
+    await user.click(dialog.getByRole('button', { name: 'Reagendar' }));
+    fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-11-01' } });
+    fireEvent.change(screen.getByLabelText('Hora'), { target: { value: '11:00' } });
+    await user.click(screen.getByRole('button', { name: 'Reagendar' }));
+
+    expect(rescheduleMock).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText('Cita reprogramada.')).toBeInTheDocument();
+  });
+
   it('creates an appointment with an offset ISO startAt', async () => {
     const service: Service = {
       id: 'svc-1',
@@ -109,6 +194,9 @@ describe('Agenda (admin appointments)', () => {
       category: null,
       active: true,
       tenantId: 'ten-ana',
+      requiresAdvance: false,
+      advanceKind: null,
+      advanceValue: null,
     };
     const resource: Resource = {
       id: 'res-1',
@@ -139,6 +227,8 @@ describe('Agenda (admin appointments)', () => {
         appliedCurrency: 'EUR',
         origin: 'admin',
         cancellationReason: null,
+        payment: null,
+        notifications: [],
         createdAt: '2026-10-20T09:00:00.000Z',
         updatedAt: '2026-10-20T09:00:00.000Z',
       },

@@ -7,7 +7,7 @@ import {
   SECONDARY_BUTTON_SX,
 } from '../../../shared/utils/landingCanon';
 import { formatPrice } from '../../../shared/utils/format';
-import type { ClientDetails } from '../utils/schemas';
+import type { AdvancePaymentDraft, ClientDetails } from '../utils/schemas';
 import type { PublicService } from '../utils/types';
 
 /** Step 4 — confirmation summary before creating the appointment (FR-013). */
@@ -16,6 +16,7 @@ export function ConfirmStep({
   specialistName,
   slot,
   client,
+  payment,
   submitting,
   message,
   error,
@@ -27,6 +28,7 @@ export function ConfirmStep({
   specialistName: string | null;
   slot: { startAt: string; endAt: string } | null;
   client: ClientDetails | null;
+  payment?: AdvancePaymentDraft | null;
   submitting: boolean;
   message: string | null;
   error: string | null;
@@ -82,6 +84,11 @@ export function ConfirmStep({
           {client?.notes ? (
             <Typography variant="body2" color="text.secondary">
               Notas: {client.notes}
+            </Typography>
+          ) : null}
+          {payment ? (
+            <Typography variant="body2" color="text.secondary">
+              Adelanto: {formatPrice(payment.amountCents, service.currency)} · Ref. {payment.reference}
             </Typography>
           ) : null}
         </Stack>

@@ -1,13 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  AppointmentDocument,
   AppointmentStatus,
   CancelAppointmentDocument,
-  CreateAppointmentDocument,
+  CreateMyAppointmentDocument,
+  MyAppointmentDocument,
   MyServicesDocument,
+  RescheduleAppointmentDocument,
   UpdateAppointmentStatusDocument,
 } from '../../../shared/api/generated';
-import { cancelAppointment, changeAppointmentStatus, createAppointment } from '../actions';
+import {
+  cancelAppointment,
+  changeAppointmentStatus,
+  createAppointment,
+  rescheduleAppointment,
+} from '../actions';
 
 const { apiMock, sessionMock } = vi.hoisted(() => ({
   apiMock: vi.fn(),
@@ -36,6 +42,9 @@ const service = {
   durationMinutes: 30,
   category: null,
   active: true,
+  requiresAdvance: false,
+  advanceKind: null,
+  advanceValue: null,
 };
 
 function makeDto(overrides: Record<string, unknown> = {}) {
@@ -55,6 +64,12 @@ function makeDto(overrides: Record<string, unknown> = {}) {
     origin: 'admin',
     notes: null,
     cancellationReason: null,
+    paymentMethodType: null,
+    advanceAmountCents: null,
+    paymentReference: null,
+    paymentProofUrl: null,
+    paymentSubmittedAt: null,
+    notifications: [],
     service: { id: 'svc-corte', name: 'Corte de cabello' },
     specialist: { id: 'res-ana', name: 'Ana' },
     ...overrides,
@@ -68,16 +83,16 @@ const input = {
   startAt: '2026-06-03T10:00:00Z',
 };
 
-describe('appointment actions (feature 011 — remote-only)', () => {
+describe('appointment actions (feature 011/017 — remote-only)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionMock.getEffectiveSession.mockResolvedValue(admin);
     sessionMock.getAccessToken.mockResolvedValue('token-test');
     apiMock.mockImplementation(async (document: unknown) => {
       if (document === MyServicesDocument) return { ok: true, data: { myServices: [service] } };
-      if (document === CreateAppointmentDocument)
-        return { ok: true, data: { createAppointment: makeDto() } };
-      if (document === AppointmentDocument) return { ok: true, data: { appointment: makeDto() } };
+      if (document === CreateMyAppointmentDocument)
+        return { ok: true, data: { createMyAppointment: makeDto() } };
+      if (document === MyAppointmentDocument) return { ok: true, data: { myAppointment: makeDto() } };
       if (document === CancelAppointmentDocument)
         return { ok: true, data: { cancelAppointment: makeDto({ status: AppointmentStatus.Cancelled }) } };
       if (document === UpdateAppointmentStatusDocument)
@@ -85,17 +100,25 @@ describe('appointment actions (feature 011 — remote-only)', () => {
           ok: true,
           data: { updateAppointmentStatus: makeDto({ status: AppointmentStatus.Confirmed }) },
         };
+      if (document === RescheduleAppointmentDocument)
+        return {
+          ok: true,
+          data: {
+            rescheduleAppointment: makeDto({ startAt: '2026-06-04T09:00:00.000Z' }),
+          },
+        };
       return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected document' } };
     });
   });
 
-  it('creates an appointment through the API and maps the result', async () => {
+  it('creates a manual appointment through the API and maps the result', async () => {
     const result = await createAppointment(input);
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.resourceId).toBe('res-ana');
       expect(result.data.status).toBe('pending');
       expect(result.data.appliedAmountCents).toBe(2000);
+      expect(result.data.payment).toBeNull();
     }
   });
 
@@ -137,16 +160,30 @@ describe('appointment actions (feature 011 — remote-only)', () => {
   it('changes status through the API with the mapped enum', async () => {
     const result = await changeAppointmentStatus({ appointmentId: 'apt-1', status: 'confirmed' });
     expect(result.ok).toBe(true);
-    expect(apiMock).toHaveBeenCalledWith(UpdateAppointmentStatusDocument, {
-      id: 'apt-1',
-      status: AppointmentStatus.Confirmed,
-    });
+    expect(apiMock).toHaveBeenCalledWith(
+      UpdateAppointmentStatusDocument,
+      { id: 'apt-1', status: AppointmentStatus.Confirmed },
+      expect.anything(),
+    );
   });
 
   it('rejects statuses the provider cannot target', async () => {
     const result = await changeAppointmentStatus({ appointmentId: 'apt-1', status: 'checked-in' });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('reschedules through the API with an ISO instant', async () => {
+    const result = await rescheduleAppointment({
+      appointmentId: 'apt-1',
+      startAt: '2026-06-04T09:00:00.000Z',
+    });
+    expect(result.ok).toBe(true);
+    expect(apiMock).toHaveBeenCalledWith(
+      RescheduleAppointmentDocument,
+      { input: { id: 'apt-1', startAt: '2026-06-04T09:00:00.000Z' } },
+      expect.anything(),
+    );
   });
 
   it('forbids a professional touching another specialist appointment', async () => {

@@ -1,10 +1,7 @@
-import { PlaceholderPanel } from '../../../shared/components/PlaceholderPanel';
+import { ConfigurationView } from '../../../modules/configuration/ConfigurationView';
+
+export const dynamic = 'force-dynamic';
 
 export default function ConfiguracionPage() {
-  return (
-    <PlaceholderPanel
-      title="Configuración"
-      description="Ajustes del negocio, recursos, roles e integraciones del módulo."
-    />
-  );
+  return <ConfigurationView />;
 }

@@ -6,6 +6,7 @@ import {
   DeleteMyServiceDocument,
   MyServicesDocument,
   UpdateMyServiceDocument,
+  type AdvanceKind as ApiAdvanceKind,
   type MyServicesQuery,
 } from '../../shared/api/generated';
 import { getEffectiveSession } from '../../shared/auth/authServer';
@@ -43,6 +44,9 @@ function mapMyService(dto: ApiService, tenantId: string): { service: Service; ra
     category: dto.category ?? null,
     active: dto.active,
     tenantId,
+    requiresAdvance: dto.requiresAdvance,
+    advanceKind: dto.advanceKind ?? null,
+    advanceValue: dto.advanceValue ?? null,
   };
   const rate: Rate = {
     id: dto.id,
@@ -84,6 +88,9 @@ export async function createService(input: unknown): Promise<ActionResult<Servic
       durationMinutes: parsed.data.durationMinutes,
       category: toNullableText(parsed.data.category),
       active: true,
+      requiresAdvance: parsed.data.requiresAdvance,
+      advanceKind: (parsed.data.requiresAdvance ? parsed.data.advanceKind : null) as ApiAdvanceKind | null,
+      advanceValue: parsed.data.requiresAdvance ? parsed.data.advanceValue : null,
     },
   });
   if (!result.ok) return result;
@@ -108,6 +115,9 @@ export async function updateService(input: unknown): Promise<ActionResult<Servic
       priceCents: parsed.data.priceCents,
       durationMinutes: parsed.data.durationMinutes,
       category: toNullableText(parsed.data.category),
+      requiresAdvance: parsed.data.requiresAdvance,
+      advanceKind: (parsed.data.requiresAdvance ? parsed.data.advanceKind : null) as ApiAdvanceKind | null,
+      advanceValue: parsed.data.requiresAdvance ? parsed.data.advanceValue : null,
     },
   });
   if (!result.ok) return result;

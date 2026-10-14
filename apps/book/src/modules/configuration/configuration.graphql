@@ -1,0 +1,29 @@
+# Configuration (payment methods) operations — feature 017.
+
+query MyPaymentMethods {
+  myPaymentMethods {
+    id
+    tenantId
+    type
+    label
+    details
+    instructions
+    active
+  }
+}
+
+mutation UpsertPaymentMethod($input: UpsertPaymentMethodInput!) {
+  upsertPaymentMethod(input: $input) {
+    id
+    tenantId
+    type
+    label
+    details
+    instructions
+    active
+  }
+}
+
+mutation DeletePaymentMethod($id: ID!) {
+  deletePaymentMethod(id: $id)
+}

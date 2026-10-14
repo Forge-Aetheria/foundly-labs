@@ -7,9 +7,11 @@ import {
   Badge,
   Button,
   Card,
+  Chip,
   DataTable,
   Modal,
   Stack,
+  Switch,
   TextField,
   Typography,
   type DataTableColumn,
@@ -36,9 +38,21 @@ interface Draft {
   price: string;
   category: string;
   description: string;
+  requiresAdvance: boolean;
+  advanceKind: 'fixed' | 'percent' | '';
+  advanceValue: string;
 }
 
-const EMPTY_DRAFT: Draft = { name: '', duration: '', price: '', category: '', description: '' };
+const EMPTY_DRAFT: Draft = {
+  name: '',
+  duration: '',
+  price: '',
+  category: '',
+  description: '',
+  requiresAdvance: false,
+  advanceKind: '',
+  advanceValue: '',
+};
 
 function draftFrom(service: Service, rate?: Rate): Draft {
   return {
@@ -47,6 +61,14 @@ function draftFrom(service: Service, rate?: Rate): Draft {
     price: rate ? String(rate.amountCents / 100) : '',
     category: service.category ?? '',
     description: service.description ?? '',
+    requiresAdvance: service.requiresAdvance,
+    advanceKind: service.advanceKind ?? '',
+    advanceValue:
+      service.advanceValue != null
+        ? service.advanceKind === 'percent'
+          ? String(service.advanceValue)
+          : String(service.advanceValue / 100)
+        : '',
   };
 }
 
@@ -99,6 +121,13 @@ export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) 
       durationMinutes: Number(draft.duration),
       priceCents: Math.round(Number(draft.price) * 100),
       category: draft.category,
+      requiresAdvance: draft.requiresAdvance,
+      advanceKind: draft.requiresAdvance ? draft.advanceKind || null : null,
+      advanceValue: draft.requiresAdvance
+        ? draft.advanceKind === 'fixed'
+          ? Math.round(Number(draft.advanceValue) * 100)
+          : Number(draft.advanceValue)
+        : null,
     };
     const result =
       feedback?.kind === 'edit'
@@ -163,6 +192,29 @@ export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) 
         return (
           <Badge pill status="neutral">
             {formatPrice(rate?.amountCents ?? 0, rate?.currency ?? 'EUR')}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: 'advance',
+      header: 'Adelanto',
+      render: (service) => {
+        if (!service.requiresAdvance || service.advanceValue == null) {
+          return (
+            <Typography variant="caption" color="text.secondary">
+              —
+            </Typography>
+          );
+        }
+        const rate = rates.find((item) => item.serviceId === service.id);
+        const label =
+          service.advanceKind === 'percent'
+            ? `${service.advanceValue}%`
+            : formatPrice(service.advanceValue, rate?.currency ?? 'EUR');
+        return (
+          <Badge pill status="info">
+            {label}
           </Badge>
         );
       },
@@ -290,6 +342,48 @@ export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) 
               maxLength={2000}
               fullWidth
             />
+            <Switch
+              checked={draft.requiresAdvance}
+              onChange={(checked) =>
+                patch({
+                  requiresAdvance: checked,
+                  ...(checked ? {} : { advanceKind: '', advanceValue: '' }),
+                })
+              }
+              label="Requiere adelanto"
+            />
+            {draft.requiresAdvance ? (
+              <Stack spacing={1.5}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ flexWrap: 'wrap' }}
+                  aria-label="Tipo de adelanto"
+                >
+                  <Chip
+                    label="Importe fijo"
+                    selectable
+                    selected={draft.advanceKind === 'fixed'}
+                    onClick={() => patch({ advanceKind: 'fixed' })}
+                  />
+                  <Chip
+                    label="Porcentaje"
+                    selectable
+                    selected={draft.advanceKind === 'percent'}
+                    onClick={() => patch({ advanceKind: 'percent' })}
+                  />
+                </Stack>
+                <TextField
+                  label={draft.advanceKind === 'percent' ? 'Porcentaje (%)' : 'Importe (€)'}
+                  type="number"
+                  value={draft.advanceValue}
+                  onChange={(value) => patch({ advanceValue: value })}
+                  error={Boolean(fieldErrors?.advanceKind ?? fieldErrors?.advanceValue)}
+                  helperText={fieldErrors?.advanceKind ?? fieldErrors?.advanceValue}
+                  fullWidth
+                />
+              </Stack>
+            ) : null}
             <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 1 }}>
               <Button variant="secondary" onClick={() => setFeedback(null)} disabled={saving}>
                 Cancelar

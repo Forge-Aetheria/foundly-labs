@@ -51,6 +51,9 @@ describe('services actions (feature 016, US5)', () => {
         durationMinutes: 30,
         category: null,
         active: true,
+        requiresAdvance: false,
+        advanceKind: null,
+        advanceValue: null,
       },
     });
     expect(result.ok).toBe(true);

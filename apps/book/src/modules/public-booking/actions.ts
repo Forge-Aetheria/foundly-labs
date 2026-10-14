@@ -4,21 +4,26 @@ import { z } from 'zod';
 import { apiRequest } from '../../shared/api/client';
 import {
   AppointmentStatus,
-  AppointmentsDocument,
   AvailabilityDocument,
   CreateAppointmentDocument,
   GalleryDocument,
+  PublicAppointmentsDocument,
+  PublicPaymentMethodsDocument,
   ReviewsDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
   TimeBlocksDocument,
-  type AppointmentsQuery,
+  type CreateAppointmentMutation,
+  type PublicAppointmentsQuery,
   type GalleryQuery,
+  type PaymentMethodType as ApiPaymentMethodType,
+  type PublicPaymentMethodsQuery,
   type SpecialistsQuery,
 } from '../../shared/api/generated';
 import { computeAvailability } from '../../shared/utils/computeAvailability';
 import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
 import type { Appointment } from '../../shared/types/appointments';
+import type { PaymentMethod } from '../../shared/types/payments';
 import { GALLERY_CATEGORIES, GALLERY_CATEGORY_LABELS } from '../../shared/types/tenancy';
 import type { GalleryCategory } from '../../shared/types/tenancy';
 import type {
@@ -55,6 +60,10 @@ const bookSchema = z.object({
     .max(20)
     .regex(/^[0-9+\- ]+$/),
   notes: z.string().max(2000).optional(),
+  paymentMethodType: z.enum(['mobile_payment', 'bank_transfer', 'binance']).optional(),
+  advanceAmountCents: z.number().int().positive().optional(),
+  paymentReference: z.string().min(1).max(200).optional(),
+  paymentProofUrl: z.string().url().optional(),
 });
 export type BookPublicInput = z.infer<typeof bookSchema>;
 
@@ -72,7 +81,8 @@ export interface SlotDay {
   slots: { startAt: string; endAt: string }[];
 }
 
-type ApiAppointment = AppointmentsQuery['appointments'][number];
+type ApiAppointment = CreateAppointmentMutation['createAppointment'];
+type ApiPublicAppointment = PublicAppointmentsQuery['appointments'][number];
 
 function mapAppointmentStatus(status: AppointmentStatus): Appointment['status'] {
   switch (status) {
@@ -105,8 +115,36 @@ function mapAppointment(dto: ApiAppointment): Appointment {
     appliedCurrency: dto.appliedCurrency,
     origin: dto.origin === 'admin' ? 'admin' : 'online',
     cancellationReason: dto.cancellationReason ?? null,
+    payment: dto.paymentMethodType
+      ? {
+          methodType: dto.paymentMethodType,
+          amountCents: dto.advanceAmountCents ?? 0,
+          reference: dto.paymentReference ?? '',
+          proofUrl: dto.paymentProofUrl ?? '',
+          submittedAt: dto.paymentSubmittedAt ?? '',
+        }
+      : null,
+    notifications: (dto.notifications ?? []).map((notification) => ({
+      id: notification.id,
+      kind: notification.kind,
+      message: notification.message,
+      channel: notification.channel,
+      createdAt: notification.createdAt,
+    })),
     createdAt: dto.startAt,
     updatedAt: dto.startAt,
+  };
+}
+
+function mapPaymentMethod(dto: PublicPaymentMethodsQuery['paymentMethods'][number]): PaymentMethod {
+  return {
+    id: dto.id,
+    tenantId: dto.tenantId,
+    type: dto.type,
+    label: dto.label ?? null,
+    details: dto.details ?? null,
+    instructions: dto.instructions ?? null,
+    active: dto.active,
   };
 }
 
@@ -187,6 +225,9 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
       priceCents: service.priceCents,
       currency: service.currency,
       category: service.category ?? undefined,
+      requiresAdvance: service.requiresAdvance,
+      advanceKind: service.advanceKind ?? null,
+      advanceValue: service.advanceValue ?? null,
     }));
 
   const specialistsResult = await apiRequest(SpecialistsDocument, { tenantId: null, tenantSlug: slug });
@@ -265,7 +306,7 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
 
   const [availabilityResult, appointmentsResult, blocksResult] = await Promise.all([
     apiRequest(AvailabilityDocument, { tenantId, tenantSlug: null, specialistId: resourceId }),
-    apiRequest(AppointmentsDocument, {
+    apiRequest(PublicAppointmentsDocument, {
       tenantId,
       tenantSlug: null,
       startDate: parsed.data.startDate,
@@ -287,7 +328,7 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
       }))
     : [];
   const appointments = appointmentsResult.ok
-    ? appointmentsResult.data.appointments.map((dto) => ({
+    ? appointmentsResult.data.appointments.map((dto: ApiPublicAppointment) => ({
         startAt: new Date(dto.startAt),
         endAt: new Date(dto.endAt),
         status: mapAppointmentStatus(dto.status),
@@ -319,6 +360,15 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
       endAt: slot.endAt.toISOString(),
     })),
   }));
+}
+
+/** Public: the business's ACTIVE payment methods (advance step, feature 017). */
+export async function listPublicPaymentMethods(
+  tenantSlug: string,
+): Promise<ActionResult<PaymentMethod[]>> {
+  const result = await apiRequest(PublicPaymentMethodsDocument, { tenantId: null, tenantSlug });
+  if (!result.ok) return result;
+  return ok(result.data.paymentMethods.map(mapPaymentMethod));
 }
 
 /** Guest booking: creates a real `origin: 'online'` appointment through the API. */
@@ -354,6 +404,10 @@ export async function bookPublicAppointment(input: unknown): Promise<ActionResul
       endAt: end.toISOString(),
       origin: 'online',
       notes: parsed.data.notes ?? null,
+      paymentMethodType: (parsed.data.paymentMethodType ?? null) as ApiPaymentMethodType | null,
+      advanceAmountCents: parsed.data.advanceAmountCents ?? null,
+      paymentReference: parsed.data.paymentReference ?? null,
+      paymentProofUrl: parsed.data.paymentProofUrl ?? null,
     },
   });
   if (!created.ok) {

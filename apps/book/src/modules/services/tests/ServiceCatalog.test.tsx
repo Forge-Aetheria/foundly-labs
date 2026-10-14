@@ -30,6 +30,9 @@ const services = [
     category: null,
     active: true,
     tenantId: 'ten-ana',
+    requiresAdvance: false,
+    advanceKind: null,
+    advanceValue: null,
   },
   {
     id: 's2',
@@ -40,6 +43,9 @@ const services = [
     category: null,
     active: false,
     tenantId: 'ten-ana',
+    requiresAdvance: false,
+    advanceKind: null,
+    advanceValue: null,
   },
 ];
 
@@ -131,6 +137,9 @@ describe('ServiceCatalog (admin services)', () => {
       durationMinutes: 30,
       priceCents: 2000,
       category: '',
+      requiresAdvance: false,
+      advanceKind: null,
+      advanceValue: null,
     });
     expect(await screen.findByText('Servicio creado.')).toBeInTheDocument();
   });

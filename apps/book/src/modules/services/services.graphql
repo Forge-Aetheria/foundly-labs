@@ -1,4 +1,4 @@
-# Services module operations — feature 011 (colocated with the module).
+# Services module operations — feature 011 (advance rule from 017, colocated with the module).
 
 query MyServices($active: Boolean) {
   myServices(active: $active) {
@@ -9,6 +9,9 @@ query MyServices($active: Boolean) {
     durationMinutes
     category
     active
+    requiresAdvance
+    advanceKind
+    advanceValue
   }
 }
 
@@ -21,6 +24,9 @@ query MyService($id: ID!) {
     durationMinutes
     category
     active
+    requiresAdvance
+    advanceKind
+    advanceValue
   }
 }
 
@@ -33,6 +39,9 @@ mutation CreateMyService($input: CreateMyServiceInput!) {
     durationMinutes
     category
     active
+    requiresAdvance
+    advanceKind
+    advanceValue
   }
 }
 
@@ -45,6 +54,9 @@ mutation UpdateMyService($id: ID!, $input: UpdateMyServiceInput!) {
     durationMinutes
     category
     active
+    requiresAdvance
+    advanceKind
+    advanceValue
   }
 }
 

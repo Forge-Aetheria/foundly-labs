@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Badge,
@@ -15,8 +15,21 @@ import {
   type BadgeStatus,
   type DataTableColumn,
 } from '@foundly/ui';
-import type { Appointment, Resource, Service } from '../../../shared/types/appointments';
-import { useCreateAppointment } from '../hooks';
+import type {
+  Appointment,
+  AppointmentNotification,
+  Resource,
+  Service,
+} from '../../../shared/types/appointments';
+import type { AdvancePayment } from '../../../shared/types/payments';
+import { PAYMENT_METHOD_LABELS } from '../../../shared/types/payments';
+import { formatPrice } from '../../../shared/utils/format';
+import {
+  useCancelAppointment,
+  useChangeAppointmentStatus,
+  useCreateAppointment,
+  useRescheduleAppointment,
+} from '../hooks';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
@@ -31,10 +44,15 @@ export interface AgendaRow {
   durationMinutes: number;
   resourceName: string;
   status: string;
+  currency: string;
+  payment: AdvancePayment | null;
+  notifications: AppointmentNotification[];
 }
 
 export interface AgendaProps {
   appointments: AgendaRow[];
+  /** Applied date range (server state); edited via `router.push`. */
+  range: { from: string; to: string };
   /** Tenant catalog (real services) for the create flow. */
   services?: Service[];
   /** Tenant professionals (real specialists) for the create flow. */
@@ -77,27 +95,51 @@ function dayKey(iso: string): string {
   return iso.slice(0, 10);
 }
 
-function dateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+function ProofPreview({ url }: { url: string }) {
+  const [broken, setBroken] = useState(false);
+  return (
+    <Stack spacing={0.5}>
+      <Typography variant="body2">Comprobante:</Typography>
+      {broken ? null : (
+        <img
+          src={url}
+          alt="Comprobante del adelanto"
+          style={{ maxWidth: 220, borderRadius: 8, display: 'block' }}
+          onError={() => setBroken(true)}
+        />
+      )}
+      <a href={url} target="_blank" rel="noreferrer">
+        Abrir comprobante
+      </a>
+    </Stack>
+  );
 }
 
-type ModalState = { kind: 'create' } | { kind: 'detail'; row: AgendaRow } | null;
+type ModalState =
+  | { kind: 'create' }
+  | { kind: 'detail'; row: AgendaRow }
+  | { kind: 'reschedule'; row: AgendaRow }
+  | { kind: 'reject'; row: AgendaRow }
+  | null;
 
-/** Agenda view: header + day/status filters + appointments table (Clean Light UI). */
-export function Agenda({ appointments, services = [], resources = [], error }: AgendaProps) {
+/** Agenda view: range filter + appointments table + lifecycle controls (Clean Light UI). */
+export function Agenda({ appointments, range, services = [], resources = [], error }: AgendaProps) {
   const router = useRouter();
   const toast = useToast();
   const createAppointment = useCreateAppointment();
+  const changeStatus = useChangeAppointmentStatus();
+  const cancelAppointment = useCancelAppointment();
+  const rescheduleAppointment = useRescheduleAppointment();
   const { pending: saving, run } = useAsyncAction();
   const [rows, setRows] = useState<AgendaRow[]>(appointments);
-  const [mounted, setMounted] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [from, setFrom] = useState(range.from);
+  const [to, setTo] = useState(range.to);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [modal, setModal] = useState<ModalState>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('No disponible');
+  const [rescheduleForm, setRescheduleForm] = useState({ date: '', time: '09:00' });
   const [form, setForm] = useState({
     clientName: '',
     clientEmail: '',
@@ -108,32 +150,89 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
     time: '09:00',
   });
 
-  useEffect(() => {
-    setSelectedDate(dateKey(new Date()));
-    setMounted(true);
-  }, []);
-
-  const days = useMemo(() => {
-    const base = new Date();
-    return Array.from({ length: 7 }, (_, index) => {
-      const day = new Date(base.getFullYear(), base.getMonth(), base.getDate() + index);
-      return dateKey(day);
-    });
-  }, []);
-
-  const visible = useMemo(() => {
+  const visible = rows.filter((row) => {
     const statusRule = STATUS_FILTERS.find((filter) => filter.key === statusFilter);
-    return rows.filter(
-      (row) =>
-        selectedDate !== null &&
-        dayKey(row.startAt) === selectedDate &&
-        (statusRule?.match(row.status) ?? true),
+    return statusRule?.match(row.status) ?? true;
+  });
+
+  function updateRow(updated: Appointment) {
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === updated.id
+          ? {
+              ...row,
+              startAt: updated.startAt,
+              endAt: updated.endAt,
+              status: updated.status,
+              payment: updated.payment,
+              notifications: updated.notifications,
+            }
+          : row,
+      ),
     );
-  }, [rows, selectedDate, statusFilter]);
+  }
+
+  function applyRange() {
+    const nextTo = to < from ? from : to;
+    setTo(nextTo);
+    router.push(`/admin/agenda?from=${from}&to=${nextTo}`);
+  }
+
+  async function accept(row: AgendaRow) {
+    setActionError(null);
+    const result = await run(() =>
+      changeStatus({ appointmentId: row.id, status: 'confirmed' }),
+    );
+    if (!result) return;
+    if (!result.ok) {
+      setActionError(result.error.message);
+      return;
+    }
+    updateRow(result.data);
+    toast.success('Cita confirmada.');
+    router.refresh();
+  }
+
+  async function confirmReject(row: AgendaRow) {
+    setActionError(null);
+    const result = await run(() =>
+      cancelAppointment({ appointmentId: row.id, reason: rejectReason.trim() || 'No disponible' }),
+    );
+    if (!result) return;
+    if (!result.ok) {
+      setActionError(result.error.message);
+      return;
+    }
+    updateRow(result.data);
+    setModal(null);
+    toast.success('Cita rechazada.');
+    router.refresh();
+  }
+
+  async function confirmReschedule(row: AgendaRow) {
+    setActionError(null);
+    const start = new Date(`${rescheduleForm.date}T${rescheduleForm.time}:00`);
+    if (!rescheduleForm.date || Number.isNaN(start.getTime())) {
+      setActionError('Selecciona una fecha y una hora válidas.');
+      return;
+    }
+    const result = await run(() =>
+      rescheduleAppointment({ appointmentId: row.id, startAt: start.toISOString() }),
+    );
+    if (!result) return;
+    if (!result.ok) {
+      setActionError(result.error.message);
+      return;
+    }
+    updateRow(result.data);
+    setModal(null);
+    toast.success('Cita reprogramada.');
+    router.refresh();
+  }
 
   function openCreate() {
     setCreateError(null);
-    setForm((prev) => ({ ...prev, date: selectedDate ?? '' }));
+    setForm((prev) => ({ ...prev, date: from }));
     setModal({ kind: 'create' });
   }
 
@@ -178,6 +277,9 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
       durationMinutes: created.appliedDurationMinutes,
       resourceName: resource?.name ?? '—',
       status: created.status,
+      currency: created.appliedCurrency,
+      payment: created.payment,
+      notifications: created.notifications,
     };
     setRows((prev) => [newRow, ...prev]);
     setForm({
@@ -199,9 +301,11 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
       key: 'time',
       header: 'Hora',
       render: (row) => (
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          {formatTime(row.startAt)}
-        </Typography>
+        <Stack spacing={0.25}>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            {dayKey(row.startAt)} · {formatTime(row.startAt)}
+          </Typography>
+        </Stack>
       ),
     },
     {
@@ -251,9 +355,16 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
       header: 'Acciones',
       align: 'right',
       render: (row) => (
-        <Button variant="secondary" onClick={() => setModal({ kind: 'detail', row })}>
-          Detalles
-        </Button>
+        <Stack direction="row" spacing={1} justifyContent="flex-end">
+          {row.status === 'pending' ? (
+            <Button variant="primary" onClick={() => void accept(row)} disabled={saving}>
+              Aceptar
+            </Button>
+          ) : null}
+          <Button variant="secondary" onClick={() => setModal({ kind: 'detail', row })}>
+            Detalles
+          </Button>
+        </Stack>
       ),
     },
   ];
@@ -271,45 +382,37 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
             </Button>
           </Stack>
 
-          {mounted && selectedDate ? (
-            <Stack spacing={1.5}>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                {days.map((day, index) => (
-                  <Button
-                    key={day}
-                    variant={selectedDate === day ? 'primary' : 'secondary'}
-                    onClick={() => setSelectedDate(day)}
-                  >
-                    {index === 0 ? 'Hoy' : day}
-                  </Button>
-                ))}
-              </Stack>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                {STATUS_FILTERS.map((filter) => (
-                  <Button
-                    key={filter.key}
-                    variant={statusFilter === filter.key ? 'primary' : 'secondary'}
-                    onClick={() => setStatusFilter(filter.key)}
-                  >
-                    {filter.label}
-                  </Button>
-                ))}
-              </Stack>
-            </Stack>
-          ) : null}
+          <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <TextField label="Desde" type="date" value={from} onChange={setFrom} />
+            <TextField label="Hasta" type="date" value={to} onChange={setTo} />
+            <Button variant="secondary" onClick={applyRange}>
+              Aplicar
+            </Button>
+          </Stack>
+
+          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+            {STATUS_FILTERS.map((filter) => (
+              <Button
+                key={filter.key}
+                variant={statusFilter === filter.key ? 'primary' : 'secondary'}
+                onClick={() => setStatusFilter(filter.key)}
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </Stack>
         </Stack>
       }
     >
       <ApiErrorDialog title="No se pudo cargar la agenda" message={error} />
-      {mounted && selectedDate ? (
-        <DataTable
-          columns={columns}
-          rows={visible}
-          dense
-          emptyMessage="No hay citas en este periodo."
-          getRowKey={(row) => row.id}
-        />
-      ) : null}
+      <ApiErrorDialog title="No se pudo completar la acción" message={actionError} />
+      <DataTable
+        columns={columns}
+        rows={visible}
+        dense
+        emptyMessage="No hay citas en este periodo."
+        getRowKey={(row) => row.id}
+      />
 
       {modal?.kind === 'create' ? (
         <Modal open onClose={() => setModal(null)} title="Nueva cita">
@@ -418,9 +521,123 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
             <Badge pill status={STATUS_BADGE[modal.row.status] ?? 'neutral'}>
               {STATUS_LABEL[modal.row.status] ?? modal.row.status}
             </Badge>
-            <Stack direction="row" justifyContent="flex-end">
+
+            {modal.row.payment ? (
+              <Card sx={{ p: 2 }}>
+                <Stack spacing={0.5}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Adelanto
+                  </Typography>
+                  <Typography variant="body2">
+                    Método: {PAYMENT_METHOD_LABELS[modal.row.payment.methodType]}
+                  </Typography>
+                  <Typography variant="body2">
+                    Monto: {formatPrice(modal.row.payment.amountCents, modal.row.currency)}
+                  </Typography>
+                  <Typography variant="body2">
+                    Referencia: {modal.row.payment.reference}
+                  </Typography>
+                  <ProofPreview url={modal.row.payment.proofUrl} />
+                </Stack>
+              </Card>
+            ) : null}
+
+            <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ flexWrap: 'wrap' }}>
+              {modal.row.status === 'pending' ? (
+                <Button variant="secondary" onClick={() => void accept(modal.row)} disabled={saving}>
+                  Aceptar
+                </Button>
+              ) : null}
+              {modal.row.status === 'pending' || modal.row.status === 'confirmed' ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setActionError(null);
+                      setRejectReason('No disponible');
+                      setModal({ kind: 'reject', row: modal.row });
+                    }}
+                    disabled={saving}
+                  >
+                    Rechazar
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setActionError(null);
+                      setRescheduleForm({
+                        date: dayKey(modal.row.startAt),
+                        time: formatTime(modal.row.startAt),
+                      });
+                      setModal({ kind: 'reschedule', row: modal.row });
+                    }}
+                    disabled={saving}
+                  >
+                    Reagendar
+                  </Button>
+                </>
+              ) : null}
               <Button variant="primary" onClick={() => setModal(null)}>
                 Cerrar
+              </Button>
+            </Stack>
+          </Stack>
+        </Modal>
+      ) : null}
+
+      {modal?.kind === 'reject' ? (
+        <Modal open onClose={() => setModal(null)} title="Rechazar cita">
+          <Stack spacing={2}>
+            <Typography variant="body2">
+              ¿Rechazar la cita de {modal.row.clientName}? El cliente recibirá una notificación.
+            </Typography>
+            <TextField label="Motivo" value={rejectReason} onChange={setRejectReason} fullWidth />
+            {actionError ? (
+              <Typography variant="body2" color="error" role="alert">
+                {actionError}
+              </Typography>
+            ) : null}
+            <Stack direction="row" justifyContent="flex-end" spacing={1}>
+              <Button variant="secondary" onClick={() => setModal(null)} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={() => void confirmReject(modal.row)} loading={saving}>
+                Rechazar
+              </Button>
+            </Stack>
+          </Stack>
+        </Modal>
+      ) : null}
+
+      {modal?.kind === 'reschedule' ? (
+        <Modal open onClose={() => setModal(null)} title="Reagendar cita">
+          <Stack spacing={2}>
+            <Typography variant="body2">
+              Nueva fecha y hora para {modal.row.clientName}.
+            </Typography>
+            <TextField
+              label="Fecha"
+              type="date"
+              value={rescheduleForm.date}
+              onChange={(value) => setRescheduleForm((prev) => ({ ...prev, date: value }))}
+            />
+            <TextField
+              label="Hora"
+              type="time"
+              value={rescheduleForm.time}
+              onChange={(value) => setRescheduleForm((prev) => ({ ...prev, time: value }))}
+            />
+            {actionError ? (
+              <Typography variant="body2" color="error" role="alert">
+                {actionError}
+              </Typography>
+            ) : null}
+            <Stack direction="row" justifyContent="flex-end" spacing={1}>
+              <Button variant="secondary" onClick={() => setModal(null)} disabled={saving}>
+                Cancelar
+              </Button>
+              <Button variant="primary" onClick={() => void confirmReschedule(modal.row)} loading={saving}>
+                Reagendar
               </Button>
             </Stack>
           </Stack>

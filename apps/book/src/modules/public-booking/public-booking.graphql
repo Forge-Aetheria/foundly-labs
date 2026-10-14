@@ -1,0 +1,77 @@
+# Public booking operations — feature 011/017 (colocated with the module).
+
+query PublicAppointments(
+  $tenantId: String
+  $tenantSlug: String
+  $startDate: String
+  $endDate: String
+  $specialistId: String
+  $status: AppointmentStatus
+) {
+  appointments(
+    tenantId: $tenantId
+    tenantSlug: $tenantSlug
+    startDate: $startDate
+    endDate: $endDate
+    specialistId: $specialistId
+    status: $status
+  ) {
+    id
+    specialistId
+    startAt
+    endAt
+    status
+  }
+}
+
+query PublicPaymentMethods($tenantId: ID, $tenantSlug: String) {
+  paymentMethods(tenantId: $tenantId, tenantSlug: $tenantSlug) {
+    id
+    tenantId
+    type
+    label
+    details
+    instructions
+    active
+  }
+}
+
+mutation CreateAppointment($input: CreateAppointmentInput!) {
+  createAppointment(input: $input) {
+    id
+    tenantId
+    serviceId
+    specialistId
+    clientName
+    clientContact
+    startAt
+    endAt
+    status
+    appliedDurationMinutes
+    appliedAmountCents
+    appliedCurrency
+    origin
+    notes
+    cancellationReason
+    paymentMethodType
+    advanceAmountCents
+    paymentReference
+    paymentProofUrl
+    paymentSubmittedAt
+    notifications {
+      id
+      kind
+      message
+      channel
+      createdAt
+    }
+    service {
+      id
+      name
+    }
+    specialist {
+      id
+      name
+    }
+  }
+}

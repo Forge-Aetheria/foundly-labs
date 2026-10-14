@@ -1,4 +1,5 @@
 import type { BusinessHours } from '../../../shared/types/tenancy';
+import type { AdvanceKind } from '../../../shared/types/payments';
 
 /** Public-facing service card data (current rate resolved server-side). */
 export interface PublicService {
@@ -10,6 +11,10 @@ export interface PublicService {
   currency: string;
   /** Catalog category used to group services on the provider landing. */
   category?: string;
+  /** Whether the service requires an advance before confirming (017). */
+  requiresAdvance: boolean;
+  advanceKind: AdvanceKind | null;
+  advanceValue: number | null;
 }
 
 /** A specialist shown on the portal (an active resource of the tenant). */

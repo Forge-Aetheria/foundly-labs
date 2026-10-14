@@ -1,25 +1,25 @@
 'use server';
 
-import { apiRequest } from '../../shared/api/client';
 import { apiRequestAdmin } from '../../shared/api/admin-request';
 import {
-  AppointmentDocument,
   AppointmentStatus,
-  AppointmentsDocument,
   CancelAppointmentDocument,
-  CreateAppointmentDocument,
-  MyServicesDocument,
+  CreateMyAppointmentDocument,
+  MyAppointmentDocument,
+  MyAppointmentsDocument,
+  RescheduleAppointmentDocument,
   UpdateAppointmentStatusDocument,
-  type AppointmentsQuery,
+  MyServicesDocument,
+  type MyAppointmentsQuery,
 } from '../../shared/api/generated';
 import { getEffectiveSession } from '../../shared/auth/authServer';
 import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
 import type { Appointment } from '../../shared/types/appointments';
-import { cancelAppointmentSchema, changeStatusSchema, createAppointmentSchema } from './utils/schemas';
+import { cancelAppointmentSchema, changeStatusSchema, createAppointmentSchema, rescheduleAppointmentSchema } from './utils/schemas';
 
 /**
  * Agenda module — server data access (feature 011; constitution §5.VI).
- * Codegen documents/types only. The API owns conflicts/lifecycle.
+ * Codegen documents/types only. The API owns conflicts/lifecycle; reads/writes are auth-scoped (017).
  */
 
 export interface AgendaFilter {
@@ -28,7 +28,7 @@ export interface AgendaFilter {
   resourceId?: string;
 }
 
-type ApiAppointment = AppointmentsQuery['appointments'][number];
+type ApiAppointment = MyAppointmentsQuery['myAppointments'][number];
 
 const MINUTE_MS = 60_000;
 
@@ -74,35 +74,46 @@ function mapAppointment(dto: ApiAppointment): Appointment {
     appliedCurrency: dto.appliedCurrency,
     origin: dto.origin === 'admin' ? 'admin' : 'online',
     cancellationReason: dto.cancellationReason ?? null,
-    createdAt: dto.startAt, // not served by the API surface (data-model §5 gap)
+    payment: dto.paymentMethodType
+      ? {
+          methodType: dto.paymentMethodType,
+          amountCents: dto.advanceAmountCents ?? 0,
+          reference: dto.paymentReference ?? '',
+          proofUrl: dto.paymentProofUrl ?? '',
+          submittedAt: dto.paymentSubmittedAt ?? '',
+        }
+      : null,
+    notifications: dto.notifications.map((notification) => ({
+      id: notification.id,
+      kind: notification.kind,
+      message: notification.message,
+      channel: notification.channel,
+      createdAt: notification.createdAt,
+    })),
+    createdAt: dto.startAt,
     updatedAt: dto.startAt,
   };
 }
 
-/** Appointments inside the window, scoped to the tenant. SERVER-ONLY. */
-export async function listAgenda(
-  filter: AgendaFilter,
-  tenantId: string,
-): Promise<ActionResult<Appointment[]>> {
-  const result = await apiRequest(AppointmentsDocument, {
-    tenantId,
-    tenantSlug: null,
-    startDate: filter.from.toISOString(),
-    endDate: filter.to.toISOString(),
+/** Appointments inside the window, scoped to the authenticated tenant. SERVER-ONLY. */
+export async function listAgenda(filter: AgendaFilter): Promise<ActionResult<Appointment[]>> {
+  const result = await apiRequestAdmin(MyAppointmentsDocument, {
+    from: filter.from.toISOString(),
+    to: filter.to.toISOString(),
     specialistId: filter.resourceId ?? null,
     status: null,
   });
   if (!result.ok) return result;
-  return ok(result.data.appointments.map(mapAppointment));
+  return ok(result.data.myAppointments.map(mapAppointment));
 }
 
 async function loadAuthorizedAppointment(appointmentId: string): Promise<ActionResult<ApiAppointment>> {
   const session = await getEffectiveSession();
   if (!session) return fail('UNAUTHENTICATED', 'Se requiere una sesión de Foundly Pass.');
-  const found = await apiRequest(AppointmentDocument, { id: appointmentId });
+  const found = await apiRequestAdmin(MyAppointmentDocument, { id: appointmentId });
   if (!found.ok) return found;
-  if (!found.data.appointment) return fail('NOT_FOUND', 'Cita no encontrada.');
-  const appointment = found.data.appointment;
+  if (!found.data.myAppointment) return fail('NOT_FOUND', 'Cita no encontrada.');
+  const appointment = found.data.myAppointment;
   if (session.role === 'professional' && session.resourceId !== appointment.specialistId) {
     return fail('FORBIDDEN', 'Solo puedes gestionar tu propia agenda.');
   }
@@ -129,9 +140,8 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Ap
 
   const startAt = new Date(parsed.data.startAt);
   const endAt = new Date(startAt.getTime() + service.durationMinutes * MINUTE_MS);
-  const created = await apiRequest(CreateAppointmentDocument, {
+  const created = await apiRequestAdmin(CreateMyAppointmentDocument, {
     input: {
-      tenantId: session.tenantId,
       serviceId: service.id,
       specialistId: parsed.data.resourceId,
       clientName: parsed.data.clientName,
@@ -143,7 +153,7 @@ export async function createAppointment(input: unknown): Promise<ActionResult<Ap
     },
   });
   if (!created.ok) return created;
-  return ok(mapAppointment(created.data.createAppointment));
+  return ok(mapAppointment(created.data.createMyAppointment));
 }
 
 export async function cancelAppointment(input: unknown): Promise<ActionResult<Appointment>> {
@@ -153,7 +163,7 @@ export async function cancelAppointment(input: unknown): Promise<ActionResult<Ap
   }
   const auth = await loadAuthorizedAppointment(parsed.data.appointmentId);
   if (!auth.ok) return auth;
-  const cancelled = await apiRequest(CancelAppointmentDocument, {
+  const cancelled = await apiRequestAdmin(CancelAppointmentDocument, {
     id: parsed.data.appointmentId,
     reason: parsed.data.reason,
   });
@@ -172,10 +182,24 @@ export async function changeAppointmentStatus(input: unknown): Promise<ActionRes
   }
   const auth = await loadAuthorizedAppointment(parsed.data.appointmentId);
   if (!auth.ok) return auth;
-  const updated = await apiRequest(UpdateAppointmentStatusDocument, {
+  const updated = await apiRequestAdmin(UpdateAppointmentStatusDocument, {
     id: parsed.data.appointmentId,
     status: apiStatus,
   });
   if (!updated.ok) return updated;
   return ok(mapAppointment(updated.data.updateAppointmentStatus));
+}
+
+export async function rescheduleAppointment(input: unknown): Promise<ActionResult<Appointment>> {
+  const parsed = rescheduleAppointmentSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail('VALIDATION_ERROR', 'Datos de reprogramación inválidos.', zodFields(parsed.error));
+  }
+  const auth = await loadAuthorizedAppointment(parsed.data.appointmentId);
+  if (!auth.ok) return auth;
+  const updated = await apiRequestAdmin(RescheduleAppointmentDocument, {
+    input: { id: parsed.data.appointmentId, startAt: parsed.data.startAt },
+  });
+  if (!updated.ok) return updated;
+  return ok(mapAppointment(updated.data.rescheduleAppointment));
 }

@@ -3,6 +3,8 @@
  * Pure TypeScript — no persistence technology is defined or implied here.
  */
 
+import type { AdvanceKind, AdvancePayment } from './payments';
+
 export type AppointmentStatus =
   'pending' | 'confirmed' | 'checked-in' | 'completed' | 'cancelled' | 'no-show';
 
@@ -34,6 +36,12 @@ export interface Service {
   active: boolean;
   /** The tenant (business) that owns this service. */
   tenantId: string;
+  /** Whether the service requires an advance before confirming (feature 017). */
+  requiresAdvance: boolean;
+  /** How the advance is expressed when required. */
+  advanceKind: AdvanceKind | null;
+  /** Cents when `advanceKind` is `fixed`; 1–100 when `percent`. */
+  advanceValue: number | null;
 }
 
 export interface Rate {
@@ -82,8 +90,21 @@ export interface Appointment {
   appliedCurrency: string;
   origin: 'admin' | 'online';
   cancellationReason: string | null;
+  /** Advance payment submitted with the booking, when the service required one (017). */
+  payment: AdvancePayment | null;
+  /** Recorded client notifications (simulated) for status changes/reschedules (017). */
+  notifications: AppointmentNotification[];
   createdAt: string;
   updatedAt: string;
+}
+
+/** A recorded, simulated message for the client produced by a status change or reschedule (017). */
+export interface AppointmentNotification {
+  id: string;
+  kind: string;
+  message: string;
+  channel: string;
+  createdAt: string;
 }
 
 export interface AppointmentAuditEntry {

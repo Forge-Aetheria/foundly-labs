@@ -5,14 +5,23 @@ import { Card, Modal, Stack, Typography } from '@foundly/ui';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
 import { useBookAppointment } from '../hooks';
 import { formatPrice } from '../../../shared/utils/format';
-import type { ClientDetails } from '../utils/schemas';
+import type { ClientDetails, AdvancePaymentDraft } from '../utils/schemas';
 import type { PublicService, PublicSpecialist } from '../utils/types';
+import { CalendarStep } from './CalendarStep';
 import { ClientStep } from './ClientStep';
 import { ConfirmStep } from './ConfirmStep';
-import { SlotStep } from './SlotStep';
+import { PaymentStep } from './PaymentStep';
 import { SpecialistStep } from './SpecialistStep';
 
-const STEP_LABELS = ['Especialista', 'Fecha y hora', 'Tus datos', 'Confirmación'] as const;
+type StepKey = 'specialist' | 'slot' | 'client' | 'payment' | 'confirm';
+
+const STEP_LABELS: Record<StepKey, string> = {
+  specialist: 'Especialista',
+  slot: 'Fecha y hora',
+  client: 'Tus datos',
+  payment: 'Adelanto',
+  confirm: 'Confirmación',
+};
 
 export interface BookingFlowProps {
   service: PublicService;
@@ -21,22 +30,41 @@ export interface BookingFlowProps {
   onClose: () => void;
 }
 
-/** Guided 4-step booking flow in an `@foundly/ui` Modal (FR-009…FR-015). */
+/** Guided booking flow in an `@foundly/ui` Modal (FR-009…FR-015); +advance step (017). */
 export function BookingFlow({ service, tenantSlug, specialists, onClose }: BookingFlowProps) {
   const bookAppointment = useBookAppointment();
   const skipSpecialist = specialists.length <= 1;
-  const [step, setStep] = useState(skipSpecialist ? 1 : 0);
+  const steps: StepKey[] = [
+    ...(skipSpecialist ? [] : (['specialist'] as StepKey[])),
+    'slot',
+    'client',
+    ...(service.requiresAdvance ? (['payment'] as StepKey[]) : []),
+    'confirm',
+  ];
+
+  const [index, setIndex] = useState(0);
   const [specialistId, setSpecialistId] = useState<string | null>(
     skipSpecialist ? (specialists[0]?.id ?? null) : null,
   );
   const [slot, setSlot] = useState<{ startAt: string; endAt: string } | null>(null);
   const [client, setClient] = useState<ClientDetails | null>(null);
+  const [payment, setPayment] = useState<AdvancePaymentDraft | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const step = steps[index] ?? 'confirm';
   const specialistName =
     specialists.find((specialist) => specialist.id === specialistId)?.name ?? null;
+
+  function back() {
+    if (index === 0) {
+      onClose();
+      return;
+    }
+    setError(null);
+    setIndex((prev) => prev - 1);
+  }
 
   async function confirm() {
     if (!slot || !client) return;
@@ -51,6 +79,10 @@ export function BookingFlow({ service, tenantSlug, specialists, onClose }: Booki
       clientEmail: client.clientEmail,
       clientPhone: client.clientPhone,
       notes: client.notes,
+      paymentMethodType: payment?.methodType,
+      advanceAmountCents: payment?.amountCents,
+      paymentReference: payment?.reference,
+      paymentProofUrl: payment?.proofUrl,
     });
     if (result.ok) {
       setMessage('Cita solicitada correctamente.');
@@ -65,7 +97,7 @@ export function BookingFlow({ service, tenantSlug, specialists, onClose }: Booki
       glass
       open
       onClose={onClose}
-      title={`Reserva · Paso ${step + 1} de 4 · ${STEP_LABELS[step]}`}
+      title={`Reserva · Paso ${index + 1} de ${steps.length} · ${STEP_LABELS[step]}`}
     >
       <Stack spacing={2}>
         <Card sx={GLASS_CARD_SX}>
@@ -75,51 +107,66 @@ export function BookingFlow({ service, tenantSlug, specialists, onClose }: Booki
           </Typography>
         </Card>
 
-        {step === 0 ? (
+        {step === 'specialist' ? (
           <SpecialistStep
             specialists={specialists}
             onContinue={(id) => {
               setSpecialistId(id);
-              setStep(1);
+              setIndex((prev) => prev + 1);
             }}
           />
         ) : null}
 
-        {step === 1 ? (
-          <SlotStep
+        {step === 'slot' ? (
+          <CalendarStep
             tenantSlug={tenantSlug}
             serviceId={service.id}
             resourceId={specialistId ?? undefined}
             value={slot}
             onSelect={setSlot}
-            onContinue={() => setStep(2)}
-            onBack={() => (skipSpecialist ? onClose() : setStep(0))}
+            onContinue={() => setIndex((prev) => prev + 1)}
+            onBack={back}
           />
         ) : null}
 
-        {step === 2 ? (
+        {step === 'client' ? (
           <ClientStep
             value={client}
             onSubmit={(details) => {
               setClient(details);
               setError(null);
-              setStep(3);
+              setIndex((prev) => prev + 1);
             }}
-            onBack={() => setStep(1)}
+            onBack={back}
           />
         ) : null}
 
-        {step === 3 ? (
+        {step === 'payment' ? (
+          <PaymentStep
+            tenantSlug={tenantSlug}
+            service={service}
+            value={payment}
+            onContinue={(draft) => {
+              setPayment(draft);
+              setError(null);
+              setIndex((prev) => prev + 1);
+            }}
+            onBack={back}
+          />
+        ) : null}
+
+        {step === 'confirm' ? (
           <ConfirmStep
             service={service}
             specialistName={specialistName}
             slot={slot}
             client={client}
+            payment={payment}
             submitting={submitting}
             message={message}
             error={error}
             onConfirm={confirm}
-            onBack={() => setStep(2)}
+            onBack={back}
             onClose={onClose}
           />
         ) : null}

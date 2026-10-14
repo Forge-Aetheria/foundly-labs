@@ -34,6 +34,9 @@ const services: Service[] = [
     category: null,
     active: true,
     tenantId: 'ten-ana',
+    requiresAdvance: false,
+    advanceKind: null,
+    advanceValue: null,
   },
 ];
 

@@ -51,6 +51,9 @@ const profile: PublicBusinessProfile = {
       priceCents: 2000,
       currency: 'EUR',
       category: 'Peluquería',
+      requiresAdvance: false,
+      advanceKind: null,
+      advanceValue: null,
     },
   ],
   specialists: [{ id: 'res-ana', name: 'Ana', role: 'Peluquera senior', avatar: null, bio: null }],
@@ -118,7 +121,7 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
 
     await user.click(screen.getByRole('button', { name: /Reservar en/ }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText(/Reserva · Paso 2 de 4 · Fecha y hora/)).toBeInTheDocument();
+    expect(screen.getByText(/Fecha y hora/)).toBeInTheDocument();
   });
 
   it('opens the guided booking checkout from a service card Reservar pill', async () => {

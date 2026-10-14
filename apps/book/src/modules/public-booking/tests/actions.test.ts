@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AppointmentStatus,
-  AppointmentsDocument,
   AvailabilityDocument,
   CreateAppointmentDocument,
+  PublicAppointmentsDocument,
   SpecialistsDocument,
   TenantBySlugDocument,
   TimeBlocksDocument,
@@ -41,6 +41,9 @@ function makeTenant() {
         currency: 'EUR',
         category: null,
         active: true,
+        requiresAdvance: false,
+        advanceKind: null,
+        advanceValue: null,
       },
     ],
   };
@@ -91,6 +94,12 @@ function makeDto() {
     origin: 'online',
     notes: null,
     cancellationReason: null,
+    paymentMethodType: null,
+    advanceAmountCents: null,
+    paymentReference: null,
+    paymentProofUrl: null,
+    paymentSubmittedAt: null,
+    notifications: [],
     service: { id: 'svc-corte', name: 'Corte de cabello' },
     specialist: { id: 'res-ana', name: 'Ana' },
   };
@@ -115,7 +124,7 @@ describe('public-booking actions (feature 011 — remote-only)', () => {
       if (document === SpecialistsDocument) return { ok: true, data: { specialists: [makeSpecialist()] } };
       if (document === AvailabilityDocument)
         return { ok: true, data: { availability: [0, 1, 2, 3, 4, 5, 6].map(makeRule) } };
-      if (document === AppointmentsDocument) return { ok: true, data: { appointments: [] } };
+      if (document === PublicAppointmentsDocument) return { ok: true, data: { appointments: [] } };
       if (document === CreateAppointmentDocument)
         return { ok: true, data: { createAppointment: makeDto() } };
       return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected' } };
@@ -213,7 +222,7 @@ describe('public-booking actions (feature 011 — remote-only)', () => {
       if (document === SpecialistsDocument) return { ok: true, data: { specialists: [makeSpecialist()] } };
       if (document === AvailabilityDocument)
         return { ok: true, data: { availability: [0, 1, 2, 3, 4, 5, 6].map(makeRule) } };
-      if (document === AppointmentsDocument) return { ok: true, data: { appointments: [] } };
+      if (document === PublicAppointmentsDocument) return { ok: true, data: { appointments: [] } };
       if (document === TimeBlocksDocument)
         return {
           ok: true,

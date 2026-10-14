@@ -12,3 +12,17 @@ export const clientDetailsSchema = z.object({
   notes: z.string().max(2000, 'Máximo 2000 caracteres.').optional(),
 });
 export type ClientDetails = z.infer<typeof clientDetailsSchema>;
+
+/** Advance payment draft collected by the mandatory payment step (feature 017). */
+export const advancePaymentSchema = z.object({
+  methodType: z.enum(['mobile_payment', 'bank_transfer', 'binance'], {
+    message: 'Selecciona un método de pago.',
+  }),
+  amountCents: z
+    .number({ message: 'Introduce el monto del adelanto.' })
+    .int()
+    .positive('El monto debe ser mayor que cero.'),
+  reference: z.string().trim().min(1, 'La referencia es obligatoria.').max(200),
+  proofUrl: z.string().url('Adjunta el comprobante.'),
+});
+export type AdvancePaymentDraft = z.infer<typeof advancePaymentSchema>;
