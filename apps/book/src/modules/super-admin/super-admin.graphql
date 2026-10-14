@@ -1,0 +1,42 @@
+# Super Admin console operations (feature 020; consumes the api 019 platform surface).
+
+query PlatformMetrics {
+  platformMetrics {
+    businesses {
+      total
+      active
+    }
+    users {
+      available
+      total
+      active
+    }
+    plans {
+      free
+      pro
+    }
+    proConversion
+  }
+}
+
+query ManagedBusinesses($query: String, $limit: Int, $offset: Int) {
+  managedBusinesses(query: $query, limit: $limit, offset: $offset) {
+    tenantId
+    slug
+    name
+    plan
+    status
+    expiresAt
+  }
+}
+
+mutation OverrideTenantSubscription($input: OverrideTenantSubscriptionInput!) {
+  overrideTenantSubscription(input: $input) {
+    tenantId
+    slug
+    name
+    plan
+    status
+    expiresAt
+  }
+}
