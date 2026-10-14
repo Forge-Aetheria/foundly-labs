@@ -22,6 +22,7 @@ import {
   SECONDARY_BUTTON_SX,
 } from '../../shared/utils/landingCanon';
 import { PublicHeader } from '../../shared/components/PublicHeader';
+import { PublicFooter } from '../../shared/components/PublicFooter';
 
 const BENEFIT_ICONS = {
   reminders: NotificationsActiveIcon,
@@ -35,7 +36,6 @@ export interface ProductLandingProps {
   /** Fast email-capture row in the hero. */
   heroCapture: { placeholder: string; button: string };
   cta: { href: string; label: string };
-  demo: { href: string; label: string };
   spotlight: ProductSpotlight;
   steps: ProductStep[];
   benefits: ProductFeature[];
@@ -54,7 +54,6 @@ export function LandingView({
   hero,
   heroCapture,
   cta,
-  demo,
   spotlight,
   steps,
   benefits,
@@ -64,14 +63,15 @@ export function LandingView({
 }: ProductLandingProps) {
   return (
     <Stack sx={{ minHeight: '100vh' }}>
-      <PublicHeader cta={cta} demo={demo} />
-      <HeroBand hero={hero} heroCapture={heroCapture} cta={cta} demo={demo} />
+      <PublicHeader cta={cta} />
+      <HeroBand hero={hero} heroCapture={heroCapture} cta={cta} />
       <SpotlightSection spotlight={spotlight} />
       <StepsSection steps={steps} />
       <BenefitsSection benefits={benefits} />
       <IndustriesSection industries={industries} />
       <PricingSection pricing={pricing} />
       <FinalCtaBand finalCta={finalCta} />
+      <PublicFooter />
     </Stack>
   );
 }
@@ -80,12 +80,10 @@ function HeroBand({
   hero,
   heroCapture,
   cta,
-  demo,
 }: {
   hero: ProductLandingProps['hero'];
   heroCapture: ProductLandingProps['heroCapture'];
   cta: ProductLandingProps['cta'];
-  demo: ProductLandingProps['demo'];
 }) {
   const [email, setEmail] = useState('');
 
@@ -178,11 +176,6 @@ function HeroBand({
                 {cta.label}
               </Button>
             </Link>
-            <Link href={demo.href}>
-              <Button variant="secondary" sx={SECONDARY_BUTTON_SX}>
-                {demo.label}
-              </Button>
-            </Link>
           </Stack>
         </Stack>
       </Container>
@@ -206,11 +199,13 @@ function SpotlightSection({ spotlight }: { spotlight: ProductSpotlight }) {
             <Typography variant="body2" color="text.secondary">
               {spotlight.description}
             </Typography>
-            <Link href={spotlight.cta.href}>
-              <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
-                {spotlight.cta.label}
-              </Button>
-            </Link>
+            {spotlight.cta ? (
+              <Link href={spotlight.cta.href}>
+                <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
+                  {spotlight.cta.label}
+                </Button>
+              </Link>
+            ) : null}
           </Stack>
           <BookingPreview preview={spotlight.preview} />
         </Stack>
@@ -440,7 +435,7 @@ function IndustriesSection({ industries }: { industries: readonly string[] }) {
 function PricingSection({ pricing }: { pricing: ProductPricingPlan[] }) {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack component="section" spacing={2}>
+      <Stack component="section" id="precios" spacing={2} sx={{ scrollMarginTop: { xs: 88, md: 96 } }}>
         <Typography variant="h4" component="h2">
           Precios sencillos
         </Typography>

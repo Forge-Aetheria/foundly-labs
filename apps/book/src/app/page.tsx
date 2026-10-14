@@ -3,7 +3,6 @@ import { LandingView } from '../modules/landing/LandingView';
 import {
   BOOK_BENEFITS,
   BOOK_CTA,
-  BOOK_DEMO,
   BOOK_FINAL_CTA,
   BOOK_HERO,
   BOOK_HERO_CAPTURE,
@@ -25,7 +24,6 @@ export default function HomePage() {
       hero={BOOK_HERO}
       heroCapture={BOOK_HERO_CAPTURE}
       cta={BOOK_CTA}
-      demo={BOOK_DEMO}
       spotlight={BOOK_SPOTLIGHT}
       steps={BOOK_STEPS}
       benefits={BOOK_BENEFITS}

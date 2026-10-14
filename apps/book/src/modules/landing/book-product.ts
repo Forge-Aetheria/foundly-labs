@@ -16,7 +16,7 @@ export interface ProductSpotlight {
   eyebrow: string;
   title: string;
   description: string;
-  cta: { href: string; label: string };
+  cta?: { href: string; label: string };
   preview: {
     name: string;
     rating: string;
@@ -54,18 +54,12 @@ export const BOOK_CTA = {
   label: 'Registrar mi negocio',
 } as const;
 
-export const BOOK_DEMO = {
-  href: '/estudio-ana',
-  label: 'Ver Demo',
-} as const;
-
 /** Spotlight / showcase: featured booking-page preview (Setmore-inspired). */
 export const BOOK_SPOTLIGHT: ProductSpotlight = {
   eyebrow: 'Booking Page',
   title: 'Tu Booking Page personalizada',
   description:
     'Comparte tu enlace y deja que tus clientes elijan servicio, profesional y hora en una página a tu marca. Sin instalaciones ni código.',
-  cta: { href: '/estudio-ana', label: 'Ver página demo' },
   preview: {
     name: 'Estudio Ana',
     rating: '4.8',

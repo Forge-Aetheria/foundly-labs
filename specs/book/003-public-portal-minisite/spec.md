@@ -99,7 +99,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 **Provider identity & landing**
 
-- **FR-001**: The public page MUST render a decorative cover/banner using the business cover photo over the module canvas.
+- **FR-001**: The public page MUST render the business cover photo as a **full-width hero banner** (`width: 100%`) placed **below the header and above the profile/two-column content** (not a reduced/floating container).
 - **FR-002**: The public page MUST show the business avatar/logo, commercial name, category and its rating (average, one decimal) with a five-star row when reviews exist.
 - **FR-003**: The public page MUST include an "Acerca de" section with the business biography when configured.
 - **FR-004**: The public page MUST expose contact data when configured: physical address, phone and social links (Instagram, WhatsApp).

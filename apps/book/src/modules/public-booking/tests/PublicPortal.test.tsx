@@ -96,6 +96,8 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
     expect(screen.getByText('Política de cancelación')).toBeInTheDocument();
     expect(screen.getByText('Experiencia excelente, muy profesional.')).toBeInTheDocument();
     expect(screen.getByAltText('Foto 1')).toBeInTheDocument();
+    // Full-width cover banner below the header.
+    expect(screen.getByAltText('Portada de Estudio Ana')).toBeInTheDocument();
 
     const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
     expect(results.violations).toHaveLength(0);

@@ -28,9 +28,12 @@ overrides in `apps/book/src/shared/utils/landingCanon.ts`.
   reviews).
 - Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints).
 
+> A **full-width cover banner** (business cover, `width: 100%`, responsive height) renders **below the
+> header and above the two-column layout**; it is not part of the main column.
+
 | Column           | Sections / content                                                                                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Main             | Gallery banner (cover + photo strip), Políticas card, Servicios (grouped by category), Equipo, Acerca de, Galería (grid), Reseñas (summary + cards), Ubicación y horarios.           |
+| Main             | Políticas card, Servicios (grouped by category), Equipo, Acerca de, Galería (grid), Reseñas (summary + cards), Ubicación y horarios.                                                  |
 | Sidebar (sticky) | Avatar/logo + name + category, rating stars + numeric, pill **Reservar** (`#6C5CE7`), hours `<details>` disclosure ("Abierto · Cierra a las HH:mm"), address + phone + social links. |
 
 ## Cards and tokens

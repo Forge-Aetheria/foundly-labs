@@ -29,7 +29,6 @@ export function ProviderSections({ profile, onReserve }: ProviderSectionsProps) 
   const byCategory = groupByCategory(profile.services);
   return (
     <Stack spacing={5}>
-      <GalleryBanner cover={profile.cover} gallery={profile.gallery ?? []} name={profile.name} />
       <PoliciesCard policies={profile.policies} />
       <ServiceCatalog categories={byCategory} onReserve={onReserve} />
       <TeamSection specialists={profile.specialists} />
@@ -54,57 +53,6 @@ function groupByCategory(services: PublicService[]): Map<string, PublicService[]
     categories.set(key, [...(categories.get(key) ?? []), service]);
   }
   return categories;
-}
-
-function GalleryBanner({
-  cover,
-  gallery,
-  name,
-}: {
-  cover: string | null;
-  gallery: PublicGalleryPhoto[];
-  name: string;
-}) {
-  const strips = [...(cover ? [cover] : []), ...gallery.map((photo) => photo.url)].slice(1, 4);
-  return (
-    <Stack spacing={1.5}>
-      {cover ? (
-        <Box
-          component="img"
-          src={cover}
-          alt={`Local de ${name}`}
-          sx={{
-            width: '100%',
-            height: { xs: 220, md: 340 },
-            objectFit: 'cover',
-            borderRadius: 2,
-            border: 1,
-            borderColor: 'divider',
-          }}
-        />
-      ) : null}
-      {strips.length > 0 ? (
-        <Stack direction="row" spacing={1.5}>
-          {strips.map((src) => (
-            <Box
-              key={src}
-              component="img"
-              src={src}
-              alt=""
-              sx={{
-                flex: 1,
-                height: { xs: 96, md: 140 },
-                objectFit: 'cover',
-                borderRadius: 2,
-                border: 1,
-                borderColor: 'divider',
-              }}
-            />
-          ))}
-        </Stack>
-      ) : null}
-    </Stack>
-  );
 }
 
 function PoliciesCard({ policies }: { policies: PublicBusinessProfile['policies'] }) {
