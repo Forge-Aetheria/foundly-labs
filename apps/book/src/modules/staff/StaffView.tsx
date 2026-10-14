@@ -11,5 +11,5 @@ export async function StaffView() {
   const services = catalogResult.ok ? catalogResult.data.services : [];
   const error =
     !staffResult.ok ? staffResult.error.message : !catalogResult.ok ? catalogResult.error.message : null;
-  return <StaffManager staff={staff} services={services} error={error} />;
+  return <StaffManager staff={staff} services={services} error={error} tenantId={tenantId} />;
 }

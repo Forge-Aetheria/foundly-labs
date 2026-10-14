@@ -40,7 +40,7 @@ _GATE: must pass before Phase 0 research. Re-check after Phase 1 design._
 - Specs live under `/specs/<dominio>/<nnn>-<feature>/` → **OK** (`book/006-gallery-management`).
 - Views consume `@foundly/ui` + tokens, no hex literals → **OK** (glass cards and pills via `GLASS_CARD_SX` / tokens).
 - Domain logic pure → **OK** (`GalleryPhoto` is a plain model; URL/category rules validated in actions and shared UI).
-- Persistence not defined → **OK** (mutations go through the store seam only; uploads out of scope, URL-based).
+- Persistence not defined → **OK** (mutations go through the store seam only; photos are URL-based or uploaded since `021-tenant-media-uploads`).
 
 _Re-check after Phase 1 design:_ **PASS** — no new `@foundly/ui` primitives required (Modal/TextField/Badge/Chip/Checkbox cover the surface); the model change stays in `apps/book/src/shared` (pure types); all mutations remain behind the store seam.
 

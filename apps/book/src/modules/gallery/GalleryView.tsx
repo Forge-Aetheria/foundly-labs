@@ -8,5 +8,5 @@ export async function GalleryView() {
   const result = await listGallery(tenantId);
   const photos = result.ok ? result.data : [];
   const error = result.ok ? null : result.error.message;
-  return <GalleryManager photos={photos} error={error} />;
+  return <GalleryManager photos={photos} error={error} tenantId={tenantId} />;
 }

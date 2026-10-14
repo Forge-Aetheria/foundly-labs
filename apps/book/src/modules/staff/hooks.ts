@@ -2,6 +2,7 @@
 
 import type { Resource } from '../../shared/types/appointments';
 import type { ActionResult } from '../../shared/types/result';
+import { uploadImage } from '../../shared/utils/uploadImage';
 import { createStaff, removeStaff, setStaffActive, updateStaff } from './actions';
 
 /**
@@ -23,4 +24,11 @@ export function useSetStaffActive(): (input: unknown) => Promise<ActionResult<Re
 
 export function useRemoveStaff(): (input: unknown) => Promise<ActionResult<{ id: string }>> {
   return (input) => removeStaff(input);
+}
+
+/** Upload a staff avatar to tenant storage (feature 021). */
+export function useUploadStaffAvatar(
+  scope: string,
+): (file: File) => Promise<ActionResult<{ url: string }>> {
+  return (file) => uploadImage(file, { scope, folder: 'avatar' });
 }

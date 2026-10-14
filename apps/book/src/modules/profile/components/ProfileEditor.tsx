@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import Box from '@mui/material/Box';
 import { Badge, Button, Card, Stack, TextField, Typography } from '@foundly/ui';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
 import { WEEKDAY_LABELS } from '../../../shared/utils/format';
 import type { BusinessHours, Tenant } from '../../../shared/types/tenancy';
-import { useUpdateProfile } from '../hooks';
+import { useUpdateProfile, useUploadProfileImage } from '../hooks';
 import { AVATAR_RULE, COVER_RULE, checkImage, ruleGuidance } from '../utils/image-rules';
 
 export interface ProfileEditorProps {
@@ -81,6 +81,8 @@ function HoursSummary({ hours }: { hours: BusinessHours[] }) {
 export function ProfileEditor({ profile, error }: ProfileEditorProps) {
   const toast = useToast();
   const updateProfile = useUpdateProfile();
+  const uploadLogo = useUploadProfileImage(profile?.id ?? '', 'logo');
+  const uploadCover = useUploadProfileImage(profile?.id ?? '', 'cover');
   const [draft, setDraft] = useState<Draft>(() => toDraft(profile));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
@@ -207,40 +209,24 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
             required
             fullWidth
           />
-          <TextField
-            label="Logo (URL)"
-            placeholder="https://…"
+          <ImageUploadField
+            label="Logo"
+            preview="circle"
             value={draft.logo}
             onChange={(value) => patch({ logo: value })}
+            onUpload={uploadLogo}
             error={Boolean(fieldErrors?.logo)}
             helperText={fieldErrors?.logo ?? ruleGuidance(AVATAR_RULE)}
-            fullWidth
           />
-          {draft.logo.trim() ? (
-            <Box
-              component="img"
-              src={draft.logo}
-              alt="Logo del negocio"
-              sx={{ height: 72, maxWidth: 220, objectFit: 'contain', borderRadius: 2 }}
-            />
-          ) : null}
-          <TextField
-            label="Portada (URL)"
-            placeholder="https://…"
+          <ImageUploadField
+            label="Portada"
+            preview="banner"
             value={draft.cover}
             onChange={(value) => patch({ cover: value })}
+            onUpload={uploadCover}
             error={Boolean(fieldErrors?.cover)}
             helperText={fieldErrors?.cover ?? ruleGuidance(COVER_RULE)}
-            fullWidth
           />
-          {draft.cover.trim() ? (
-            <Box
-              component="img"
-              src={draft.cover}
-              alt="Portada del negocio"
-              sx={{ width: { xs: '100%', sm: 260 }, aspectRatio: '3 / 1', objectFit: 'cover', borderRadius: 2 }}
-            />
-          ) : null}
 
           <Typography variant="h6" component="h2">
             Contacto y redes

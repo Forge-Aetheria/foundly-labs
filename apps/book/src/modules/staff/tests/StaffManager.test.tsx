@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +13,7 @@ const { staffActionsMock } = vi.hoisted(() => ({
     updateStaff: vi.fn(),
     setStaffActive: vi.fn(),
     removeStaff: vi.fn(),
+    uploadAvatar: vi.fn(),
   },
 }));
 
@@ -21,6 +22,7 @@ vi.mock('../hooks', () => ({
   useUpdateStaff: () => staffActionsMock.updateStaff,
   useSetStaffActive: () => staffActionsMock.setStaffActive,
   useRemoveStaff: () => staffActionsMock.removeStaff,
+  useUploadStaffAvatar: () => staffActionsMock.uploadAvatar,
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
@@ -126,6 +128,31 @@ describe('StaffManager (admin Equipo y Especialistas, 005)', () => {
 
     expect(await screen.findByText('Nuria Pons')).toBeInTheDocument();
     expect(staffActionsMock.createStaff).toHaveBeenCalledTimes(1);
+  });
+
+  it('uploads an avatar and persists its URL (feature 021)', async () => {
+    staffActionsMock.uploadAvatar.mockResolvedValue({
+      ok: true,
+      data: { url: 'https://cdn.test/ana.jpg' },
+    });
+    const user = userEvent.setup();
+    renderManager();
+
+    await user.click(screen.getByRole('button', { name: '+ Añadir Profesional' }));
+    await user.type(screen.getByLabelText(/Nombre/), 'Nuria Pons');
+    await user.type(screen.getByLabelText(/Cargo/), 'Colorista');
+    fireEvent.change(screen.getByLabelText('Subir Foto / Avatar'), {
+      target: { files: [new File([new Uint8Array(8)], 'ana.jpg', { type: 'image/jpeg' })] },
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Foto \/ Avatar \(URL\)/)).toHaveValue('https://cdn.test/ana.jpg'),
+    );
+    await user.click(screen.getByRole('button', { name: 'Guardar profesional' }));
+
+    expect(await screen.findByText('Nuria Pons')).toBeInTheDocument();
+    expect(staffActionsMock.createStaff).toHaveBeenCalledWith(
+      expect.objectContaining({ avatar: 'https://cdn.test/ana.jpg' }),
+    );
   });
 
   it('blocks saving when name or role are missing', async () => {

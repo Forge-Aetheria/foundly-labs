@@ -103,6 +103,20 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
     expect(results.violations).toHaveLength(0);
   });
 
+  it('falls back to the first gallery photo when the cover is empty (feature 021)', () => {
+    renderPortal({ ...profile, cover: null });
+
+    const hero = screen.getByAltText('Portada de Estudio Ana');
+    expect(hero).toHaveAttribute('src', 'https://images.unsplash.com/photo-1');
+  });
+
+  it('renders a branded gradient hero when there is no cover nor gallery (feature 021)', () => {
+    renderPortal({ ...profile, cover: null, gallery: [] });
+
+    const hero = screen.getByRole('img', { name: 'Portada de Estudio Ana' });
+    expect(hero).toHaveTextContent('Estudio Ana');
+  });
+
   it('shows assigned service badges on the team section', async () => {
     const withServices = {
       ...profile,

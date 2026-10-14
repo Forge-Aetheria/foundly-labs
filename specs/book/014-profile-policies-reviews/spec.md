@@ -120,6 +120,6 @@ As a maintainer, I want the profile module to follow the canonical data layer an
 
 - **Backend dependency**: relies on the profile-update and reviews surface delivered by `specs/api/013-profile-policies-reviews` (reviews are **publicly submittable** by any visitor, no account).
 - **Gallery is already integrated** (`013-gallery-integration`); it is not part of this feature even though it is mentioned alongside the public sections.
-- **Images are URL-based** (no upload); the opening-hours summary is read-only and sourced from the availability configuration.
+- **Images are URL-based or uploaded** (feature `021-tenant-media-uploads`); the opening-hours summary is read-only and sourced from the availability configuration.
 - **Tenant scoping** for admin reads/writes comes from the session (never the URL).
 - **Respect for the governance hierarchy**: follows `specs/business-model.md` and the authority order of `constitution.md`.

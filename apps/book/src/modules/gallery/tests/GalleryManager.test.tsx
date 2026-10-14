@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,11 +7,16 @@ import type { GalleryPhoto } from '../../../shared/types/tenancy';
 import { ToastProvider } from '../../../shared/components/Toaster';
 import { GalleryManager } from '../components/GalleryManager';
 
-const { addMock, removeMock } = vi.hoisted(() => ({ addMock: vi.fn(), removeMock: vi.fn() }));
+const { addMock, removeMock, uploadMock } = vi.hoisted(() => ({
+  addMock: vi.fn(),
+  removeMock: vi.fn(),
+  uploadMock: vi.fn(),
+}));
 
 vi.mock('../hooks', () => ({
   useAddGalleryItem: () => addMock,
   useRemoveGalleryItem: () => removeMock,
+  useUploadGalleryPhoto: () => uploadMock,
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
@@ -34,6 +39,7 @@ describe('GalleryManager (admin Galería, feature 013)', () => {
   beforeEach(() => {
     addMock.mockReset();
     removeMock.mockReset();
+    uploadMock.mockReset();
   });
 
   it('renders the real photos as cards with title and category badge', async () => {
@@ -76,6 +82,31 @@ describe('GalleryManager (admin Galería, feature 013)', () => {
       description: '',
       category: undefined,
     });
+  });
+
+  it('uploads a photo and saves the resulting URL (feature 021)', async () => {
+    uploadMock.mockResolvedValue({ ok: true, data: { url: 'https://cdn.test/up.jpg' } });
+    addMock.mockResolvedValue({
+      ok: true,
+      data: { id: 'g-up', url: 'https://cdn.test/up.jpg', title: 'Subida' },
+    });
+    const user = userEvent.setup();
+    renderManager();
+
+    await user.click(screen.getByRole('button', { name: '+ Añadir imagen' }));
+    fireEvent.change(screen.getByLabelText('Subir Foto'), {
+      target: { files: [new File([new Uint8Array(8)], 'up.jpg', { type: 'image/jpeg' })] },
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText('URL de la imagen')).toHaveValue('https://cdn.test/up.jpg'),
+    );
+    await user.type(screen.getByLabelText(/Título/), 'Subida');
+    await user.click(screen.getByRole('button', { name: 'Guardar foto' }));
+
+    expect(await screen.findByText('Subida')).toBeInTheDocument();
+    expect(addMock).toHaveBeenCalledWith(
+      expect.objectContaining({ url: 'https://cdn.test/up.jpg', title: 'Subida' }),
+    );
   });
 
   it('blocks saving without a valid URL', async () => {

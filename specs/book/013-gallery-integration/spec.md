@@ -103,6 +103,6 @@ As a maintainer, I want the gallery module to follow the canonical module struct
 ## Assumptions
 
 - **Backend dependency**: relies on the gallery surface delivered by `specs/api/012-gallery-management` (public read + authenticated add/remove, tenant-scoped).
-- **Categories** remain the closed set Local · Trabajos · Equipo plus "none"; photos are URL-based (no upload), consistent with `006`.
+- **Categories** remain the closed set Local · Trabajos · Equipo plus "none"; photos are URL-based or uploaded from the device (feature `021-tenant-media-uploads`), consistent with `006`.
 - **Tenant scoping** for admin reads comes from the session (never the URL); the public read uses the business's public reference.
 - **Respect for the governance hierarchy**: follows `specs/business-model.md` (the business's public page and portfolio are part of the Foundly Book value proposition) and the authority order of `constitution.md`.

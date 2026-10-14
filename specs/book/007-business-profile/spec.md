@@ -97,7 +97,7 @@ As an administrator, I want to write the "About" text and the reservation/cancel
 ## Assumptions
 
 - Governed by `constitution.md` v5.0.1 and `specs/business-model.md` (Foundly Book module).
-- Images (logo/cover) are URL-based; upload is out of scope for this version.
+- Images (logo/cover) are URL-based; since feature `021-tenant-media-uploads` they can also be uploaded from the device via the shared media control, keeping a pasted URL as an alternative. The stored value remains a URL string.
 - WhatsApp is represented by the contact phone; the social field may also accept a `wa.me` link.
 - The opening-hours summary is read-only in this view and sources from the availability configuration (edit remains in the availability section).
 - Policies are free-text entries (title + body) managed in this view; the public policies card renders them.

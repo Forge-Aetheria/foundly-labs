@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -8,9 +8,15 @@ import { ToastProvider } from '../../../shared/components/Toaster';
 import { ProfileEditor } from '../components/ProfileEditor';
 import { checkImage } from '../utils/image-rules';
 
-const { updateMock } = vi.hoisted(() => ({ updateMock: vi.fn() }));
+const { updateMock, uploadMock } = vi.hoisted(() => ({
+  updateMock: vi.fn(),
+  uploadMock: vi.fn(),
+}));
 
-vi.mock('../hooks', () => ({ useUpdateProfile: () => updateMock }));
+vi.mock('../hooks', () => ({
+  useUpdateProfile: () => updateMock,
+  useUploadProfileImage: () => uploadMock,
+}));
 vi.mock('../utils/image-rules', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../utils/image-rules')>();
   return { ...actual, checkImage: vi.fn() };
@@ -59,6 +65,7 @@ function renderEditor(profile: Tenant | null = makeTenant(), error: string | nul
 describe('ProfileEditor (admin Perfil, feature 014)', () => {
   beforeEach(() => {
     updateMock.mockReset();
+    uploadMock.mockReset();
     vi.mocked(checkImage).mockReset();
     vi.mocked(checkImage).mockResolvedValue({ ok: true, measured: false });
   });
@@ -110,6 +117,25 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
     await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
 
     expect(await screen.findByText('Esa URL pública ya está en uso.')).toBeInTheDocument();
+  });
+
+  it('uploads a logo and includes the resulting URL in the submission (feature 021)', async () => {
+    updateMock.mockResolvedValue({ ok: true, data: makeTenant() });
+    uploadMock.mockResolvedValue({ ok: true, data: { url: 'https://cdn.test/logo.png' } });
+    const user = userEvent.setup();
+    renderEditor();
+
+    fireEvent.change(screen.getByLabelText('Subir Logo'), {
+      target: { files: [new File([new Uint8Array(8)], 'logo.png', { type: 'image/png' })] },
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText('Logo (URL)')).toHaveValue('https://cdn.test/logo.png'),
+    );
+    await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
+
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    const arg = updateMock.mock.calls[0]![0] as { logo: string | null };
+    expect(arg.logo).toBe('https://cdn.test/logo.png');
   });
 
   it('adds a policy to the submission', async () => {

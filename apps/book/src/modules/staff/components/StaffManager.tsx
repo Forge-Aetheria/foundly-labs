@@ -21,8 +21,9 @@ import {
   PRIMARY_BUTTON_SX,
   SECONDARY_BUTTON_SX,
 } from '../../../shared/utils/landingCanon';
-import { useCreateStaff, useRemoveStaff, useSetStaffActive, useUpdateStaff } from '../hooks';
+import { useCreateStaff, useRemoveStaff, useSetStaffActive, useUpdateStaff, useUploadStaffAvatar } from '../hooks';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 
@@ -30,6 +31,8 @@ export interface StaffManagerProps {
   staff: Resource[];
   /** Tenant catalog used for the services multi-select and the card badges. */
   services: Service[];
+  /** Tenant scope for media uploads (feature 021); uploads disabled when empty. */
+  tenantId?: string;
   /** Backend error surfaced to the user (FR-010) when the API is unreachable. */
   error?: string | null;
 }
@@ -96,7 +99,7 @@ function AvatarBadge({ resource }: { resource: Resource }) {
 }
 
 /** Equipo y Especialistas: glassmorphism member grid + create/edit modal (005). */
-export function StaffManager({ staff, services, error }: StaffManagerProps) {
+export function StaffManager({ staff, services, tenantId, error }: StaffManagerProps) {
   const [members, setMembers] = useState<Resource[]>(staff);
   const [draft, setDraft] = useState<{ open: boolean; editing: boolean; value: StaffDraft }>({
     open: false,
@@ -113,6 +116,7 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
   const updateStaff = useUpdateStaff();
   const setStaffActive = useSetStaffActive();
   const removeStaff = useRemoveStaff();
+  const uploadAvatar = useUploadStaffAvatar(tenantId ?? '');
 
   /** Transient (network/config) failures surface as a non-destructive banner. */
   function handleActionFailure(result: {
@@ -388,28 +392,14 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
               fullWidth
             />
 
-            <TextField
-              label="Foto / Avatar (URL)"
-              placeholder="https://…"
+            <ImageUploadField
+              label="Foto / Avatar"
+              preview="circle"
               value={draft.value.avatar}
               onChange={(value) => patch({ avatar: value })}
-              fullWidth
+              onUpload={uploadAvatar}
+              helperText="Recomendado: cuadrada (1:1)."
             />
-            {draft.value.avatar.trim() ? (
-              <Box
-                component="img"
-                src={draft.value.avatar.trim()}
-                alt="Vista previa del avatar"
-                sx={{
-                  width: 88,
-                  height: 88,
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: 1,
-                  borderColor: 'divider',
-                }}
-              />
-            ) : null}
 
             <Stack spacing={1}>
               <Typography variant="h6" component="h3">

@@ -22,13 +22,16 @@ import {
 } from '../../../shared/types/tenancy';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
-import { useAddGalleryItem, useRemoveGalleryItem } from '../hooks';
+import { useAddGalleryItem, useRemoveGalleryItem, useUploadGalleryPhoto } from '../hooks';
 
 export interface GalleryManagerProps {
   /** Gallery photos read from the backend (feature 013). */
   photos: GalleryPhoto[];
+  /** Tenant scope for media uploads (feature 021); uploads disabled when empty. */
+  tenantId?: string;
   /** Backend/load error surfaced cleanly (no raw text). */
   error?: string | null;
 }
@@ -43,7 +46,7 @@ interface Draft {
 const EMPTY_DRAFT: Draft = { url: '', title: '', description: '', category: '' };
 
 /** Galería (feature 013): real grid + add modal + lightbox + delete confirmation. */
-export function GalleryManager({ photos, error }: GalleryManagerProps) {
+export function GalleryManager({ photos, tenantId, error }: GalleryManagerProps) {
   const [items, setItems] = useState<GalleryPhoto[]>(photos);
   const [draft, setDraft] = useState<{ open: boolean; value: Draft }>({
     open: false,
@@ -59,6 +62,7 @@ export function GalleryManager({ photos, error }: GalleryManagerProps) {
   const { pending: saving, run } = useAsyncAction();
   const addItem = useAddGalleryItem();
   const removeItem = useRemoveGalleryItem();
+  const uploadPhoto = useUploadGalleryPhoto(tenantId ?? '');
 
   function openAdd() {
     setFieldErrors(null);
@@ -230,15 +234,15 @@ export function GalleryManager({ photos, error }: GalleryManagerProps) {
       {draft.open ? (
         <Modal open onClose={closeAdd} title="Añadir imagen">
           <Stack spacing={2} sx={{ pt: 1, minWidth: { xs: 0, sm: 460 } }}>
-            <TextField
-              label="URL de la imagen"
-              placeholder="https://…"
+            <ImageUploadField
+              label="Foto"
+              preview="square"
+              urlLabel="URL de la imagen"
               value={draft.value.url}
               onChange={(value) => patch({ url: value })}
+              onUpload={uploadPhoto}
               error={Boolean(fieldErrors?.url)}
               helperText={fieldErrors?.url}
-              required
-              fullWidth
             />
             <TextField
               label="Título (opcional)"

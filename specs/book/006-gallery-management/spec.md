@@ -75,7 +75,7 @@ As an operator, I want the gallery screens to reuse the shared visual system and
 - **FR-003**: The add-photo form MUST collect a photo URL (required, validated as a URL), a short title/description (optional) and a category/tag (optional, from the set Local · Trabajos · Equipo, with a "sin categoría" option).
 - **FR-004**: Saving with an empty or invalid URL MUST be blocked with an inline error; omitting title and category MUST still allow saving.
 - **FR-005**: Each photo MUST support a lightbox preview that can be dismissed, and removal MUST require an explicit confirmation.
-- **FR-006**: Adding, previewing or removing photos MUST NOT block on external services (no upload, URL-based mock).
+- **FR-006**: Adding, previewing or removing photos MUST NOT block on external services; a photo MAY be supplied either by pasting a URL or (since feature `021-tenant-media-uploads`) by uploading a file from the device. The stored value remains a URL string.
 - **FR-007**: Any photo added or removed in the admin MUST be reflected immediately in the `#galeria` block of the tenant's public page through the shared mock/local state.
 - **FR-008**: Duplicate photo URLs MUST be rejected; the gallery MUST remain consistent (each photo identified individually).
 - **FR-009**: The screens MUST use the shared design system (glassmorphism cards, pills) and tokens; automated accessibility checks MUST pass with zero critical violations.
@@ -97,7 +97,7 @@ As an operator, I want the gallery screens to reuse the shared visual system and
 ## Assumptions
 
 - Governed by `constitution.md` v5.0.1 and `specs/business-model.md` (Foundly Book module).
-- Photos are URL-based; upload is out of scope for this version (consistent with the mock data).
+- Photos are URL-based by default; since feature `021-tenant-media-uploads` a photo can also be uploaded from the device through the shared media control, and the stored value remains a URL string.
 - Categories are limited to the trio Local · Trabajos · Equipo plus "sin categoría"; the set could become configurable later.
 - Each photo gets a stable identity so duplicates are tracked and removals are precise; the title/description and category enrich the public cards.
 - Data stays in the in-memory mock store seam; persistence technology remains undefined until `specs/architecture.md` ratifies storage.

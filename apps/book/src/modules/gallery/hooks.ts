@@ -2,6 +2,7 @@
 
 import type { GalleryPhoto } from '../../shared/types/tenancy';
 import type { ActionResult } from '../../shared/types/result';
+import { uploadImage } from '../../shared/utils/uploadImage';
 import { addGalleryItem, listGallery, removeGalleryItem } from './actions';
 
 /**
@@ -18,4 +19,11 @@ export function useAddGalleryItem(): (input: unknown) => Promise<ActionResult<Ga
 
 export function useRemoveGalleryItem(): (input: unknown) => Promise<ActionResult<{ id: string }>> {
   return (input) => removeGalleryItem(input);
+}
+
+/** Upload a gallery photo to tenant storage (feature 021). */
+export function useUploadGalleryPhoto(
+  scope: string,
+): (file: File) => Promise<ActionResult<{ url: string }>> {
+  return (file) => uploadImage(file, { scope, folder: 'gallery' });
 }

@@ -42,7 +42,7 @@ _GATE: must pass before Phase 0 research. Re-check after Phase 1 design._
 - Specs live under `/specs/<dominio>/<nnn>-<feature>/` → **OK** (`book/007-business-profile`).
 - Views consume `@foundly/ui` + tokens → **OK** (glass cards/pills via `GLASS_CARD_SX`, `primary.main`).
 - Domain logic pure → **OK** (slug validation reuses `shared/utils/slug.ts`; hours summary is read-only data binding).
-- Persistence not defined → **OK** (mutations through the store seam; images and links URL-based).
+- Persistence not defined → **OK** (mutations through the store seam; images and links URL-based or uploaded since `021-tenant-media-uploads`).
 
 _Re-check after Phase 1 design:_ **PASS** — no new entities or `@foundly/ui` primitives; slug rules
 reused from the domain; the hours summary is a read-only projection of `businessHours`; both new

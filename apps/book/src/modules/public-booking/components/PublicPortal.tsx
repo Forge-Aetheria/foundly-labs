@@ -24,7 +24,11 @@ export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
   return (
     <Stack>
       <ProviderNav profile={profile} />
-      <CoverBanner cover={profile.cover} name={profile.name} />
+      <CoverBanner
+        cover={profile.cover}
+        fallback={profile.gallery?.[0]?.url ?? null}
+        name={profile.name}
+      />
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
