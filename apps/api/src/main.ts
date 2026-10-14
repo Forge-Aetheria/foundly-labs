@@ -33,7 +33,7 @@ async function bootstrap(): Promise<void> {
     methods: ['GET', 'HEAD', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'apollo-require-preflight'],
   });
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   logger.log(`Foundly API listening on http://localhost:${port}`);
 }
 
