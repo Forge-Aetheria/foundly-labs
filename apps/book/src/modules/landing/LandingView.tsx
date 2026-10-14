@@ -111,6 +111,15 @@ function BrandBar({
           color="text.secondary"
           sx={{ display: { xs: 'none', sm: 'block' } }}
         >
+          <Link href="/directorio" style={{ textDecoration: 'none' }}>
+            Directorio
+          </Link>
+        </Typography>
+        <Typography
+          variant="button"
+          color="text.secondary"
+          sx={{ display: { xs: 'none', sm: 'block' } }}
+        >
           <Link href={demo.href} style={{ textDecoration: 'none' }}>
             {demo.label}
           </Link>

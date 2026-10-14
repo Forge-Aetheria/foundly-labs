@@ -277,10 +277,100 @@ type TimeBlockObject {
   reason: String
 }
 
+type PlanDistribution {
+  free: Int!
+  pro: Int!
+}
+
+type UserMetrics {
+  available: Boolean!
+  total: Int
+  active: Int
+}
+
+type BusinessMetrics {
+  total: Int!
+  active: Int!
+}
+
+type PlatformMetrics {
+  businesses: BusinessMetrics!
+  users: UserMetrics!
+  plans: PlanDistribution!
+  proConversion: Float!
+}
+
+type ManagedBusiness {
+  tenantId: ID!
+  slug: String!
+  name: String!
+  plan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  expiresAt: String
+}
+
+input OverrideTenantSubscriptionInput {
+  tenantId: ID!
+  plan: SubscriptionPlan
+  status: SubscriptionStatus
+  expiresAt: String
+}
+
+type BusinessSchedule {
+  weekday: Int!
+  startTime: String!
+  endTime: String!
+}
+
+type BusinessSummary {
+  tenantId: ID!
+  slug: String!
+  name: String!
+  category: String!
+  description: String
+  address: String
+  phone: String
+  logo: String
+  cover: String
+  schedule: [BusinessSchedule!]!
+}
+
+type SubscriptionUsage {
+  used: Int!
+  limit: Int!
+  unlimited: Boolean!
+}
+
+type SubscriptionLimits {
+  services: SubscriptionUsage!
+  team: SubscriptionUsage!
+}
+
+type SubscriptionSummary {
+  plan: SubscriptionPlan!
+  effectivePlan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  expiresAt: String
+  limits: SubscriptionLimits!
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  expired
+  canceled
+}
+
 type Query {
   health: HealthPayload!
   tenants: [TenantObject!]!
   tenant(slug: String!): TenantObject
+  searchBusinesses(query: String, limit: Int, offset: Int): [BusinessSummary!]!
   services(tenantId: String, tenantSlug: String, category: String, minDuration: Int, maxDuration: Int): [Service!]!
   service(id: String!): Service
   specialists(tenantId: String, tenantSlug: String): [Specialist!]!
@@ -305,9 +395,13 @@ type Query {
   timeBlocks(tenantId: ID, tenantSlug: String, specialistId: ID): [TimeBlockObject!]!
   paymentMethods(tenantId: ID, tenantSlug: String): [PaymentMethodObject!]!
   myPaymentMethods: [PaymentMethodObject!]!
+  mySubscription: SubscriptionSummary!
+  platformMetrics: PlatformMetrics!
+  managedBusinesses(query: String, limit: Int, offset: Int): [ManagedBusiness!]!
 }
 
 type Mutation {
+  overrideTenantSubscription(input: OverrideTenantSubscriptionInput!): ManagedBusiness!
   createTenant(input: CreateTenantInput!): TenantObject!
   updateMyBusinessProfile(input: UpdateBusinessProfileInput!): TenantObject!
   createService(input: CreateServiceInput!): Service!
