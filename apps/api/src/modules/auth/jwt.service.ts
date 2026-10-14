@@ -89,14 +89,26 @@ export class SupabaseJwtService {
         : typeof payload.tenant_id === 'string'
           ? payload.tenant_id
           : undefined;
-    return {
+    const platformRole =
+      typeof appMetadata.platform_role === 'string'
+        ? appMetadata.platform_role
+        : typeof payload.platform_role === 'string'
+          ? payload.platform_role
+          : undefined;
+    const user: AuthUser = {
       sub: payload.sub,
       email: typeof payload.email === 'string' ? payload.email : null,
       role: typeof payload.role === 'string' ? payload.role : AUDIENCE,
       aud: typeof aud === 'string' ? aud : AUDIENCE,
       exp: typeof payload.exp === 'number' ? payload.exp : 0,
       iat: typeof payload.iat === 'number' ? payload.iat : undefined,
-      tenantId,
     };
+    if (tenantId) {
+      user.tenantId = tenantId;
+    }
+    if (platformRole) {
+      user.platformRole = platformRole;
+    }
+    return user;
   }
 }

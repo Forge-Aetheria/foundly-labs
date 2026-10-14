@@ -10,6 +10,11 @@ export interface AuthUser {
   iat?: number;
   /** Organization membership from the `tenant_id` claim (additive; optional). */
   tenantId?: string;
+  /**
+   * Global platform role from the verified `app_metadata.platform_role` claim (additive; optional).
+   * `'super_admin'` grants the platform console; a business account cannot self-grant it.
+   */
+  platformRole?: string;
 }
 
 /** GraphQL view of the authenticated identity (sample protected surface). */

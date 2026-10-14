@@ -37,6 +37,7 @@ export interface TokenOverrides {
   expiresIn?: string;
   algorithm?: string;
   tenantId?: string;
+  platformRole?: string;
 }
 
 /** ES256 test token signed against `privateJwk` with configurable claims (expiry, issuer, aud...). */
@@ -53,12 +54,18 @@ export async function signTestToken(
     expiresIn = '1h',
     algorithm = 'ES256',
     tenantId,
+    platformRole,
   } = overrides;
 
   const claims: Record<string, unknown> = {};
   if (email !== undefined) claims.email = email;
   if (role !== undefined) claims.role = role;
-  if (tenantId !== undefined) claims.app_metadata = { tenant_id: tenantId };
+  if (tenantId !== undefined || platformRole !== undefined) {
+    const appMetadata: Record<string, unknown> = {};
+    if (tenantId !== undefined) appMetadata.tenant_id = tenantId;
+    if (platformRole !== undefined) appMetadata.platform_role = platformRole;
+    claims.app_metadata = appMetadata;
+  }
 
   const builder = new SignJWT(claims)
     .setProtectedHeader({ alg: algorithm, kid: TEST_KID })

@@ -18,6 +18,8 @@ import { GalleryModule } from './modules/gallery/gallery.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { TimeBlockModule } from './modules/time-block/time-block.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { PlatformModule } from './modules/platform/platform.module';
 import { SharedPrismaModule } from './shared/prisma/prisma.module';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -45,6 +47,8 @@ const isProduction = process.env.NODE_ENV === 'production';
     ReviewsModule,
     TimeBlockModule,
     PaymentsModule,
+    SubscriptionModule,
+    PlatformModule,
   ],
   controllers: [AppController],
   providers: [HealthResolver],
