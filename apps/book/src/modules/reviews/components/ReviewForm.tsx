@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Chip, Stack, TextField, Typography } from '@foundly/ui';
+import { useToast } from '../../../shared/components/Toaster';
 import { useSubmitReview } from '../hooks';
 
 const RATINGS = [1, 2, 3, 4, 5];
@@ -18,6 +19,7 @@ export interface ReviewFormProps {
  */
 export function ReviewForm({ tenantSlug }: ReviewFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const submitReview = useSubmitReview();
   const [author, setAuthor] = useState('');
   const [rating, setRating] = useState(5);
@@ -37,8 +39,10 @@ export function ReviewForm({ tenantSlug }: ReviewFormProps) {
     if (!result.ok) {
       if (result.error.fields) {
         setFieldErrors(result.error.fields);
+        toast.warning('Revisa los datos de tu reseña.');
       } else {
         setNotice(result.error.message);
+        toast.error(result.error.message);
       }
       return;
     }
@@ -46,6 +50,7 @@ export function ReviewForm({ tenantSlug }: ReviewFormProps) {
     setRating(5);
     setComment('');
     setDone(true);
+    toast.success('¡Gracias por tu reseña!');
     router.refresh();
   }
 

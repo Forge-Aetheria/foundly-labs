@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import {
   AlertDialog,
@@ -22,6 +23,8 @@ import {
 } from '../../../shared/utils/landingCanon';
 import { useCreateStaff, useRemoveStaff, useSetStaffActive, useUpdateStaff } from '../hooks';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { useToast } from '../../../shared/components/Toaster';
+import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 
 export interface StaffManagerProps {
   staff: Resource[];
@@ -103,6 +106,9 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Resource | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const router = useRouter();
+  const toast = useToast();
+  const { pending: saving, run } = useAsyncAction();
   const createStaff = useCreateStaff();
   const updateStaff = useUpdateStaff();
   const setStaffActive = useSetStaffActive();
@@ -183,9 +189,10 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
       active: draft.value.active,
       serviceIds: draft.value.serviceIds,
     };
-    const result = draft.editing
-      ? await updateStaff({ id: draft.value.id, ...input })
-      : await createStaff(input);
+    const result = await run(() =>
+      draft.editing ? updateStaff({ id: draft.value.id, ...input }) : createStaff(input),
+    );
+    if (!result) return;
     if (!result.ok) {
       handleActionFailure(result);
       return;
@@ -197,11 +204,14 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
     } else {
       setMembers((prev) => [...prev, result.data]);
     }
+    toast.success(draft.editing ? 'Profesional actualizado.' : 'Profesional añadido.');
     close();
+    router.refresh();
   }
 
   async function toggleActive(resource: Resource) {
-    const result = await setStaffActive({ id: resource.id, active: !resource.active });
+    const result = await run(() => setStaffActive({ id: resource.id, active: !resource.active }));
+    if (!result) return;
     if (result.ok) {
       setActionNotice(null);
       setMembers((prev) => prev.map((item) => (item.id === result.data.id ? result.data : item)));
@@ -212,11 +222,14 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
 
   async function confirmDelete() {
     if (!deleteTarget) return;
-    const result = await removeStaff({ id: deleteTarget.id });
-    if (result.ok) {
+    const target = deleteTarget;
+    const result = await run(() => removeStaff({ id: target.id }));
+    if (result?.ok) {
       setActionNotice(null);
-      setMembers((prev) => prev.filter((item) => item.id !== deleteTarget.id));
-    } else {
+      setMembers((prev) => prev.filter((item) => item.id !== target.id));
+      toast.success('Profesional eliminado.');
+      router.refresh();
+    } else if (result && !result.ok) {
       handleActionFailure(result);
     }
     setDeleteTarget(null);
@@ -434,10 +447,15 @@ export function StaffManager({ staff, services, error }: StaffManagerProps) {
             </Stack>
 
             <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ pt: 1 }}>
-              <Button variant="secondary" onClick={close}>
+              <Button variant="secondary" onClick={close} disabled={saving}>
                 Cancelar
               </Button>
-              <Button variant="primary" sx={PRIMARY_BUTTON_SX} onClick={save}>
+              <Button
+                variant="primary"
+                sx={PRIMARY_BUTTON_SX}
+                onClick={save}
+                loading={saving}
+              >
                 Guardar profesional
               </Button>
             </Stack>

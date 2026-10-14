@@ -11,7 +11,7 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
 | `/book`            | `/`             | Landing informativa del producto (features + CTA a registro)      |
 | `/book/onboarding` | `/onboarding`   | Wizard de registro de negocio en 3 pasos (cuenta · negocio · setup) |
 | `/book/login`      | `/login`        | Inicio de sesión del propietario (email + contraseña)             |
-| `/book/admin/*`    | `/admin/*`      | Dashboard privado (Drawer shell, agenda / servicios / disponibilidad · equipo / galería / perfil · seguridad) |
+| `/book/admin/*`    | `/admin/*`      | Dashboard privado (Drawer shell, agenda / servicios / disponibilidad · equipo / galería / perfil / reseñas · seguridad) |
 | `/book/<slug>`     | `/<slug>`       | Portal público de reservas de cada negocio (guest booking)        |
 
 ## Superficies y flujos
@@ -104,6 +104,22 @@ rechazado como problema de sesión. Al iniciar sesión se valida además que la 
 `Viewer`), por lo que un desajuste de autenticación se ve en `/login`, no repartido por el panel. Detalle:
 `specs/book/012-centralized-api-errors/` y `specs/api/011-jwt-algorithm-support/`.
 
+## Notificaciones, moderación y UX del panel (feature `016-admin-ux-hardening`)
+
+- **Toasts globales**: `shared/components/Toaster.tsx` (`ToastProvider` + `useToast`) ofrece avisos flotantes con
+  colores semánticos (verde éxito, amarillo validación, azul info, rojo error), auto-ocultado, descartables y
+  accesibles (`aria-live`); montado en el layout raíz. Sin dependencias nuevas.
+- **Sin doble envío**: `shared/hooks/useAsyncAction` estandariza el estado pendiente; los modales de galería,
+  equipo, servicios y agenda deshabilitan el submit mientras hay una petición en vuelo, cierran al éxito y
+  revalidan la lista (`router.refresh()`).
+- **Moderación de reseñas** (`/admin/reviews`): lista las reseñas del negocio (cualquier estado), marca las
+  pendientes y permite aprobar/rechazar (idempotente) o eliminar con confirmación; solo las aprobadas se publican.
+  Backend: `specs/api/015-review-moderation`.
+- **Reglas de imagen del perfil**: el logo se recomienda cuadrado (1:1, 512×512) y la portada banner (3:1, 1200×400);
+  cuando la imagen es medible se bloquea el guardado si no cumple el aspecto, y si no es medible se muestra la guía.
+- **Acciones antes huérfanas**: `/admin/services` crea/edita/elimina servicios de verdad (antes era un placeholder)
+  y `/admin/agenda` "Nueva cita" compone un instante ISO con offset (antes fallaba la validación y no persistía).
+
 ## Dominio y datos
 
 - **Estructura modular**: `src/app/` es la capa delgada de rutas App Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `dialogs/`, `hooks/`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (types, utils, componentes, `infra/` con el seam de sesión/results, `tenancy/`).
@@ -128,8 +144,10 @@ rechazado como problema de sesión. Al iniciar sesión se valida además que la 
 - `specs/book/013-gallery-integration/` — galería conectada al backend (admin `/admin/gallery` + `#galeria` del mini-sitio).
 - `specs/book/014-profile-policies-reviews/` — perfil editable + políticas y reseñas reales (admin `/admin/profile` + mini-sitio).
 - `specs/book/015-availability-time-blocks/` — bloqueos de disponibilidad reales (admin `/admin/availability`) y su exclusión del booking público.
+- `specs/book/016-admin-ux-hardening/` — toasts, estados de carga/anti-doble-envío, moderación de reseñas, reglas de imagen del perfil y activación de acciones huérfanas (servicios + nueva cita).
 - `specs/api/012-gallery-management/` — superficie GraphQL de la galería (lectura pública + add/remove autenticados y por tenant).
 - `specs/api/013-profile-policies-reviews/` — superficie GraphQL del perfil (update autenticado) y de reseñas (lectura + alta públicas).
 - `specs/api/014-availability-time-blocks/` — superficie GraphQL de bloqueos de disponibilidad (lectura pública + add/remove autenticados y por tenant).
+- `specs/api/015-review-moderation/` — superficie GraphQL de moderación de reseñas (estado pending/approved/rejected, lectura admin y aprobar/rechazar/eliminar autenticados).
 
 > Pendiente: paginación/windowing de la agenda (T039 de `001`) y suite Playwright E2E (`e2e/`).

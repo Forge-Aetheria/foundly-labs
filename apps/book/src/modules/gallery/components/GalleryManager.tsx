@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import {
   AlertDialog,
@@ -21,6 +22,8 @@ import {
 } from '../../../shared/types/tenancy';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { useToast } from '../../../shared/components/Toaster';
+import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 import { useAddGalleryItem, useRemoveGalleryItem } from '../hooks';
 
 export interface GalleryManagerProps {
@@ -51,6 +54,9 @@ export function GalleryManager({ photos, error }: GalleryManagerProps) {
   const [preview, setPreview] = useState<GalleryPhoto | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GalleryPhoto | null>(null);
   const [broken, setBroken] = useState<Set<string>>(new Set());
+  const router = useRouter();
+  const toast = useToast();
+  const { pending: saving, run } = useAsyncAction();
   const addItem = useAddGalleryItem();
   const removeItem = useRemoveGalleryItem();
 
@@ -79,12 +85,15 @@ export function GalleryManager({ photos, error }: GalleryManagerProps) {
       setFieldErrors({ url: 'Introduce una URL válida (http o https).' });
       return;
     }
-    const result = await addItem({
-      url: value.url.trim(),
-      title: value.title,
-      description: value.description,
-      category: value.category || undefined,
-    });
+    const result = await run(() =>
+      addItem({
+        url: value.url.trim(),
+        title: value.title,
+        description: value.description,
+        category: value.category || undefined,
+      }),
+    );
+    if (!result) return;
     if (!result.ok) {
       if (result.error.fields) {
         setFieldErrors(result.error.fields);
@@ -95,14 +104,19 @@ export function GalleryManager({ photos, error }: GalleryManagerProps) {
     }
     setItems((prev) => [...prev, result.data]);
     closeAdd();
+    toast.success('Foto añadida.');
+    router.refresh();
   }
 
   async function confirmDelete() {
     if (!deleteTarget) return;
-    const result = await removeItem({ id: deleteTarget.id });
-    if (result.ok) {
-      setItems((prev) => prev.filter((item) => item.id !== deleteTarget.id));
-    } else {
+    const target = deleteTarget;
+    const result = await run(() => removeItem({ id: target.id }));
+    if (result?.ok) {
+      setItems((prev) => prev.filter((item) => item.id !== target.id));
+      toast.success('Foto eliminada.');
+      router.refresh();
+    } else if (result && !result.ok) {
       setActionNotice(result.error.message);
     }
     setDeleteTarget(null);
@@ -269,10 +283,10 @@ export function GalleryManager({ photos, error }: GalleryManagerProps) {
               </Stack>
             </Stack>
             <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 1 }}>
-              <Button variant="secondary" onClick={closeAdd}>
+              <Button variant="secondary" onClick={closeAdd} disabled={saving}>
                 Cancelar
               </Button>
-              <Button variant="primary" onClick={save}>
+              <Button variant="primary" onClick={save} loading={saving}>
                 Guardar foto
               </Button>
             </Stack>

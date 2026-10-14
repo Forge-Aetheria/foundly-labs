@@ -4,11 +4,17 @@ import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import type { Tenant } from '../../../shared/types/tenancy';
+import { ToastProvider } from '../../../shared/components/Toaster';
 import { ProfileEditor } from '../components/ProfileEditor';
+import { checkImage } from '../utils/image-rules';
 
 const { updateMock } = vi.hoisted(() => ({ updateMock: vi.fn() }));
 
 vi.mock('../hooks', () => ({ useUpdateProfile: () => updateMock }));
+vi.mock('../utils/image-rules', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../utils/image-rules')>();
+  return { ...actual, checkImage: vi.fn() };
+});
 
 function makeTenant(): Tenant {
   return {
@@ -43,7 +49,9 @@ function makeTenant(): Tenant {
 function renderEditor(profile: Tenant | null = makeTenant(), error: string | null = null) {
   return render(
     <FoundlyThemeProvider>
-      <ProfileEditor profile={profile} error={error} />
+      <ToastProvider>
+        <ProfileEditor profile={profile} error={error} />
+      </ToastProvider>
     </FoundlyThemeProvider>,
   );
 }
@@ -51,6 +59,8 @@ function renderEditor(profile: Tenant | null = makeTenant(), error: string | nul
 describe('ProfileEditor (admin Perfil, feature 014)', () => {
   beforeEach(() => {
     updateMock.mockReset();
+    vi.mocked(checkImage).mockReset();
+    vi.mocked(checkImage).mockResolvedValue({ ok: true, measured: false });
   });
 
   it('renders the editable profile with current values, policies and hours', async () => {
@@ -120,5 +130,21 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
   it('shows a clean error dialog when the profile cannot be loaded', () => {
     renderEditor(null, 'No se pudo cargar el perfil.');
     expect(screen.getByRole('dialog')).toHaveTextContent('No se pudo cargar el perfil.');
+  });
+
+  it('blocks saving when a measured image violates its rule', async () => {
+    vi.mocked(checkImage).mockResolvedValueOnce({
+      ok: false,
+      message: 'La imagen debe ser cuadrada (1:1). Se recomienda 512×512px.',
+    });
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
+
+    expect(
+      await screen.findByText(/La imagen debe ser cuadrada \(1:1\)/),
+    ).toBeInTheDocument();
+    expect(updateMock).not.toHaveBeenCalled();
   });
 });

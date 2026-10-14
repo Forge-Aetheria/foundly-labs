@@ -5,9 +5,11 @@ import Box from '@mui/material/Box';
 import { Badge, Button, Card, Stack, TextField, Typography } from '@foundly/ui';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { useToast } from '../../../shared/components/Toaster';
 import { WEEKDAY_LABELS } from '../../../shared/utils/format';
 import type { BusinessHours, Tenant } from '../../../shared/types/tenancy';
 import { useUpdateProfile } from '../hooks';
+import { AVATAR_RULE, COVER_RULE, checkImage, ruleGuidance } from '../utils/image-rules';
 
 export interface ProfileEditorProps {
   /** Profile read from the API; `null` when the tenant could not be resolved. */
@@ -77,6 +79,7 @@ function HoursSummary({ hours }: { hours: BusinessHours[] }) {
  * reservation/cancellation policies, persisted through `useUpdateProfile`.
  */
 export function ProfileEditor({ profile, error }: ProfileEditorProps) {
+  const toast = useToast();
   const updateProfile = useUpdateProfile();
   const [draft, setDraft] = useState<Draft>(() => toDraft(profile));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
@@ -112,6 +115,18 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
     setSaved(false);
     setFieldErrors(null);
     setActionNotice(null);
+
+    const logoCheck = await checkImage(draft.logo, AVATAR_RULE);
+    const coverCheck = await checkImage(draft.cover, COVER_RULE);
+    if (!logoCheck.ok || !coverCheck.ok) {
+      setSaving(false);
+      setFieldErrors({
+        ...(logoCheck.ok ? {} : { logo: logoCheck.message }),
+        ...(coverCheck.ok ? {} : { cover: coverCheck.message }),
+      });
+      return;
+    }
+
     const result = await updateProfile({
       name: draft.name,
       category: draft.category,
@@ -136,6 +151,7 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
     }
     setDraft(toDraft(result.data));
     setSaved(true);
+    toast.success('Perfil guardado.');
   }
 
   return (
@@ -197,7 +213,7 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
             value={draft.logo}
             onChange={(value) => patch({ logo: value })}
             error={Boolean(fieldErrors?.logo)}
-            helperText={fieldErrors?.logo}
+            helperText={fieldErrors?.logo ?? ruleGuidance(AVATAR_RULE)}
             fullWidth
           />
           {draft.logo.trim() ? (
@@ -214,7 +230,7 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
             value={draft.cover}
             onChange={(value) => patch({ cover: value })}
             error={Boolean(fieldErrors?.cover)}
-            helperText={fieldErrors?.cover}
+            helperText={fieldErrors?.cover ?? ruleGuidance(COVER_RULE)}
             fullWidth
           />
           {draft.cover.trim() ? (

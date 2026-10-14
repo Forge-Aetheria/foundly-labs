@@ -4,6 +4,7 @@ import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import type { Resource, Service } from '../../../shared/types/appointments';
+import { ToastProvider } from '../../../shared/components/Toaster';
 import { StaffManager } from '../components/StaffManager';
 
 const { staffActionsMock } = vi.hoisted(() => ({
@@ -21,6 +22,7 @@ vi.mock('../hooks', () => ({
   useSetStaffActive: () => staffActionsMock.setStaffActive,
   useRemoveStaff: () => staffActionsMock.removeStaff,
 }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const services: Service[] = [
   {
@@ -54,7 +56,9 @@ function makeResource(overrides: Partial<Resource> = {}): Resource {
 function renderManager(staff: Resource[] = [makeResource(), makeResource({ id: 'res-luis', name: 'Luis Estilista', role: 'Barbero', serviceIds: [] })]) {
   return render(
     <FoundlyThemeProvider>
-      <StaffManager staff={staff} services={services} />
+      <ToastProvider>
+        <StaffManager staff={staff} services={services} />
+      </ToastProvider>
     </FoundlyThemeProvider>,
   );
 }

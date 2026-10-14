@@ -74,6 +74,9 @@ export interface PortalPolicy {
   body: string;
 }
 
+/** Moderation state of a review (feature 015/016). */
+export type ReviewState = 'pending' | 'approved' | 'rejected';
+
 /** A client review of the business shown on the provider landing (mock content). */
 export interface Review {
   id: string;
@@ -84,6 +87,8 @@ export interface Review {
   comment: string;
   /** ISO-8601 date of the review. */
   date: string;
+  /** Moderation state (feature 015): only `approved` are public. */
+  state: ReviewState;
 }
 
 /** An account able to sign in and administer a business. */

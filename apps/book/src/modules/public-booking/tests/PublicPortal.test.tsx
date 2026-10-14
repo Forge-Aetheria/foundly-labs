@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { ToastProvider } from '../../../shared/components/Toaster';
 import type { PublicBusinessProfile } from '../utils/types';
 import { PublicPortal } from '../components/PublicPortal';
 
@@ -62,12 +63,18 @@ const profile: PublicBusinessProfile = {
 };
 
 describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, contracts/portal-ui.contract.md)', () => {
-  it('renders the internal nav, main sections and the sticky sidebar', async () => {
-    const { container } = render(
+  function renderPortal(p = profile) {
+    return render(
       <FoundlyThemeProvider>
-        <PublicPortal profile={profile} />
+        <ToastProvider>
+          <PublicPortal profile={p} />
+        </ToastProvider>
       </FoundlyThemeProvider>,
     );
+  }
+
+  it('renders the internal nav, main sections and the sticky sidebar', async () => {
+    const { container } = renderPortal();
 
     // Internal nav anchors
     for (const label of ['Servicios', 'Equipo', 'Acerca de', 'Galería', 'Reseñas', 'Dirección']) {
@@ -99,11 +106,7 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
         ...profile.specialists.slice(1),
       ],
     };
-    const { container } = render(
-      <FoundlyThemeProvider>
-        <PublicPortal profile={withServices} />
-      </FoundlyThemeProvider>,
-    );
+    const { container } = renderPortal(withServices);
 
     const team = container.querySelector('#equipo')!;
     expect(within(team as HTMLElement).getByText('Corte de cabello')).toBeInTheDocument();
@@ -111,11 +114,7 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
 
   it('opens the guided booking checkout from the sticky sidebar CTA', async () => {
     const user = userEvent.setup();
-    render(
-      <FoundlyThemeProvider>
-        <PublicPortal profile={profile} />
-      </FoundlyThemeProvider>,
-    );
+    renderPortal();
 
     await user.click(screen.getByRole('button', { name: /Reservar en/ }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -124,11 +123,7 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
 
   it('opens the guided booking checkout from a service card Reservar pill', async () => {
     const user = userEvent.setup();
-    render(
-      <FoundlyThemeProvider>
-        <PublicPortal profile={profile} />
-      </FoundlyThemeProvider>,
-    );
+    renderPortal();
 
     const serviceButtons = screen.getAllByRole('button', { name: 'Reservar' });
     // The sidebar CTA carries a distinct aria-label; the remaining Reservar pills belong to services.

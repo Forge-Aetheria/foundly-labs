@@ -4,6 +4,7 @@ import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import type { GalleryPhoto } from '../../../shared/types/tenancy';
+import { ToastProvider } from '../../../shared/components/Toaster';
 import { GalleryManager } from '../components/GalleryManager';
 
 const { addMock, removeMock } = vi.hoisted(() => ({ addMock: vi.fn(), removeMock: vi.fn() }));
@@ -12,6 +13,7 @@ vi.mock('../hooks', () => ({
   useAddGalleryItem: () => addMock,
   useRemoveGalleryItem: () => removeMock,
 }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const photos: GalleryPhoto[] = [
   { id: 'g1', url: 'https://example.com/1.jpg', title: 'Fachada', category: 'local' },
@@ -21,7 +23,9 @@ const photos: GalleryPhoto[] = [
 function renderManager(items: GalleryPhoto[] = photos) {
   return render(
     <FoundlyThemeProvider>
-      <GalleryManager photos={items} />
+      <ToastProvider>
+        <GalleryManager photos={items} />
+      </ToastProvider>
     </FoundlyThemeProvider>,
   );
 }

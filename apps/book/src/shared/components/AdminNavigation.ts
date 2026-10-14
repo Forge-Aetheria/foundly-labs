@@ -5,6 +5,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import ReviewsIcon from '@mui/icons-material/Reviews';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import SettingsIcon from '@mui/icons-material/Settings';
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -29,6 +30,7 @@ export const PRIMARY_NAV: AdminNavItem[] = [
   { href: '/admin/staff', label: 'Equipo', icon: GroupsIcon },
   { href: '/admin/gallery', label: 'Galería', icon: PhotoLibraryIcon },
   { href: '/admin/profile', label: 'Perfil', icon: StorefrontIcon },
+  { href: '/admin/reviews', label: 'Reseñas', icon: ReviewsIcon },
   { href: '/admin/availability', label: 'Disponibilidad', icon: ScheduleIcon },
 ];
 

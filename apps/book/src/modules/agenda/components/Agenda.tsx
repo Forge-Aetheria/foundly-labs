@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Badge,
   Button,
@@ -17,6 +18,8 @@ import {
 import type { Appointment, Resource, Service } from '../../../shared/types/appointments';
 import { useCreateAppointment } from '../hooks';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { useToast } from '../../../shared/components/Toaster';
+import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 
 export interface AgendaRow {
   id: string;
@@ -85,7 +88,10 @@ type ModalState = { kind: 'create' } | { kind: 'detail'; row: AgendaRow } | null
 
 /** Agenda view: header + day/status filters + appointments table (Clean Light UI). */
 export function Agenda({ appointments, services = [], resources = [], error }: AgendaProps) {
+  const router = useRouter();
+  const toast = useToast();
   const createAppointment = useCreateAppointment();
+  const { pending: saving, run } = useAsyncAction();
   const [rows, setRows] = useState<AgendaRow[]>(appointments);
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -137,14 +143,24 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
       setCreateError('Selecciona un servicio y un profesional reales.');
       return;
     }
-    const result = await createAppointment({
-      resourceId: form.specialistId,
-      serviceId: form.serviceId,
-      clientName: form.clientName,
-      clientContact:
-        form.clientEmail || form.clientPhone ? `${form.clientEmail} · ${form.clientPhone}` : undefined,
-      startAt: `${form.date}T${form.time}:00`,
-    });
+    const start = new Date(`${form.date}T${form.time}:00`);
+    if (!form.date || Number.isNaN(start.getTime())) {
+      setCreateError('Selecciona una fecha y una hora válidas.');
+      return;
+    }
+    const result = await run(() =>
+      createAppointment({
+        resourceId: form.specialistId,
+        serviceId: form.serviceId,
+        clientName: form.clientName,
+        clientContact:
+          form.clientEmail || form.clientPhone
+            ? `${form.clientEmail} · ${form.clientPhone}`
+            : undefined,
+        startAt: start.toISOString(),
+      }),
+    );
+    if (!result) return;
     if (!result.ok) {
       setCreateError(result.error.message);
       return;
@@ -174,6 +190,8 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
       time: '09:00',
     });
     setModal(null);
+    toast.success('Cita creada.');
+    router.refresh();
   }
 
   const columns: DataTableColumn<AgendaRow>[] = [
@@ -370,10 +388,10 @@ export function Agenda({ appointments, services = [], resources = [], error }: A
               </Typography>
             ) : null}
             <Stack direction="row" justifyContent="flex-end" spacing={1}>
-              <Button variant="secondary" onClick={() => setModal(null)}>
+              <Button variant="secondary" onClick={() => setModal(null)} disabled={saving}>
                 Cancelar
               </Button>
-              <Button variant="primary" onClick={saveCreate}>
+              <Button variant="primary" onClick={saveCreate} loading={saving}>
                 Guardar
               </Button>
             </Stack>

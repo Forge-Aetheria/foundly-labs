@@ -5,6 +5,7 @@ query Reviews($tenantSlug: String) {
       author
       rating
       comment
+      state
       createdAt
     }
     average
@@ -18,6 +19,33 @@ mutation AddReview($input: AddReviewInput!) {
     author
     rating
     comment
+    state
     createdAt
   }
+}
+
+query MyReviews($state: ReviewState) {
+  myReviews(state: $state) {
+    id
+    author
+    rating
+    comment
+    state
+    createdAt
+  }
+}
+
+mutation SetReviewState($id: ID!, $state: ReviewState!) {
+  setReviewState(id: $id, state: $state) {
+    id
+    author
+    rating
+    comment
+    state
+    createdAt
+  }
+}
+
+mutation DeleteReview($id: ID!) {
+  deleteReview(id: $id)
 }
