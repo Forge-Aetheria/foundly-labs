@@ -26,13 +26,16 @@ overrides in `apps/book/src/shared/utils/landingCanon.ts`.
 - The right column wrapper MUST use `position: sticky; top: 5.5rem` (Tailwind `sticky top-22`) on desktop
   so the provider card follows the whole vertical scroll of the left column (services, policies, team,
   reviews).
-- **Overlap**: the right column MUST apply a **negative top margin on desktop** (`mt: { md: -10 }`, ≈ −80px)
-  so the solid info card rises over the lower edge of the hero banner, creating a floating layer. The
-  card MUST use a solid surface (`surface.cardLight`) with a soft elevated shadow (`theme.shadows[8]`)
-  and no translucent backdrop, so the photo behind stays decorative and metadata stays legible.
-- Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints) and the
-  negative margin is **disabled** (`mt: { xs: 0 }`) so the card stacks below the banner without covering
-  any button or text (FR-022).
+- **Overlap**: the two-column **content grid** MUST be pulled up with a **negative top margin on desktop**
+  (`mt: { md: -8 }`, ≈ −64px, reduced to `{ xs: -2 }` ≈ −16px on mobile) so the cards of **both columns**
+  (content cards on the left and the summary card on the right) overlap the lower edge of the hero banner.
+  The grid MUST sit on a higher layer than the photo (`position: relative; z-index: 1`, sidebar `z-index: 2`)
+  and its cards keep rounded corners with soft shadows.
+- The sidebar info card MUST use a **solid surface** (`surface.cardLight`) with a strong elevated shadow
+  (`theme.shadows[8]`) and no translucent backdrop, so the photo behind stays decorative and metadata stays
+  legible.
+- Mobile: the sidebar renders first as a **compact header card** (order swap via breakpoints) and the grid's
+  negative margin is **reduced** so the cards never cover a button or text (FR-022).
 
 > A **contained, rounded hero banner** (business cover, `width: 100%` inside the page `Container`,
 > ≈16px radius, capped height ≈320–360px, `object-fit: cover`) renders **below the header and above the

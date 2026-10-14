@@ -10,16 +10,17 @@ import { ProviderSections } from './ProviderSections';
 import { ProviderSidebar } from './ProviderSidebar';
 
 /**
- * Desktop amount (in `theme.spacing` units) the info card rises over the hero banner,
- * producing the floating-card overlap of the reference layout (FR-021).
+ * Desktop amount (in `theme.spacing` units, 8px each) the content grid rises over the
+ * hero banner so both columns' cards overlap it (FR-021). Reduced on mobile (FR-022).
  */
-export const SIDEBAR_OVERLAP = 10;
+export const CONTENT_OVERLAP = { xs: -2, md: -8 } as const;
 
 /**
  * Provider landing (`/[tenantSlug]`): internal nav + a contained rounded hero banner +
- * two-column layout (main sections left, solid info card right) where the card overlaps
- * the lower edge of the banner on desktop and stacks cleanly without overlap on mobile.
- * The guided booking checkout modal closes over the canvas.
+ * a two-column content grid (main sections left, summary card right) that is pulled up
+ * with a negative top margin so both columns' cards overlap the lower edge of the banner.
+ * The overlap is reduced on mobile so no critical content is covered; the guided booking
+ * checkout modal closes over the canvas.
  */
 export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
   const [bookService, setBookService] = useState<PublicService | null>(null);
@@ -42,7 +43,12 @@ export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
           direction={{ xs: 'column', md: 'row' }}
           spacing={{ xs: 2, md: 4 }}
           alignItems="flex-start"
-          sx={{ mt: { xs: 2, md: 2 } }}
+          sx={{
+            // Slide the whole grid up over the banner and lift it onto a higher layer.
+            mt: CONTENT_OVERLAP,
+            position: 'relative',
+            zIndex: 1,
+          }}
         >
           <Stack sx={{ flexGrow: 1, minWidth: 0, width: '100%', order: { xs: 2, md: 1 } }}>
             <ProviderSections profile={profile} onReserve={setBookService} />
@@ -53,11 +59,9 @@ export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
               order: { xs: 1, md: 2 },
               width: { xs: '100%', md: 340 },
               flexShrink: 0,
-              // Float the info card over the banner on desktop; stack it (no overlap) on mobile.
-              mt: { xs: 0, md: -SIDEBAR_OVERLAP },
               position: { md: 'sticky' },
               top: { md: 88 },
-              zIndex: 10,
+              zIndex: 2,
             }}
           >
             <ProviderSidebar profile={profile} onReserve={reserveFirstService} />
