@@ -197,7 +197,15 @@ type ReviewObject {
   author: String!
   rating: Int!
   comment: String!
+  state: ReviewState!
   createdAt: String!
+}
+
+"""Moderation state of a review (015)."""
+enum ReviewState {
+  pending
+  approved
+  rejected
 }
 
 type ReviewSummaryObject {
@@ -237,6 +245,7 @@ type Query {
   mySpecialist(id: ID!): MySpecialist
   gallery(tenantId: ID, tenantSlug: String): [GalleryItem!]!
   reviews(tenantId: ID, tenantSlug: String): ReviewSummaryObject!
+  myReviews(state: ReviewState): [ReviewObject!]!
   timeBlocks(tenantId: ID, tenantSlug: String, specialistId: ID): [TimeBlockObject!]!
 }
 
@@ -266,6 +275,8 @@ type Mutation {
   addGalleryItem(input: AddGalleryItemInput!): GalleryItem!
   removeGalleryItem(id: ID!): Boolean!
   addReview(input: AddReviewInput!): ReviewObject!
+  setReviewState(id: ID!, state: ReviewState!): ReviewObject!
+  deleteReview(id: ID!): Boolean!
   addTimeBlock(input: AddTimeBlockInput!): TimeBlockObject!
   removeTimeBlock(id: ID!): Boolean!
 }

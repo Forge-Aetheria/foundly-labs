@@ -1,6 +1,19 @@
-import { Field, Float, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Float, ID, InputType, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
-/** A customer review of a business (feature 013). */
+/** Moderation state of a review (feature 015). */
+export const ReviewState = {
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+export type ReviewState = (typeof ReviewState)[keyof typeof ReviewState];
+
+registerEnumType(ReviewState, {
+  name: 'ReviewState',
+  description: 'Moderation state of a review (015).',
+});
+
+/** A customer review of a business (feature 013; moderation state from 015). */
 @ObjectType()
 export class ReviewObject {
   @Field(() => ID)
@@ -14,6 +27,9 @@ export class ReviewObject {
 
   @Field(() => String)
   comment!: string;
+
+  @Field(() => ReviewState)
+  state!: ReviewState;
 
   @Field(() => String)
   createdAt!: string;

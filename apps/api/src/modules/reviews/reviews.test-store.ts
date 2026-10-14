@@ -1,6 +1,7 @@
 import { validationError } from '../../shared/tenant-scope';
 import type { TenantScopeInput } from '../../shared/tenant-scope';
 import type { ReviewRow, ReviewsStore } from './reviews.store';
+import type { ReviewState } from './reviews.types';
 
 let seq = 0;
 const nextId = (): string => `rev-${++seq}-${Date.now()}`;
@@ -34,9 +35,9 @@ export function createMemoryReviewsStore(): MemoryReviewsStore {
       }
       return slugToTenant.get(tenantSlug ?? '') ?? null;
     },
-    async listByTenant(tenantId) {
+    async listByTenant(tenantId, state) {
       return [...rows.values()]
-        .filter((row) => row.tenantId === tenantId)
+        .filter((row) => row.tenantId === tenantId && (state === undefined || row.state === state))
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     },
     async create(tenantId, input) {
@@ -46,10 +47,27 @@ export function createMemoryReviewsStore(): MemoryReviewsStore {
         author: input.author,
         rating: input.rating,
         comment: input.comment,
+        state: 'pending',
         createdAt: new Date(Date.now() + ++seq).toISOString(),
       };
       rows.set(row.id, row);
       return row;
+    },
+    async setState(id, tenantId, state: ReviewState) {
+      const row = rows.get(id);
+      if (!row || row.tenantId !== tenantId) {
+        return null;
+      }
+      const updated: ReviewRow = { ...row, state };
+      rows.set(id, updated);
+      return updated;
+    },
+    async deleteById(id, tenantId) {
+      const row = rows.get(id);
+      if (!row || row.tenantId !== tenantId) {
+        return false;
+      }
+      return rows.delete(id);
     },
   };
 }
