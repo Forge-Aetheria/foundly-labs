@@ -73,6 +73,53 @@ export class ServiceObject {
   advanceValue?: number | null;
 }
 
+/** One weekday opening range on a public directory card (018). */
+@ObjectType('BusinessSchedule')
+export class BusinessScheduleObject {
+  @Field(() => Int)
+  weekday!: number;
+
+  @Field(() => String)
+  startTime!: string;
+
+  @Field(() => String)
+  endTime!: string;
+}
+
+/** Public directory listing entry (018). */
+@ObjectType('BusinessSummary')
+export class BusinessSummaryObject {
+  @Field(() => ID)
+  tenantId!: string;
+
+  @Field(() => String)
+  slug!: string;
+
+  @Field(() => String)
+  name!: string;
+
+  @Field(() => String)
+  category!: string;
+
+  @Field(() => String, { nullable: true })
+  description?: string | null;
+
+  @Field(() => String, { nullable: true })
+  address?: string | null;
+
+  @Field(() => String, { nullable: true })
+  phone?: string | null;
+
+  @Field(() => String, { nullable: true })
+  logo?: string | null;
+
+  @Field(() => String, { nullable: true })
+  cover?: string | null;
+
+  @Field(() => [BusinessScheduleObject])
+  schedule!: BusinessScheduleObject[];
+}
+
 @ObjectType()
 export class TenantObject {
   @Field(() => ID)

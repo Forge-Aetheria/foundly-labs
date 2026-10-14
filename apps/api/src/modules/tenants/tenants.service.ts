@@ -5,6 +5,8 @@ import { PrismaService } from '../../shared/prisma/prisma.service';
 import type { AuthUser } from '../auth/jwt.types';
 import {
   BusinessProfileObject,
+  BusinessScheduleObject,
+  BusinessSummaryObject,
   CreateTenantInput,
   PortalPolicyObject,
   ServiceObject,
@@ -30,6 +32,24 @@ const TENANT_INCLUDE = {
 type TenantWithProfile = Prisma.TenantGetPayload<{
   include: typeof TENANT_INCLUDE;
 }>;
+
+const DIRECTORY_DEFAULT_LIMIT = 20;
+const DIRECTORY_MAX_LIMIT = 100;
+
+const DIRECTORY_INCLUDE = {
+  profile: true,
+  availability: true,
+} satisfies Prisma.TenantInclude;
+
+type TenantForDirectory = Prisma.TenantGetPayload<{
+  include: typeof DIRECTORY_INCLUDE;
+}>;
+
+export interface SearchBusinessesInput {
+  query?: string | null;
+  limit?: number | null;
+  offset?: number | null;
+}
 
 function validationError(message: string): GraphQLError {
   return new GraphQLError(message, {
@@ -110,6 +130,48 @@ export class TenantsService {
       include: { tenant: { include: TENANT_INCLUDE } },
     });
     return businessProfile ? this.toTenantObject(businessProfile.tenant) : null;
+  }
+
+  /**
+   * Public discovery directory (018): active businesses with a public profile and at least one
+   * active service, optionally filtered by name/category/address (case-insensitive), ordered by
+   * name and bounded by limit/offset.
+   */
+  async searchBusinesses(input: SearchBusinessesInput): Promise<BusinessSummaryObject[]> {
+    const limit = input.limit ?? DIRECTORY_DEFAULT_LIMIT;
+    if (!Number.isInteger(limit) || limit <= 0) {
+      throw validationError('limit must be a positive integer');
+    }
+    const take = Math.min(limit, DIRECTORY_MAX_LIMIT);
+    const offset = input.offset ?? 0;
+    if (!Number.isInteger(offset) || offset < 0) {
+      throw validationError('offset must be a non-negative integer');
+    }
+    const term = input.query?.trim() ?? '';
+
+    const where: Prisma.TenantWhereInput = {
+      status: 'active',
+      profile: { isNot: null },
+      services: { some: { active: true } },
+      ...(term
+        ? {
+            OR: [
+              { name: { contains: term, mode: 'insensitive' } },
+              { category: { contains: term, mode: 'insensitive' } },
+              { profile: { is: { address: { contains: term, mode: 'insensitive' } } } },
+            ],
+          }
+        : {}),
+    };
+
+    const rows = await this.prismaService.client.tenant.findMany({
+      where,
+      include: DIRECTORY_INCLUDE,
+      orderBy: { name: 'asc' },
+      take,
+      skip: offset,
+    });
+    return rows.map((row) => this.toBusinessSummary(row));
   }
 
   async create(input: CreateTenantInput): Promise<TenantObject> {
@@ -283,6 +345,46 @@ export class TenantsService {
       });
     }
     return user.tenantId;
+  }
+
+  /** Aggregate a business's availability into weekday opening ranges (earliest start, latest end). */
+  private toSchedule(
+    rules: { weekday: number; startTime: string; endTime: string }[],
+  ): BusinessScheduleObject[] {
+    const byWeekday = new Map<number, { startTime: string; endTime: string }>();
+    for (const rule of rules) {
+      const current = byWeekday.get(rule.weekday);
+      if (!current) {
+        byWeekday.set(rule.weekday, { startTime: rule.startTime, endTime: rule.endTime });
+        continue;
+      }
+      byWeekday.set(rule.weekday, {
+        startTime: rule.startTime < current.startTime ? rule.startTime : current.startTime,
+        endTime: rule.endTime > current.endTime ? rule.endTime : current.endTime,
+      });
+    }
+    return [...byWeekday.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([weekday, range]) => ({
+        weekday,
+        startTime: range.startTime,
+        endTime: range.endTime,
+      }));
+  }
+
+  private toBusinessSummary(row: TenantForDirectory): BusinessSummaryObject {
+    return {
+      tenantId: row.id,
+      slug: row.profile?.slug ?? '',
+      name: row.name,
+      category: row.category,
+      description: row.profile?.bio ?? null,
+      address: row.profile?.address ?? null,
+      phone: row.profile?.phone ?? null,
+      logo: row.profile?.logo ?? null,
+      cover: row.profile?.cover ?? null,
+      schedule: this.toSchedule(row.availability),
+    };
   }
 
   private toTenantObject(row: TenantWithProfile): TenantObject {
