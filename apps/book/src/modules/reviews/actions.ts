@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { apiRequestAdmin } from '../../shared/api/admin-request';
 import { apiRequest } from '../../shared/api/client';
 import {
@@ -71,6 +72,8 @@ export async function submitPublicReview(input: unknown): Promise<ActionResult<R
     },
   });
   if (!result.ok) return result;
+  // The public portal is dynamic; invalidate its cached data for this business.
+  revalidatePath(`/${parsed.data.tenantSlug}`);
   return ok(mapReview(result.data.addReview));
 }
 
@@ -94,6 +97,7 @@ export async function setReviewState(input: unknown): Promise<ActionResult<Revie
     state: toApiState(parsed.data.state),
   });
   if (!result.ok) return result;
+  revalidatePath('/admin/reviews');
   return ok(mapReview(result.data.setReviewState));
 }
 
@@ -105,5 +109,6 @@ export async function deleteReview(input: unknown): Promise<ActionResult<{ id: s
   }
   const result = await apiRequestAdmin(DeleteReviewDocument, { id: parsed.data.id });
   if (!result.ok) return result;
+  revalidatePath('/admin/reviews');
   return ok({ id: parsed.data.id });
 }

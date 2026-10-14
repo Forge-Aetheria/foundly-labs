@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -118,8 +118,12 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
     renderEditor();
 
     await user.click(screen.getByRole('button', { name: '+ Añadir política' }));
-    await user.type(screen.getByLabelText(/Título · política 2/), 'Depósito');
-    await user.type(screen.getAllByLabelText(/Contenido/)[1]!, 'Se pide un depósito.');
+    fireEvent.change(screen.getByLabelText(/Título · política 2/), {
+      target: { value: 'Depósito' },
+    });
+    fireEvent.change(screen.getAllByLabelText(/Contenido/)[1]!, {
+      target: { value: 'Se pide un depósito.' },
+    });
     await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
 
     const arg = updateMock.mock.calls[0]![0] as { policies: { title: string }[] };

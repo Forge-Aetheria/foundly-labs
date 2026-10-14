@@ -43,6 +43,8 @@ describe('LoginForm (009 — US1)', () => {
       password: 'mock-credential',
     });
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/agenda'));
+    // Loading persists until the App Router lands on the admin workspace.
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeDisabled();
   });
 
   it('shows an inline error for invalid credentials', async () => {

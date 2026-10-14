@@ -16,6 +16,7 @@ vi.mock('../../../shared/api/client', () => ({
 vi.mock('../../../shared/api/admin-request', () => ({
   apiRequestAdmin: (...args: unknown[]) => adminMock(...args),
 }));
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 describe('reviews actions (feature 014 submission + 015/016 moderation)', () => {
   beforeEach(() => {

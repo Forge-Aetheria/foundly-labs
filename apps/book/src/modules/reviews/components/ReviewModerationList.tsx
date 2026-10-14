@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertDialog, Badge, Button, Card, Chip, Stack, Typography } from '@foundly/ui';
 import type { BadgeStatus } from '@foundly/ui';
@@ -45,6 +45,13 @@ export function ReviewModerationList({ reviews, error }: ReviewModerationListPro
   const [filter, setFilter] = useState<Filter>('all');
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Review | null>(null);
+
+  // Keep the list in sync with the server: `router.refresh()` (and any App Router
+  // revalidation) re-renders this Server Component with fresh `reviews`; without
+  // this the component would keep the stale snapshot it was mounted with.
+  useEffect(() => {
+    setItems(reviews);
+  }, [reviews]);
 
   const visible = filter === 'all' ? items : items.filter((review) => review.state === filter);
 

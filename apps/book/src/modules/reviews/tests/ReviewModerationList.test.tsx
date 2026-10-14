@@ -57,6 +57,33 @@ describe('ReviewModerationList (feature 015/016, US3)', () => {
     expect(screen.getByText('No hay reseñas')).toBeInTheDocument();
   });
 
+  it('reflects fresh server data when the reviews prop changes', () => {
+    const { rerender } = renderList(reviews);
+    expect(screen.queryByText('Nueva')).not.toBeInTheDocument();
+
+    const next: Review[] = [
+      ...reviews,
+      {
+        id: 'r3',
+        tenantId: 'ten-ana',
+        author: 'Nueva',
+        rating: 5,
+        comment: 'Recién creada',
+        date: '2026-10-14T10:00:00.000Z',
+        state: 'pending',
+      },
+    ];
+    rerender(
+      <FoundlyThemeProvider>
+        <ToastProvider>
+          <ReviewModerationList reviews={next} />
+        </ToastProvider>
+      </FoundlyThemeProvider>,
+    );
+
+    expect(screen.getByText('Nueva')).toBeInTheDocument();
+  });
+
   it('approves a review through the hook and shows a success toast', async () => {
     setMock.mockResolvedValue({ ok: true, data: { ...reviews[0], state: 'approved' } });
     const user = userEvent.setup();

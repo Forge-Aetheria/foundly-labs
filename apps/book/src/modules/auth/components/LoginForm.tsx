@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
 import { useSignIn } from '../hooks';
@@ -14,6 +14,8 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
   const [fields, setFields] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [navigating, startNavigation] = useTransition();
+  const busy = submitting || navigating;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,16 +25,20 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
 
     try {
       const result = await signIn({ email, password });
-      if (result.ok) {
-        router.push(result.data.redirectTo);
-        router.refresh();
+      if (!result.ok) {
+        setFormError(result.error.message);
+        setFields(result.error.fields ?? {});
+        setSubmitting(false);
         return;
       }
-      setFormError(result.error.message);
-      setFields(result.error.fields ?? {});
+      // Keep the loading state until the App Router lands on the admin workspace
+      // (the form unmounts on success); only an error clears it.
+      startNavigation(() => {
+        router.push(result.data.redirectTo);
+        router.refresh();
+      });
     } catch {
       setFormError('No se pudo iniciar sesión. Inténtalo de nuevo.');
-    } finally {
       setSubmitting(false);
     }
   }
@@ -73,7 +79,7 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
           </Typography>
         ) : null}
         <Stack direction="row" justifyContent="flex-end">
-          <Button type="submit" variant="primary" loading={submitting} disabled={submitting}>
+          <Button type="submit" variant="primary" loading={busy} disabled={busy}>
             Entrar
           </Button>
         </Stack>
