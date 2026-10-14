@@ -8,10 +8,14 @@ overrides in `apps/book/src/shared/utils/landingCanon.ts`.
 
 ## Internal navigation (FR-005)
 
-- Glass bar (`--book-glass` + blur + subtle bottom border) that scrolls with the page, with anchor pills:
-  `Servicios`, `Equipo`, `Acerca de`, `Galería`, `Reseñas`, `Dirección`.
-- Pills are `MuiLink`/`Typography`-based anchors styled like the landing `SECONDARY_BUTTON_SX`;
-  scrolling is smooth (`html { scroll-behavior: smooth }`) with `scroll-margin-top` per section.
+- Sticky glass bar (`--book-glass` + blur + subtle bottom border) with three aligned zones:
+  - **Left — business brand**: compact avatar/logo (or initials) + the **current business name**.
+  - **Centre — section nav**: plain-text anchors (`Servicios`, `Equipo`, `Acerca de`, `Galería`, `Reseñas`,
+    `Ubicación`) in a clean horizontal bar (no floating pills). The active item is highlighted with a thin
+    `primary.main` `border-bottom` indicator, tracked as the page scrolls.
+  - **Right — contact**: the business phone (`tel:`) and WhatsApp links, aligned to the right.
+- Links are `MuiLink`/`Typography` anchors; activation scrolls smoothly to the anchored section
+  (`scrollIntoView({ behavior: 'smooth' })`) and each section keeps its `scroll-margin-top`.
 - Scrollable horizontally on small viewports (no overflow). It is NOT pinned so it never collides with
   the sticky sidebar.
 
@@ -26,7 +30,7 @@ overrides in `apps/book/src/shared/utils/landingCanon.ts`.
 
 | Column           | Sections / content                                                                                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Main             | Gallery banner (cover + photo strip), Políticas card, Servicios (grouped by category), Equipo, Acerca de, Galería (grid), Reseñas (summary + cards), Dirección y horarios.           |
+| Main             | Gallery banner (cover + photo strip), Políticas card, Servicios (grouped by category), Equipo, Acerca de, Galería (grid), Reseñas (summary + cards), Ubicación y horarios.           |
 | Sidebar (sticky) | Avatar/logo + name + category, rating stars + numeric, pill **Reservar** (`#6C5CE7`), hours `<details>` disclosure ("Abierto · Cierra a las HH:mm"), address + phone + social links. |
 
 ## Cards and tokens

@@ -80,12 +80,12 @@ describe('PublicPortal (provider landing, FR-005…FR-008 + two-column landing, 
     const { container } = renderPortal();
 
     // Internal nav anchors
-    for (const label of ['Servicios', 'Equipo', 'Acerca de', 'Galería', 'Reseñas', 'Dirección']) {
+    for (const label of ['Servicios', 'Equipo', 'Acerca de', 'Galería', 'Reseñas', 'Ubicación']) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument();
     }
 
-    // Sidebar: brand, rating and the pill Reservar CTA
-    expect(screen.getByText('Estudio Ana')).toBeInTheDocument();
+    // Header + sidebar: the business brand is shown
+    expect(screen.getAllByText('Estudio Ana').length).toBeGreaterThan(0);
     expect(screen.getAllByText('4.6').length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /Reservar en/ })).toBeInTheDocument();
 

@@ -392,9 +392,9 @@ function ReviewsSection({
 
 function DirectionSection({ profile }: { profile: PublicBusinessProfile }) {
   return (
-    <Stack component="section" id="direccion" spacing={2} sx={SECTION_OFFSET}>
+    <Stack component="section" id="ubicacion" spacing={2} sx={SECTION_OFFSET}>
       <Typography variant="h4" component="h2">
-        Dirección y horarios
+        Ubicación y horarios
       </Typography>
       <Card sx={GLASS_CARD_SX}>
         <Stack spacing={1.5}>

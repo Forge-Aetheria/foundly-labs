@@ -22,7 +22,7 @@ export function PublicPortal({ profile }: { profile: PublicBusinessProfile }) {
 
   return (
     <Stack>
-      <ProviderNav />
+      <ProviderNav profile={profile} />
       <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}

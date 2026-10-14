@@ -21,7 +21,7 @@ As a client, I want to open a business's public page and immediately understand 
 **Acceptance Scenarios**:
 
 1. **Given** an active business, **When** I open its public page, **Then** I see a decorative cover, the brand avatar/logo, name, category and the rating (e.g. "4.6" with five-star row).
-2. **Given** the provider landing, **When** I activate the internal nav (Servicios, Equipo, Acerca de, Galería, Reseñas, Dirección), **Then** the page scrolls smoothly to the requested anchored section.
+2. **Given** the provider landing, **When** I activate the internal nav (Servicios, Equipo, Acerca de, Galería, Reseñas, Ubicación), **Then** the page scrolls smoothly to the requested anchored section and the active item shows a primary border-bottom indicator.
 3. **Given** the main column, **When** I scroll, **Then** I find the policies card, the service catalog grouped by category, the team cards, the "Acerca de" bio, the photo gallery and the reviews (summary rating + comments).
 4. **Given** any viewport, **When** the page is opened, **Then** on desktop the sidebar stays sticky on the right and on mobile it becomes a compact header card above the content.
 5. **Given** an unknown, draft or suspended business, **When** I open its page, **Then** only an "unavailable" state is shown and no business data is exposed.
@@ -103,7 +103,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 - **FR-002**: The public page MUST show the business avatar/logo, commercial name, category and its rating (average, one decimal) with a five-star row when reviews exist.
 - **FR-003**: The public page MUST include an "Acerca de" section with the business biography when configured.
 - **FR-004**: The public page MUST expose contact data when configured: physical address, phone and social links (Instagram, WhatsApp).
-- **FR-005**: The public page MUST provide an internal navigation header with anchored links (Servicios, Equipo, Acerca de, Galería, Reseñas, Dirección) that scroll smoothly to the matching sections.
+- **FR-005**: The public page MUST provide an internal navigation header whose **left** shows the business brand (avatar/logo + the current business name), whose **centre** shows plain-text anchored links (Servicios, Equipo, Acerca de, Galería, Reseñas, Ubicación) laid out as a clean horizontal bar with the active item marked by a thin primary border-bottom, and whose **right** shows the business contact (phone/WhatsApp). Anchored links MUST scroll smoothly to the matching sections.
 - **FR-006**: The public page MUST group the active services into a catalog by category, each service showing name, description, duration and current rate with a pill "Reservar" button.
 - **FR-007**: The public page MUST list the business's active specialists as cards with avatar (or initials), name, role and bio; if none exist, the section MUST be omitted.
 - **FR-008**: The public page MUST show the opening hours per weekday and the business's booking/cancellation policies.

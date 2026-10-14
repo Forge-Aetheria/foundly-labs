@@ -109,7 +109,8 @@ As an anonymous visitor, I want "Ver perfil" to take me to the business's public
 - **FR-010**: The directory data access MUST follow the module data-layer convention (`actions.ts` / `hooks.ts` / `<module>.graphql` with codegen-only types); the UI MUST NOT call the API or data hooks directly.
 - **FR-011**: The page MUST be responsive and accessible (keyboard-operable search and card actions, meaningful link semantics, adequate color contrast using existing design tokens).
 - **FR-012**: Automated tests MUST cover: rendering the directory grid from the listing; search filtering (match, clear, no results); card content and graceful placeholders; navigation from a card to the public page; and the empty/error/loading states.
-- **FR-013**: All book gates (`build`, `typecheck`, `test`, lint) MUST pass with no regressions under strict TypeScript.
+- **FR-013**: The directory route MUST render inside the **global public header** (shared with the landing product page) so the Foundly Book logo/isotipo keeps **identical dimensions** and its nav links ("Negocios", "Ver Demo") and primary action stay vertically centred on both surfaces.
+- **FR-014**: All book gates (`build`, `typecheck`, `test`, lint) MUST pass with no regressions under strict TypeScript.
 
 ### Key Entities _(include if feature involves data)_
 
