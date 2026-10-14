@@ -22,7 +22,7 @@
 - [x] T006 `tsc --noEmit` for `apps/api` — green.
 - [x] T007 ESLint — green.
 - [x] T008 `jwt.service.spec.ts` (9/9) executed green, including the new ES256 test.
-- [~] T009 Full `nest`/Vitest suite — **blocked in the author's machine** by the OS Application Control policy (`LoadLibraryExW failed` on the unsigned `@swc/core` native addon required by the test transform). `npm rebuild @swc/core` + a clean reinstall of `@swc/core-win32-x64-msvc@1.16.18` were performed; the carrier materializes but Windows blocks loading the unsigned binary. Not a code issue: a non-SWC (esbuild) runner confirms the transform (decorator metadata) is the only gap, and pure unit specs pass.
+- [x] T009 Full `nest`/Vitest suite — **originally blocked in the author's machine** by the OS Application Control policy (`LoadLibraryExW failed` on the unsigned `@swc/core` native addon required by the test transform); `npm rebuild @swc/core` + a clean reinstall of `@swc/core-win32-x64-msvc@1.16.18` did not help because Windows blocks loading the unsigned binary. Not a code issue: a non-SWC (esbuild) runner confirmed the transform (decorator metadata) was the only gap, and pure unit specs passed. **Resolved 2026-10-13**: the API test transform no longer uses SWC (`apps/api/vitest.config.ts` compiles TS with the pure-JS TypeScript compiler), so the full suite runs locally — 32 files / 183 tests green.
 
 ---
 

@@ -179,4 +179,4 @@ Task: "e2e add scenarios in apps/api/src/modules/gallery/gallery.e2e.spec.ts"
 - `[P]` = different files, no dependencies.
 - `[Story]` maps each task to a user story for traceability.
 - Constraint values are quoted from `data-model.md` (URL absolute http(s); title ≤ 200; description ≤ 2000; category ∈ {local, trabajos, equipo}).
-- Environment note: if a WDAC policy blocks the unsigned `@swc/core` addon, run the API `test` gate where that policy is absent (typecheck and direct unit specs are unaffected).
+- Environment note (resolved 2026-10-13): the API test transform no longer uses SWC — `apps/api/vitest.config.ts` compiles TypeScript with the pure-JS TypeScript compiler (`ts.transpileModule`), so the previous WDAC block on the unsigned `@swc/core` addon no longer applies and the full `test` gate runs locally (typecheck and direct unit specs included).

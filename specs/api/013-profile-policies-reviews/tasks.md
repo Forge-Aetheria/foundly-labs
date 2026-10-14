@@ -185,4 +185,4 @@ Task: "Create in-memory store in apps/api/src/modules/reviews/reviews.test-store
 - `[P]` = different files, no dependencies.
 - Constraint values quoted from `data-model.md` (slug pattern; URLs absolute http(s); bio ≤ 2000; name/category ≤ 120; author ≤ 120; rating integer 1–5; comment ≤ 2000).
 - Reviews creation is **public** (resolved option A); profile updates are authenticated/tenant-scoped.
-- Environment note: if WDAC blocks the unsigned `@swc/core` addon, run the API `test` gate where that policy is absent (typecheck and direct unit specs are unaffected).
+- Environment note (resolved 2026-10-13): the API test transform no longer uses SWC — `apps/api/vitest.config.ts` compiles TypeScript with the pure-JS TypeScript compiler (`ts.transpileModule`), so the previous WDAC block on the unsigned `@swc/core` addon no longer applies and the full `test` gate runs locally (typecheck and direct unit specs included).

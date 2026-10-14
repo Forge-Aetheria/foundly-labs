@@ -74,4 +74,4 @@ npm run lint -w @foundly/api
 npm run build -w @foundly/api
 ```
 
-> Environment note: if a WDAC policy blocks the unsigned `@swc/core` addon used by the API test transform, run the suite where that policy is absent (type-checking and direct unit specs are unaffected).
+> Environment note (resolved 2026-10-13): the API test transform no longer uses SWC — `apps/api/vitest.config.ts` compiles TypeScript with the pure-JS TypeScript compiler (`ts.transpileModule`), so the previous WDAC block on the unsigned `@swc/core` addon no longer applies and the full suite runs locally.

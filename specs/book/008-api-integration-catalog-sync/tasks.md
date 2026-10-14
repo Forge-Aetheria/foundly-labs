@@ -127,7 +127,7 @@
 **Purpose**: Quality gates, docs consistency and zero-regression verification (FR-010 / SC-005).
 
 - [x] T027 Run `npm run typecheck -w @foundly/book` ✅ and `npm run test -w @foundly/book` ✅ (26 files / 118 tests) and `npm run build -w @foundly/book` ✅ — all pass
-- [ ] T028 Run `npm run build -w @foundly/api` ✅ and `npm run test -w @foundly/api` ⚠️ and `npm run lint` (repo root) ✅ — build & lint pass; **API vitest is blocked by a corrupt `@swc/core` win32 native binary** (pre-existing environment/tooling issue, unrelated to this feature; `@swc/core-win32-x64-msvc@1.16.18` binary loads as "not a valid Win32 application"). Re-run `npm run test -w @foundly/api` once the toolchain is restored.
+- [x] T028 Run `npm run build -w @foundly/api` ✅ and `npm run test -w @foundly/api` ✅ and `npm run lint` (repo root) ✅ — build, lint and the full API test suite pass; the earlier blocker (corrupt/unloadable `@swc/core` win32 native binary, `@swc/core-win32-x64-msvc@1.16.18` loading as "not a valid Win32 application") is **resolved (2026-10-13)**: the API test transform no longer uses SWC and the suite runs locally — 32 files / 183 tests green.
 - [ ] T029 Execute the quickstart validation scenarios in `specs/book/008-api-integration-catalog-sync/quickstart.md` (connectivity, session/binding, catalog sync, tenant guard, outage, gates) — **requires a live API + PostgreSQL/Supabase + Supabase Auth project** (scenarios 1–5) and a healthy npm toolchain; not runnable in this environment. Scenario 6 (gates) partially run (see T027/T028).
 - [x] T030 Cleanup pass: no `any`/implicit `as` casts in new code, no secrets tracked (`.env.example` only; new env vars via `architecture.md` §3.1), `.gitignore` covers generated codegen artifacts, admin surfaces keep `@foundly/ui`, `npm run lint` ✅ root
 
@@ -169,8 +169,8 @@
 
 ## Implementation Status (2026-10-12)
 
-**Done**: T001–T027, T030. **Partially done / runtime-gated**: T028 (API `vitest` blocked by the environment's corrupt `@swc/core` binary; build + lint pass), T029 (quickstart scenarios 1–5 need live API/PostgreSQL/Supabase; scenario 6 gates partially run).
+**Done**: T001–T028, T030 (T028 unblocked on 2026-10-13: the API test transform no longer uses SWC, so `npm run test -w @foundly/api` runs green — 32 files / 183 tests). **Runtime-gated**: T029 (quickstart scenarios 1–5 need live API/PostgreSQL/Supabase; scenario 6 gates partially run).
 
 **Approach**: Remote-first seams with **graceful store fallback** (any failure/config absence → local data + clear `STATE_ERROR`, per US3/FR-006/FR-007). Client-side mutations (StaffManager) and unmigrated domains (gallery, reviews, policies, availability, agenda) remain on the in-memory seam to preserve the existing suite and UI; the remote write adapters (`remoteCatalog`) are implemented and unit-tested (mappers) for the server-side wiring that follows the live-session environment.
 
-**Verified green**: `typecheck` + `test` (118) + `build` for `@foundly/book`; `build` + `lint` for `@foundly/api` (root lint passed).
+**Verified green**: `typecheck` + `test` (118) + `build` for `@foundly/book`; `build` + `test` + `lint` for `@foundly/api` (root lint passed).

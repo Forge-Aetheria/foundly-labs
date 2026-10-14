@@ -163,4 +163,4 @@ Task: "e2e public read in apps/api/src/modules/time-block/time-block.e2e.spec.ts
 - `[P]` = different files, no dependencies.
 - Constraint values quoted from `data-model.md` (`endAt` strictly after `startAt`; valid ISO-8601 instants; `reason` ≤ 200 chars; `specialistId` must belong to the tenant).
 - Reads are public; writes are authenticated and tenant-scoped.
-- Environment note: if WDAC blocks the unsigned `@swc/core` addon, run the API `test` gate where that policy is absent (typecheck and direct unit specs are unaffected).
+- Environment note (resolved 2026-10-13): the API test transform no longer uses SWC — `apps/api/vitest.config.ts` compiles TypeScript with the pure-JS TypeScript compiler (`ts.transpileModule`), so the previous WDAC block on the unsigned `@swc/core` addon no longer applies and the full `test` gate runs locally (typecheck and direct unit specs included).
