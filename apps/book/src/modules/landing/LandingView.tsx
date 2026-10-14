@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { alpha } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import EventBusyIcon from '@mui/icons-material/EventBusy';
 import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
@@ -22,6 +21,7 @@ import {
   PRIMARY_BUTTON_SX,
   SECONDARY_BUTTON_SX,
 } from '../../shared/utils/landingCanon';
+import { PublicHeader } from '../../shared/components/PublicHeader';
 
 const BENEFIT_ICONS = {
   reminders: NotificationsActiveIcon,
@@ -64,7 +64,7 @@ export function LandingView({
 }: ProductLandingProps) {
   return (
     <Stack sx={{ minHeight: '100vh' }}>
-      <BrandBar cta={cta} demo={demo} />
+      <PublicHeader cta={cta} demo={demo} />
       <HeroBand hero={hero} heroCapture={heroCapture} cta={cta} demo={demo} />
       <SpotlightSection spotlight={spotlight} />
       <StepsSection steps={steps} />
@@ -72,64 +72,6 @@ export function LandingView({
       <IndustriesSection industries={industries} />
       <PricingSection pricing={pricing} />
       <FinalCtaBand finalCta={finalCta} />
-    </Stack>
-  );
-}
-
-function BrandBar({
-  cta,
-  demo,
-}: {
-  cta: ProductLandingProps['cta'];
-  demo: ProductLandingProps['demo'];
-}) {
-  return (
-    <Stack
-      component="header"
-      direction="row"
-      alignItems="center"
-      justifyContent="space-between"
-      sx={{
-        px: 3,
-        py: 1.5,
-        backgroundColor: 'var(--book-glass)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderBottom: 1,
-        borderColor: (theme) => alpha(theme.palette.border.subtle, 0.6),
-        position: 'sticky',
-        top: 0,
-        zIndex: (theme) => theme.zIndex.appBar,
-      }}
-    >
-      <Link href="/" aria-label="Foundly Book — inicio" style={{ display: 'flex' }}>
-        <Image src="/branding-logo.png" alt="Foundly Book" width={140} height={70} priority />
-      </Link>
-      <Stack direction="row" spacing={1.5} alignItems="center">
-        <Typography
-          variant="button"
-          color="text.secondary"
-          sx={{ display: { xs: 'none', sm: 'block' } }}
-        >
-          <Link href="/directorio" style={{ textDecoration: 'none' }}>
-            Directorio
-          </Link>
-        </Typography>
-        <Typography
-          variant="button"
-          color="text.secondary"
-          sx={{ display: { xs: 'none', sm: 'block' } }}
-        >
-          <Link href={demo.href} style={{ textDecoration: 'none' }}>
-            {demo.label}
-          </Link>
-        </Typography>
-        <Link href={cta.href}>
-          <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
-            {cta.label}
-          </Button>
-        </Link>
-      </Stack>
     </Stack>
   );
 }
@@ -187,6 +129,25 @@ function HeroBand({
           >
             {hero.subtitle}
           </Typography>
+
+          {/* Business search → /negocios?q=... */}
+          <form action="/negocios" method="get">
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              sx={{ maxWidth: 560 }}
+            >
+              <TextField
+                label="Buscar negocios"
+                name="q"
+                placeholder="Nombre, categoría o ciudad"
+                sx={{ flex: 1 }}
+              />
+              <Button variant="secondary" type="submit" sx={SECONDARY_BUTTON_SX}>
+                Buscar
+              </Button>
+            </Stack>
+          </form>
 
           {/* Fast email capture */}
           <Stack

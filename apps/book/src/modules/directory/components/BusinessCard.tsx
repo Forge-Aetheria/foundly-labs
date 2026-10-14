@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import MuiButton from '@mui/material/Button';
 import Link from 'next/link';
 import { Badge, Card, Stack, Typography } from '@foundly/ui';
+import { BusinessDescription } from './BusinessDescription';
 import { formatDirectoryHours } from '../utils/hours';
 import type { DirectoryBusiness } from '../utils/types';
 
@@ -16,6 +17,7 @@ export function BusinessCard({ business }: BusinessCardProps) {
 
   return (
     <Card
+      sx={{ height: '100%', minHeight: 360, overflow: 'hidden' }}
       media={
         business.cover ? (
           <Box
@@ -74,13 +76,14 @@ export function BusinessCard({ business }: BusinessCardProps) {
       }
     >
       <Stack spacing={1.5}>
-        <Typography variant="body2" color="text.secondary" sx={{ minHeight: '2.5em' }}>
-          {business.description ?? 'Sin descripción por el momento.'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <BusinessDescription
+          text={business.description}
+          emptyText="Sin descripción por el momento."
+        />
+        <Typography variant="body2" color="text.secondary" noWrap>
           {business.address ?? 'Ubicación no indicada'}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" noWrap>
           {hours ?? 'Horario no disponible'}
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center">

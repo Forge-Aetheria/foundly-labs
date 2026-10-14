@@ -30,6 +30,10 @@ const nextConfig = {
       ],
     },
   },
+  /** The discovery directory was renamed from `/directorio` to `/negocios`. */
+  async redirects() {
+    return [{ source: '/directorio', destination: '/negocios', permanent: false }];
+  },
 };
 
 export default nextConfig;

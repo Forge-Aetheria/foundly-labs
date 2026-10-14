@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import { BusinessCard } from '../components/BusinessCard';
@@ -56,5 +57,22 @@ describe('BusinessCard (019)', () => {
     expect(screen.queryByAltText('Logo de Estudio Ana')).not.toBeInTheDocument();
     // The initial-letter avatar is shown instead of the logo.
     expect(screen.getByText('E')).toBeInTheDocument();
+  });
+
+  it('shows "(... ver más)" with a tooltip for a long description', async () => {
+    const longDescription = 'Descripción muy larga del negocio. '.repeat(8).trim();
+    const user = userEvent.setup();
+    renderCard(makeBusiness({ description: longDescription }));
+
+    const suffix = screen.getByText('(... ver más)');
+    expect(suffix).toBeInTheDocument();
+
+    await user.hover(suffix);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(longDescription);
+  });
+
+  it('omits the "(... ver más)" suffix for a short description', () => {
+    renderCard();
+    expect(screen.queryByText('(... ver más)')).not.toBeInTheDocument();
   });
 });

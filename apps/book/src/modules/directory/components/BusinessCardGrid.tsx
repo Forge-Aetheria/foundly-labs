@@ -26,7 +26,7 @@ function StatePanel({
         </Typography>
         {clearSearch ? (
           <Box>
-            <Link href="/directorio">Ver todos los negocios</Link>
+            <Link href="/negocios">Ver todos los negocios</Link>
           </Box>
         ) : null}
       </Stack>

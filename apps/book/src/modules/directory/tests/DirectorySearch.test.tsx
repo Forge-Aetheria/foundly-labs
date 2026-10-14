@@ -10,7 +10,7 @@ const { replaceMock, refreshMock } = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: replaceMock, refresh: refreshMock }),
-  usePathname: () => '/directorio',
+  usePathname: () => '/negocios',
 }));
 
 function renderSearch(value = '') {
@@ -36,7 +36,7 @@ describe('DirectorySearch (019)', () => {
     expect(replaceMock).not.toHaveBeenCalled();
     vi.advanceTimersByTime(300);
     expect(replaceMock).toHaveBeenCalledTimes(1);
-    expect(replaceMock).toHaveBeenCalledWith('/directorio?q=cortes');
+    expect(replaceMock).toHaveBeenCalledWith('/negocios?q=cortes');
   });
 
   it('restores the base URL when the term is cleared', () => {
@@ -45,7 +45,7 @@ describe('DirectorySearch (019)', () => {
     const input = screen.getByLabelText('Buscar negocios');
     fireEvent.change(input, { target: { value: '' } });
     vi.advanceTimersByTime(300);
-    expect(replaceMock).toHaveBeenCalledWith('/directorio');
+    expect(replaceMock).toHaveBeenCalledWith('/negocios');
   });
 
   it('keeps focus on the input while typing', () => {

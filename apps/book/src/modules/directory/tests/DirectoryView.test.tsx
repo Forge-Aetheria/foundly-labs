@@ -6,7 +6,7 @@ import type { DirectoryBusiness } from '../utils/types';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn(), refresh: vi.fn() }),
-  usePathname: () => '/directorio',
+  usePathname: () => '/negocios',
 }));
 
 const business: DirectoryBusiness = {
@@ -32,7 +32,7 @@ function renderView(props: Partial<Parameters<typeof DirectoryView>[0]> = {}) {
 describe('DirectoryView (019)', () => {
   it('renders a card per business with the search input', () => {
     renderView();
-    expect(screen.getByRole('heading', { name: 'Directorio de negocios' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Negocios' })).toBeInTheDocument();
     expect(screen.getByLabelText('Buscar negocios')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Estudio Ana' })).toBeInTheDocument();
   });
@@ -50,7 +50,7 @@ describe('DirectoryView (019)', () => {
 
   it('shows the error state with a retry', () => {
     renderView({ businesses: [], error: true });
-    expect(screen.getByText('No pudimos cargar el directorio')).toBeInTheDocument();
+    expect(screen.getByText('No pudimos cargar los negocios')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
   });
 });

@@ -38,7 +38,7 @@ export function DirectoryError() {
     <Card
       header={
         <Typography variant="h6" component="h2">
-          No pudimos cargar el directorio
+          No pudimos cargar los negocios
         </Typography>
       }
     >

@@ -17,7 +17,7 @@ export function DirectoryView({ query, businesses, error }: DirectoryViewProps) 
       <Stack spacing={3}>
         <Stack spacing={1}>
           <Typography variant="h3" component="h1">
-            Directorio de negocios
+            Negocios
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Descubre negocios y reserva tu cita en segundos.

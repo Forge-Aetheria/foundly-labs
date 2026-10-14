@@ -30,7 +30,7 @@ export function useDirectorySearch(): (term: string) => void {
       }
       timer.current = setTimeout(() => {
         const trimmed = term.trim();
-        const target = pathname ?? '/directorio';
+        const target = pathname ?? '/negocios';
         router.replace(trimmed ? `${target}?q=${encodeURIComponent(trimmed)}` : target);
       }, DEBOUNCE_MS);
     },
