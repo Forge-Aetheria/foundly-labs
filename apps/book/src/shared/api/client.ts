@@ -17,6 +17,20 @@ export function resolveApiUrl(): string | null {
   return url ? url : null;
 }
 
+/**
+ * Hard budget for a single GraphQL round-trip. Without this, an unresponsive or
+ * black-holed API leaves the SSR/Server Action await pending until the platform
+ * kills the function (Vercel: "Task timed out after 300s"). Overridable via env.
+ */
+export const API_REQUEST_TIMEOUT_MS = Number(process.env.API_REQUEST_TIMEOUT_MS ?? '') || 10_000;
+
+/** An abort signal that fires after `ms`, or `undefined` when unsupported (older runtimes). */
+function timeoutSignal(ms: number): AbortSignal | undefined {
+  return typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+    ? AbortSignal.timeout(ms)
+    : undefined;
+}
+
 export interface ApiRequestOptions {
   token?: string | null;
 }
@@ -86,12 +100,13 @@ export async function apiRequest<TResult, TVariables extends Variables = Variabl
     // `TypedDocumentNode` extends `DocumentNode`, so it is a valid `RequestDocument`.
     // Typing the document concretely lets graphql-request resolve its variables tuple.
     const graphqlDocument: RequestDocument = document;
-    const data = await request<TResult, Variables>(
-      `${url.replace(/\/+$/, '')}/graphql`,
-      graphqlDocument,
+    const data = await request<TResult, Variables>({
+      url: `${url.replace(/\/+$/, '')}/graphql`,
+      document: graphqlDocument,
       variables,
       requestHeaders,
-    );
+      signal: timeoutSignal(API_REQUEST_TIMEOUT_MS),
+    });
     return ok(data);
   } catch (error) {
     return mapActionError(error);

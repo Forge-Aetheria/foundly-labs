@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from './supabase/server';
 import type { Session } from './auth';
 import { requireTenant } from './auth';
 import type { ActionResult } from '../types/result';
+import { AUTH_CALL_TIMEOUT_MS, withTimeout } from './withTimeout';
 
 /**
  * Server-only session helpers (feature 008 — session-auth.contract.md, feature
@@ -22,7 +23,10 @@ import type { ActionResult } from '../types/result';
 export async function getLiveSession(): Promise<Session | null> {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return null;
-  const { data } = await supabase.auth.getClaims();
+  const { data } = await withTimeout(supabase.auth.getClaims(), AUTH_CALL_TIMEOUT_MS, {
+    data: null,
+    error: null,
+  });
   // `getClaims()` returns `{ data: { claims, header, signature } }` — the JWT
   // payload lives at `data.claims`, not `data` (feature 009 fix).
   const claims = (data?.claims ?? null) as Record<string, unknown> | null;
@@ -55,7 +59,10 @@ export async function getEffectiveSession(): Promise<Session | null> {
 export async function getAccessToken(): Promise<string | null> {
   const supabase = await createServerSupabaseClient();
   if (!supabase) return null;
-  const { data } = await supabase.auth.getSession();
+  const { data } = await withTimeout(supabase.auth.getSession(), AUTH_CALL_TIMEOUT_MS, {
+    data: { session: null },
+    error: null,
+  });
   return data.session?.access_token ?? null;
 }
 

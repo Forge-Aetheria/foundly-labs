@@ -16,6 +16,9 @@ const NAV_SECTIONS = [
   { id: 'ubicacion', label: 'Ubicación' },
 ] as const;
 
+/** Stable id list (module scope) so the observer effect does not re-run every render. */
+const NAV_SECTION_IDS: readonly string[] = NAV_SECTIONS.map((section) => section.id);
+
 function initials(name: string): string {
   return name
     .trim()
@@ -63,7 +66,7 @@ function useActiveSection(ids: readonly string[]): string | null {
  * business contact on the right. Anchored links scroll smoothly to each section.
  */
 export function ProviderNav({ profile }: { profile: PublicBusinessProfile }) {
-  const active = useActiveSection(NAV_SECTIONS.map((section) => section.id));
+  const active = useActiveSection(NAV_SECTION_IDS);
 
   const handleNavigate = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();

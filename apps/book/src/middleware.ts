@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { liveAuthEnv } from './shared/auth/supabase/env';
 import { toNextResponseCookieOptions } from './shared/auth/supabase/cookies';
 import { evaluateRedirect } from './shared/auth/authGuard';
+import { AUTH_CALL_TIMEOUT_MS, withTimeout } from './shared/auth/withTimeout';
 
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
@@ -37,7 +38,11 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
 
     // Single refresh point; the verified claims also decide the guard.
     // `getClaims()` returns `{ data: { claims, header, signature } }`.
-    const { data } = await supabase.auth.getClaims();
+    // Bounded so a slow/unreachable Auth provider cannot hang every request.
+    const { data } = await withTimeout(supabase.auth.getClaims(), AUTH_CALL_TIMEOUT_MS, {
+      data: null,
+      error: null,
+    });
     const claims = (data?.claims ?? null) as Record<string, unknown> | null;
     authenticated = Boolean(claims && typeof claims.sub === 'string' && claims.sub.length > 0);
   } else {
