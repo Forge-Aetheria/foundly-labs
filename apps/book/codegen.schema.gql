@@ -9,6 +9,24 @@ type HealthPayload {
   checkedAt: String!
 }
 
+type PaymentMethodObject {
+  id: ID!
+  tenantId: String!
+  type: PaymentMethodType!
+  label: String
+  details: String
+  instructions: String
+  active: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum PaymentMethodType {
+  mobile_payment
+  bank_transfer
+  binance
+}
+
 type BusinessProfileObject {
   id: ID!
   slug: String!
@@ -32,6 +50,14 @@ type ServiceObject {
   currency: String!
   category: String
   active: Boolean!
+  requiresAdvance: Boolean!
+  advanceKind: AdvanceKind
+  advanceValue: Int
+}
+
+enum AdvanceKind {
+  fixed
+  percent
 }
 
 type TenantObject {
@@ -66,6 +92,9 @@ type Service {
   priceCents: Int!
   currency: String!
   active: Boolean!
+  requiresAdvance: Boolean!
+  advanceKind: AdvanceKind
+  advanceValue: Int
   specialists: [SpecialistRef!]!
 }
 
@@ -108,6 +137,34 @@ type AppointmentSpecialist {
   name: String!
 }
 
+type AppointmentNotificationObject {
+  id: ID!
+  kind: String!
+  message: String!
+  channel: String!
+  createdAt: String!
+}
+
+type PublicAppointment {
+  id: ID!
+  specialistId: String!
+  startAt: DateTime!
+  endAt: DateTime!
+  status: AppointmentStatus!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 type Appointment {
   id: ID!
   tenantId: String!
@@ -124,20 +181,14 @@ type Appointment {
   origin: String!
   notes: String
   cancellationReason: String
+  paymentMethodType: PaymentMethodType
+  advanceAmountCents: Int
+  paymentReference: String
+  paymentProofUrl: String
+  paymentSubmittedAt: String
+  notifications: [AppointmentNotificationObject!]!
   service: AppointmentService!
   specialist: AppointmentSpecialist!
-}
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
-
-enum AppointmentStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
 }
 
 type CurrentTenant {
@@ -172,6 +223,9 @@ type MyService {
   durationMinutes: Int!
   category: String
   active: Boolean!
+  requiresAdvance: Boolean!
+  advanceKind: AdvanceKind
+  advanceValue: Int
 }
 
 type MySpecialist {
@@ -233,8 +287,10 @@ type Query {
   specialist(id: String!): Specialist
   serviceSpecialists(serviceId: String!): [Specialist!]!
   availability(tenantId: String, tenantSlug: String, specialistId: String): [Availability!]!
-  appointments(tenantId: String, tenantSlug: String, startDate: String, endDate: String, specialistId: String, status: AppointmentStatus): [Appointment!]!
-  appointment(id: String!): Appointment
+  appointments(tenantId: String, tenantSlug: String, startDate: String, endDate: String, specialistId: String, status: AppointmentStatus): [PublicAppointment!]!
+  appointment(id: String!): PublicAppointment
+  myAppointments(from: String!, to: String!, status: AppointmentStatus, specialistId: ID): [Appointment!]!
+  myAppointment(id: ID!): Appointment
   me: CurrentUser!
   currentTenant: CurrentTenant!
   bookCapability: BookCapability!
@@ -247,6 +303,8 @@ type Query {
   reviews(tenantId: ID, tenantSlug: String): ReviewSummaryObject!
   myReviews(state: ReviewState): [ReviewObject!]!
   timeBlocks(tenantId: ID, tenantSlug: String, specialistId: ID): [TimeBlockObject!]!
+  paymentMethods(tenantId: ID, tenantSlug: String): [PaymentMethodObject!]!
+  myPaymentMethods: [PaymentMethodObject!]!
 }
 
 type Mutation {
@@ -264,8 +322,10 @@ type Mutation {
   updateAvailability(id: String!, input: UpdateAvailabilityInput!): Availability!
   removeAvailability(id: String!): Boolean!
   createAppointment(input: CreateAppointmentInput!): Appointment!
+  createMyAppointment(input: CreateAppointmentInput!): Appointment!
   updateAppointmentStatus(id: String!, status: AppointmentStatus!): Appointment!
   cancelAppointment(id: String!, reason: String): Appointment!
+  rescheduleAppointment(input: RescheduleAppointmentInput!): Appointment!
   createMyService(input: CreateMyServiceInput!): MyService!
   updateMyService(id: ID!, input: UpdateMyServiceInput!): MyService!
   deleteMyService(id: ID!): Boolean!
@@ -279,6 +339,8 @@ type Mutation {
   deleteReview(id: ID!): Boolean!
   addTimeBlock(input: AddTimeBlockInput!): TimeBlockObject!
   removeTimeBlock(id: ID!): Boolean!
+  upsertPaymentMethod(input: UpsertPaymentMethodInput!): PaymentMethodObject!
+  deletePaymentMethod(id: ID!): Boolean!
 }
 
 input CreateTenantInput {
@@ -330,6 +392,9 @@ input CreateServiceInput {
   priceCents: Int!
   currency: String
   active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
   tenantId: String
   tenantSlug: String
 }
@@ -343,6 +408,9 @@ input UpdateServiceInput {
   priceCents: Int
   currency: String
   active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
 }
 
 input CreateSpecialistInput {
@@ -398,6 +466,16 @@ input CreateAppointmentInput {
   endAt: String!
   origin: String
   notes: String
+  paymentMethodType: PaymentMethodType
+  advanceAmountCents: Int
+  paymentReference: String
+  paymentProofUrl: String
+}
+
+input RescheduleAppointmentInput {
+  id: ID!
+  startAt: String!
+  specialistId: ID
 }
 
 input CreateMyServiceInput {
@@ -407,6 +485,9 @@ input CreateMyServiceInput {
   durationMinutes: Int! = 0
   category: String
   active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
 }
 
 input UpdateMyServiceInput {
@@ -416,6 +497,9 @@ input UpdateMyServiceInput {
   durationMinutes: Int
   category: String
   active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
 }
 
 input CreateMySpecialistInput {
@@ -456,4 +540,12 @@ input AddTimeBlockInput {
   startAt: String! = ""
   endAt: String! = ""
   reason: String
+}
+
+input UpsertPaymentMethodInput {
+  type: PaymentMethodType!
+  label: String
+  details: String
+  instructions: String
+  active: Boolean
 }

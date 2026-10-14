@@ -22,14 +22,16 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile      BusinessProfile?
-  services     Service[]
-  specialists  Specialist[]
-  appointments Appointment[]
-  gallery      GalleryPhoto[]
-  availability Availability[]
-  reviews      Review[]
-  timeBlocks   TimeBlock[]
+  profile       BusinessProfile?
+  services      Service[]
+  specialists   Specialist[]
+  appointments  Appointment[]
+  gallery       GalleryPhoto[]
+  availability  Availability[]
+  reviews       Review[]
+  timeBlocks    TimeBlock[]
+  paymentMethods PaymentMethod[]
+  notifications  AppointmentNotification[]
 }
 
 model BusinessProfile {
@@ -62,6 +64,9 @@ model Service {
   priceCents      Int
   currency        String   @default("EUR")
   active          Boolean  @default(true)
+  requiresAdvance Boolean  @default(false)
+  advanceKind     AdvanceKind?
+  advanceValue    Int?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -132,12 +137,18 @@ model Appointment {
   origin                 String   @default("online")
   notes                  String?
   cancellationReason     String?
+  paymentMethodType      PaymentMethodType?
+  advanceAmountCents     Int?
+  paymentReference       String?
+  paymentProofUrl        String?
+  paymentSubmittedAt     DateTime?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
-  tenant     Tenant     @relation(fields: [tenantId], references: [id])
-  specialist Specialist @relation(fields: [specialistId], references: [id])
-  service    Service    @relation(fields: [serviceId], references: [id])
+  tenant        Tenant                  @relation(fields: [tenantId], references: [id])
+  specialist    Specialist              @relation(fields: [specialistId], references: [id])
+  service       Service                 @relation(fields: [serviceId], references: [id])
+  notifications AppointmentNotification[]
 }
 
 model GalleryPhoto {
@@ -187,4 +198,47 @@ model TimeBlock {
   specialist Specialist? @relation(fields: [specialistId], references: [id])
 
   @@index([tenantId, startAt])
+}
+
+enum PaymentMethodType {
+  mobile_payment
+  bank_transfer
+  binance
+}
+
+enum AdvanceKind {
+  fixed
+  percent
+}
+
+model PaymentMethod {
+  id           String            @id @default(cuid())
+  tenantId     String
+  type         PaymentMethodType
+  label        String?
+  details      String?
+  instructions String?
+  active       Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, type])
+  @@index([tenantId, active])
+}
+
+model AppointmentNotification {
+  id            String   @id @default(cuid())
+  tenantId      String
+  appointmentId String
+  kind          String
+  message       String
+  channel       String   @default("simulated")
+  createdAt     DateTime @default(now())
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId, createdAt])
 }

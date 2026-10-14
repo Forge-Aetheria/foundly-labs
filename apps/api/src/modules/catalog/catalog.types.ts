@@ -1,4 +1,5 @@
 import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { AdvanceKind } from '../payments/payments.types';
 
 @ObjectType()
 export class MyService {
@@ -22,6 +23,15 @@ export class MyService {
 
   @Field(() => Boolean)
   active!: boolean;
+
+  @Field(() => Boolean)
+  requiresAdvance!: boolean;
+
+  @Field(() => AdvanceKind, { nullable: true })
+  advanceKind?: AdvanceKind | null;
+
+  @Field(() => Int, { nullable: true })
+  advanceValue?: number | null;
 }
 
 @InputType()
@@ -43,6 +53,15 @@ export class CreateMyServiceInput {
 
   @Field(() => Boolean, { nullable: true })
   active?: boolean | null;
+
+  @Field(() => Boolean, { nullable: true })
+  requiresAdvance?: boolean | null;
+
+  @Field(() => AdvanceKind, { nullable: true })
+  advanceKind?: AdvanceKind | null;
+
+  @Field(() => Int, { nullable: true })
+  advanceValue?: number | null;
 
   constructor() {
     this.name = '';
@@ -70,6 +89,15 @@ export class UpdateMyServiceInput {
 
   @Field(() => Boolean, { nullable: true })
   active?: boolean | null;
+
+  @Field(() => Boolean, { nullable: true })
+  requiresAdvance?: boolean | null;
+
+  @Field(() => AdvanceKind, { nullable: true })
+  advanceKind?: AdvanceKind | null;
+
+  @Field(() => Int, { nullable: true })
+  advanceValue?: number | null;
 }
 
 @ObjectType()

@@ -2,7 +2,24 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@foundly/database';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { notFoundError, resolveTenantId, validationError } from '../../shared/tenant-scope';
+import { AdvanceKind } from '../payments/payments.types';
 import { CreateServiceInput, ServiceObject, UpdateServiceInput } from './services.types';
+
+const ADVANCE_KINDS = new Set<string>(Object.values(AdvanceKind));
+
+/** Validate a full advance rule (used on create): a positive value is required when enabled. */
+function assertAdvanceRule(kind: AdvanceKind | null | undefined, value: number | null | undefined): void {
+  if (kind == null || !ADVANCE_KINDS.has(kind)) {
+    throw validationError('advanceKind must be fixed or percent');
+  }
+  if (!Number.isInteger(value) || (value ?? 0) < 1) {
+    throw validationError('advanceValue must be a positive integer');
+  }
+  if (kind === AdvanceKind.percent && (value ?? 0) > 100) {
+    throw validationError('advanceValue must be at most 100 for a percentage');
+  }
+}
+
 
 const SERVICE_INCLUDE = {
   assignments: {
@@ -36,6 +53,9 @@ function validateCreate(input: CreateServiceInput): void {
   if (input.priceCents < 0) {
     throw validationError('priceCents must be non-negative');
   }
+  if (input.requiresAdvance === true) {
+    assertAdvanceRule(input.advanceKind, input.advanceValue);
+  }
 }
 
 function validateUpdate(input: UpdateServiceInput): void {
@@ -50,6 +70,22 @@ function validateUpdate(input: UpdateServiceInput): void {
   }
   if (input.priceCents != null && input.priceCents < 0) {
     throw validationError('priceCents must be non-negative');
+  }
+  if (input.requiresAdvance === true) {
+    assertAdvanceRule(input.advanceKind, input.advanceValue);
+    return;
+  }
+  if (input.advanceKind != null && !ADVANCE_KINDS.has(input.advanceKind)) {
+    throw validationError('advanceKind must be fixed or percent');
+  }
+  if (
+    input.advanceValue != null &&
+    (!Number.isInteger(input.advanceValue) || input.advanceValue < 1)
+  ) {
+    throw validationError('advanceValue must be a positive integer');
+  }
+  if (input.advanceKind === AdvanceKind.percent && (input.advanceValue ?? 0) > 100) {
+    throw validationError('advanceValue must be at most 100 for a percentage');
   }
 }
 
@@ -106,6 +142,9 @@ export class ServicesService {
       priceCents: input.priceCents,
       currency: input.currency ?? 'EUR',
       active: input.active ?? true,
+      requiresAdvance: input.requiresAdvance ?? false,
+      advanceKind: input.requiresAdvance ? (input.advanceKind ?? null) : null,
+      advanceValue: input.requiresAdvance ? (input.advanceValue ?? null) : null,
     } satisfies Prisma.ServiceUncheckedCreateInput;
 
     const created = await this.prismaService.client.service.create({
@@ -133,6 +172,22 @@ export class ServicesService {
       ...(input.priceCents != null ? { priceCents: input.priceCents } : {}),
       ...(input.currency != null ? { currency: input.currency } : {}),
       ...(input.active != null ? { active: input.active } : {}),
+      ...(input.requiresAdvance === false
+        ? { requiresAdvance: false, advanceKind: null, advanceValue: null }
+        : {}),
+      ...(input.requiresAdvance === true
+        ? {
+            requiresAdvance: true,
+            advanceKind: input.advanceKind ?? null,
+            advanceValue: input.advanceValue ?? null,
+          }
+        : {}),
+      ...(input.requiresAdvance == null
+        ? {
+            ...(input.advanceKind !== undefined ? { advanceKind: input.advanceKind } : {}),
+            ...(input.advanceValue !== undefined ? { advanceValue: input.advanceValue } : {}),
+          }
+        : {}),
     };
     const updated = await this.prismaService.client.service.update({
       where: { id },
@@ -171,6 +226,9 @@ export class ServicesService {
       priceCents: row.priceCents,
       currency: row.currency,
       active: row.active,
+      requiresAdvance: row.requiresAdvance,
+      advanceKind: row.advanceKind ?? null,
+      advanceValue: row.advanceValue ?? null,
       specialists: row.assignments.map((assignment) => ({
         id: assignment.specialist.id,
         name: assignment.specialist.name,

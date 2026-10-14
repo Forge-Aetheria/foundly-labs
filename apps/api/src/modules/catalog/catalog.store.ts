@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { AdvanceKind } from '../payments/payments.types';
 import type {
   CreateMyServiceInput,
   CreateMySpecialistInput,
@@ -17,6 +18,9 @@ export interface ServiceRow {
   durationMinutes: number;
   category: string | null;
   active: boolean;
+  requiresAdvance: boolean;
+  advanceKind: AdvanceKind | null;
+  advanceValue: number | null;
 }
 
 export interface SpecialistRow {
@@ -60,6 +64,9 @@ const serviceSelect = {
   durationMinutes: true,
   category: true,
   active: true,
+  requiresAdvance: true,
+  advanceKind: true,
+  advanceValue: true,
 } as const;
 
 const specialistSelect = {
@@ -108,6 +115,9 @@ export class PrismaCatalogStore implements CatalogStore {
         durationMinutes: input.durationMinutes,
         category: input.category ?? null,
         active: input.active ?? true,
+        requiresAdvance: input.requiresAdvance ?? false,
+        advanceKind: input.requiresAdvance ? (input.advanceKind ?? null) : null,
+        advanceValue: input.requiresAdvance ? (input.advanceValue ?? null) : null,
       },
       select: serviceSelect,
     });
@@ -132,6 +142,22 @@ export class PrismaCatalogStore implements CatalogStore {
             : {}),
           ...(input.category !== undefined ? { category: input.category } : {}),
           ...(input.active !== undefined && input.active !== null ? { active: input.active } : {}),
+          ...(input.requiresAdvance === false
+            ? { requiresAdvance: false, advanceKind: null, advanceValue: null }
+            : {}),
+          ...(input.requiresAdvance === true
+            ? {
+                requiresAdvance: true,
+                advanceKind: input.advanceKind ?? null,
+                advanceValue: input.advanceValue ?? null,
+              }
+            : {}),
+          ...(input.requiresAdvance == null || input.requiresAdvance === undefined
+            ? {
+                ...(input.advanceKind !== undefined ? { advanceKind: input.advanceKind } : {}),
+                ...(input.advanceValue !== undefined ? { advanceValue: input.advanceValue } : {}),
+              }
+            : {}),
         },
       })
       .then((result) =>

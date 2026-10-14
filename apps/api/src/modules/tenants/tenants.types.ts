@@ -1,4 +1,5 @@
 import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { AdvanceKind } from '../payments/payments.types';
 
 @ObjectType()
 export class BusinessProfileObject {
@@ -61,6 +62,15 @@ export class ServiceObject {
 
   @Field(() => Boolean)
   active!: boolean;
+
+  @Field(() => Boolean)
+  requiresAdvance!: boolean;
+
+  @Field(() => AdvanceKind, { nullable: true })
+  advanceKind?: AdvanceKind | null;
+
+  @Field(() => Int, { nullable: true })
+  advanceValue?: number | null;
 }
 
 @ObjectType()

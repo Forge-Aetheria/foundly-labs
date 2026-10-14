@@ -26,6 +26,9 @@ const pickServiceInput = (input: CreateMyServiceInput): Omit<ServiceRow, 'id' | 
   durationMinutes: input.durationMinutes,
   category: input.category ?? null,
   active: input.active ?? true,
+  requiresAdvance: input.requiresAdvance ?? false,
+  advanceKind: input.requiresAdvance ? (input.advanceKind ?? null) : null,
+  advanceValue: input.requiresAdvance ? (input.advanceValue ?? null) : null,
 });
 
 const applyServiceUpdate = (
@@ -43,6 +46,16 @@ const applyServiceUpdate = (
     : {}),
   ...(input.category !== undefined ? { category: input.category } : {}),
   ...(input.active !== undefined && input.active !== null ? { active: input.active } : {}),
+  ...(input.requiresAdvance === false
+    ? { requiresAdvance: false, advanceKind: null, advanceValue: null }
+    : {}),
+  ...(input.requiresAdvance === true
+    ? {
+        requiresAdvance: true,
+        advanceKind: input.advanceKind ?? null,
+        advanceValue: input.advanceValue ?? null,
+      }
+    : {}),
 });
 
 const applySpecialistUpdate = (

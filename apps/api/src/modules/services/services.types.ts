@@ -1,4 +1,5 @@
 import { Field, ID, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { AdvanceKind } from '../payments/payments.types';
 
 @ObjectType('SpecialistRef')
 export class SpecialistRefObject {
@@ -41,6 +42,15 @@ export class ServiceObject {
   @Field(() => Boolean)
   active!: boolean;
 
+  @Field(() => Boolean)
+  requiresAdvance!: boolean;
+
+  @Field(() => AdvanceKind, { nullable: true })
+  advanceKind?: AdvanceKind | null;
+
+  @Field(() => Int, { nullable: true })
+  advanceValue?: number | null;
+
   @Field(() => [SpecialistRefObject])
   specialists!: SpecialistRefObject[];
 }
@@ -70,6 +80,15 @@ export class CreateServiceInput {
 
   @Field(() => Boolean, { nullable: true })
   active?: boolean | null;
+
+  @Field(() => Boolean, { nullable: true })
+  requiresAdvance?: boolean | null;
+
+  @Field(() => AdvanceKind, { nullable: true })
+  advanceKind?: AdvanceKind | null;
+
+  @Field(() => Int, { nullable: true })
+  advanceValue?: number | null;
 
   @Field(() => String, { nullable: true })
   tenantId?: string | null;
@@ -103,4 +122,13 @@ export class UpdateServiceInput {
 
   @Field(() => Boolean, { nullable: true })
   active?: boolean | null;
+
+  @Field(() => Boolean, { nullable: true })
+  requiresAdvance?: boolean | null;
+
+  @Field(() => AdvanceKind, { nullable: true })
+  advanceKind?: AdvanceKind | null;
+
+  @Field(() => Int, { nullable: true })
+  advanceValue?: number | null;
 }

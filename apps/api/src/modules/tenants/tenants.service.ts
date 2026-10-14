@@ -324,6 +324,9 @@ export class TenantsService {
       currency: service.currency,
       category: service.category ?? null,
       active: service.active,
+      requiresAdvance: service.requiresAdvance,
+      advanceKind: service.advanceKind ?? null,
+      advanceValue: service.advanceValue ?? null,
     };
   }
 }

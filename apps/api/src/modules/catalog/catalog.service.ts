@@ -6,6 +6,7 @@ import {
   notFoundError,
   validationError,
 } from '../../shared/tenant-scope';
+import { AdvanceKind } from '../payments/payments.types';
 import type {
   CreateMyServiceInput,
   CreateMySpecialistInput,
@@ -147,6 +148,21 @@ function assertServiceCreate(input: CreateMyServiceInput): void {
   if (!Number.isInteger(input.durationMinutes) || input.durationMinutes <= 0) {
     throw validationError('durationMinutes must be a positive integer');
   }
+  if (input.requiresAdvance === true) {
+    assertAdvanceRule(input.advanceKind, input.advanceValue);
+  }
+}
+
+function assertAdvanceRule(kind: AdvanceKind | null | undefined, value: number | null | undefined): void {
+  if (kind !== AdvanceKind.fixed && kind !== AdvanceKind.percent) {
+    throw validationError('advanceKind must be fixed or percent');
+  }
+  if (!Number.isInteger(value) || (value ?? 0) < 1) {
+    throw validationError('advanceValue must be a positive integer');
+  }
+  if (kind === AdvanceKind.percent && (value ?? 0) > 100) {
+    throw validationError('advanceValue must be at most 100 for a percentage');
+  }
 }
 
 function assertServiceUpdate(input: UpdateMyServiceInput): void {
@@ -166,5 +182,8 @@ function assertServiceUpdate(input: UpdateMyServiceInput): void {
     (!Number.isInteger(input.durationMinutes) || input.durationMinutes <= 0)
   ) {
     throw validationError('durationMinutes must be a positive integer');
+  }
+  if (input.requiresAdvance === true) {
+    assertAdvanceRule(input.advanceKind, input.advanceValue);
   }
 }
