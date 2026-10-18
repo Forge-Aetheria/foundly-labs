@@ -68,7 +68,7 @@ description: "Task list for Foundly Book — Profile, Policies & Reviews (Admin 
 ### Implementation for User Story 1
 
 - [x] T013 [US1] Implement the server view (resolve tenant via `getAdminTenantId()`, call `getProfile(tenantId)`, pass `profile`/`error`) in `apps/book/src/modules/profile/ProfileView.tsx`
-- [x] T014 [US1] Implement the editable `ProfileEditor` (name, category, slug, logo, cover with preview, address, phone, Instagram, WhatsApp, bio; `Guardar perfil` via `useUpdateProfile`; inline field errors; `ApiErrorDialog` for transient failures; read-only hours summary) consuming only `hooks.ts` in `apps/book/src/modules/profile/components/ProfileEditor.tsx`
+- [x] T014 [US1] Implement the editable `ProfileEditor` (name, category, slug, logo, cover with preview, address, phone, Instagram, WhatsApp, bio; `Guardar perfil` via `useUpdateProfile`; inline field errors; `ApiErrorDialog` for transient failures) consuming only `hooks.ts` in `apps/book/src/modules/profile/components/ProfileEditor.tsx` — media refined into vertical cards and the read-only hours summary removed (feature 022 follow-up)
 
 **Checkpoint**: User Story 1 works (MVP).
 

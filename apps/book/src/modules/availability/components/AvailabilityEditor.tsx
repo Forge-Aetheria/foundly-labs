@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { AlertDialog, Badge, Button, Card, Chip, Stack, Switch, TextField, Typography } from '@foundly/ui';
+import { useState, type ChangeEvent, type ReactNode } from 'react';
+import Box from '@mui/material/Box';
+import { alpha, type Theme } from '@mui/material/styles';
+import type { SystemStyleObject } from '@mui/system';
+import { AlertDialog, Badge, Button, Card, Chip, Stack, Switch, Typography } from '@foundly/ui';
 import type { AvailabilityRule, TimeBlock } from '../../../shared/types/appointments';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { useAddTimeBlock, useRemoveTimeBlock, useSaveAvailability } from '../hooks';
@@ -10,6 +13,99 @@ import { useAddTimeBlock, useRemoveTimeBlock, useSaveAvailability } from '../hoo
 const WEEKDAY_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 /** Rendered Monday-first, while keeping `weekday` indices. */
 const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+/** Compact, token-based input skin (feature 022): subtle border, rounded, primary focus ring. */
+const INPUT_BASE_SX: SystemStyleObject<Theme> = {
+  px: 1.25,
+  py: 0.75,
+  border: '1px solid',
+  borderColor: 'border.subtle',
+  borderRadius: '10px',
+  backgroundColor: 'surface.cardLight',
+  color: 'text.primary',
+  fontSize: '0.875rem',
+  lineHeight: 1.4,
+  outline: 'none',
+  transition: 'border-color 120ms ease, box-shadow 120ms ease',
+  '&:hover': { borderColor: 'border.lavender' },
+  '&:focus-visible': {
+    borderColor: 'primary.main',
+    boxShadow: (theme) => `0 0 0 3px ${alpha(theme.palette.primary.main, 0.16)}`,
+  },
+};
+
+/** Neutral card surface for the schedule rows / form / list items. */
+const CARD_ROW_SX: SystemStyleObject<Theme> = {
+  border: '1px solid',
+  borderColor: 'border.subtle',
+  borderRadius: '16px',
+  backgroundColor: 'surface.cardLight',
+};
+
+/** Field with a clear, subtle label above the control (no label/placeholder overlap). */
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <Stack spacing={0.5}>
+      <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+        {label}
+      </Typography>
+      {children}
+    </Stack>
+  );
+}
+
+/** Compact input (text/time/date) with an accessible label and optional inline error. */
+function CompactInput({
+  type,
+  label,
+  value,
+  onChange,
+  error = false,
+  errorMessage,
+  fullWidth = false,
+}: {
+  type: 'text' | 'time' | 'date';
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: boolean;
+  errorMessage?: string | null;
+  fullWidth?: boolean;
+}) {
+  const width = type === 'time' ? 116 : type === 'date' ? 150 : 220;
+  return (
+    <Stack spacing={0.5} sx={fullWidth ? { width: '100%' } : undefined}>
+      <Box
+        component="input"
+        type={type}
+        aria-label={label}
+        value={value}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
+        sx={[
+          INPUT_BASE_SX,
+          {
+            width: fullWidth ? '100%' : width,
+            fontVariantNumeric: type === 'time' ? 'tabular-nums' : 'normal',
+            borderColor: error ? 'error.main' : 'border.subtle',
+            '&:focus-visible': {
+              borderColor: error ? 'error.main' : 'primary.main',
+              boxShadow: (theme) =>
+                `0 0 0 3px ${alpha(
+                  error ? theme.palette.error.main : theme.palette.primary.main,
+                  0.16,
+                )}`,
+            },
+          },
+        ]}
+      />
+      {error && errorMessage ? (
+        <Typography variant="caption" color="error">
+          {errorMessage}
+        </Typography>
+      ) : null}
+    </Stack>
+  );
+}
 
 interface DayConfig {
   weekday: number;
@@ -167,40 +263,45 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
         <Stack spacing={1.5}>
           {WEEKDAY_ORDER.map((weekday) => {
             const day = days.find((item) => item.weekday === weekday) ?? EMPTY_DAY(weekday);
+            const label = WEEKDAY_LABELS[weekday];
             return (
-              <Stack
-                key={weekday}
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={1.5}
-                alignItems={{ xs: 'stretch', sm: 'center' }}
-                sx={{ borderBottom: 1, borderColor: 'divider', pb: 1.5 }}
-              >
-                <Switch
-                  checked={day.isOpen}
-                  onChange={(checked) => toggle(weekday, checked)}
-                  label={WEEKDAY_LABELS[weekday]}
-                />
-                {day.isOpen ? (
-                  <>
-                    <TextField
-                      label="Inicio"
-                      type="time"
-                      value={day.startTime}
-                      onChange={(value) => update(weekday, { startTime: value })}
-                    />
-                    <TextField
-                      label="Fin"
-                      type="time"
-                      value={day.endTime}
-                      onChange={(value) => update(weekday, { endTime: value })}
-                    />
-                  </>
-                ) : (
-                  <Typography variant="caption" color="text.secondary">
-                    Cerrado
-                  </Typography>
-                )}
-              </Stack>
+              <Box key={weekday} sx={[CARD_ROW_SX, { p: 1.5, '&:hover': { borderColor: 'border.lavender' } }]}>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={1.5}
+                  alignItems={{ xs: 'stretch', sm: 'center' }}
+                  justifyContent="space-between"
+                >
+                  <Switch
+                    checked={day.isOpen}
+                    onChange={(checked) => toggle(weekday, checked)}
+                    label={label}
+                  />
+                  {day.isOpen ? (
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <CompactInput
+                        type="time"
+                        label={`Hora de inicio · ${label}`}
+                        value={day.startTime}
+                        onChange={(value) => update(weekday, { startTime: value })}
+                      />
+                      <Typography variant="caption" color="text.secondary" aria-hidden>
+                        –
+                      </Typography>
+                      <CompactInput
+                        type="time"
+                        label={`Hora de fin · ${label}`}
+                        value={day.endTime}
+                        onChange={(value) => update(weekday, { endTime: value })}
+                      />
+                    </Stack>
+                  ) : (
+                    <Badge pill status="neutral">
+                      Cerrado
+                    </Badge>
+                  )}
+                </Stack>
+              </Box>
             );
           })}
 
@@ -233,105 +334,132 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
           </Stack>
         }
       >
-        <Stack spacing={2}>
-          <Stack spacing={1}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              Tipo de bloqueo
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-              <Chip
-                label="Rango de horas"
-                selectable
-                selected={draft.mode === 'range'}
-                onClick={() => setDraft((prev) => ({ ...prev, mode: 'range' }))}
-              />
-              <Chip
-                label="Días completos"
-                selectable
-                selected={draft.mode === 'fullday'}
-                onClick={() => setDraft((prev) => ({ ...prev, mode: 'fullday' }))}
-              />
-            </Stack>
-          </Stack>
+        <Stack spacing={2.5}>
+          <Box sx={[CARD_ROW_SX, { p: { xs: 2, sm: 3 } }]}>
+            <Stack spacing={2.5}>
+              <Field label="Tipo de bloqueo">
+                <Box
+                  role="group"
+                  aria-label="Tipo de bloqueo"
+                  sx={{
+                    display: 'inline-flex',
+                    gap: 0.5,
+                    p: 0.5,
+                    border: '1px solid',
+                    borderColor: 'border.subtle',
+                    borderRadius: '9999px',
+                    backgroundColor: 'surface.badgePill',
+                    width: 'fit-content',
+                  }}
+                >
+                  <Chip
+                    label="Rango de horas"
+                    selectable
+                    selected={draft.mode === 'range'}
+                    onClick={() => setDraft((prev) => ({ ...prev, mode: 'range' }))}
+                  />
+                  <Chip
+                    label="Días completos"
+                    selectable
+                    selected={draft.mode === 'fullday'}
+                    onClick={() => setDraft((prev) => ({ ...prev, mode: 'fullday' }))}
+                  />
+                </Box>
+              </Field>
 
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.5}
-            alignItems={{ xs: 'stretch', sm: 'center' }}
-          >
-            <TextField
-              label="Fecha"
-              type="date"
-              value={draft.date}
-              onChange={(value) => setDraft((prev) => ({ ...prev, date: value }))}
-              error={Boolean(blockErrors?.date)}
-              helperText={blockErrors?.date}
-            />
-            {draft.mode === 'range' ? (
-              <>
-                <TextField
-                  label="Hora de inicio"
-                  type="time"
-                  value={draft.startTime}
-                  onChange={(value) => setDraft((prev) => ({ ...prev, startTime: value }))}
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ flexWrap: 'wrap' }}>
+                <Field label="Fecha">
+                  <CompactInput
+                    type="date"
+                    label="Fecha"
+                    value={draft.date}
+                    onChange={(value) => setDraft((prev) => ({ ...prev, date: value }))}
+                    error={Boolean(blockErrors?.date)}
+                    errorMessage={blockErrors?.date}
+                  />
+                </Field>
+                {draft.mode === 'range' ? (
+                  <>
+                    <Field label="Hora de inicio">
+                      <CompactInput
+                        type="time"
+                        label="Hora de inicio"
+                        value={draft.startTime}
+                        onChange={(value) => setDraft((prev) => ({ ...prev, startTime: value }))}
+                      />
+                    </Field>
+                    <Field label="Hora de fin">
+                      <CompactInput
+                        type="time"
+                        label="Hora de fin"
+                        value={draft.endTime}
+                        onChange={(value) => setDraft((prev) => ({ ...prev, endTime: value }))}
+                        error={Boolean(blockErrors?.endTime)}
+                        errorMessage={blockErrors?.endTime}
+                      />
+                    </Field>
+                  </>
+                ) : (
+                  <Field label="Duración">
+                    <Stack justifyContent="center" sx={{ height: 40 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Todo el día
+                      </Typography>
+                    </Stack>
+                  </Field>
+                )}
+              </Stack>
+
+              <Field label="Motivo (opcional)">
+                <CompactInput
+                  type="text"
+                  label="Motivo (opcional)"
+                  value={draft.reason}
+                  onChange={(value) => setDraft((prev) => ({ ...prev, reason: value }))}
+                  error={Boolean(blockErrors?.reason)}
+                  errorMessage={blockErrors?.reason}
+                  fullWidth
                 />
-                <TextField
-                  label="Hora de fin"
-                  type="time"
-                  value={draft.endTime}
-                  onChange={(value) => setDraft((prev) => ({ ...prev, endTime: value }))}
-                  error={Boolean(blockErrors?.endTime)}
-                  helperText={blockErrors?.endTime}
-                />
-              </>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Se bloqueará todo el día.
-              </Typography>
-            )}
-            <TextField
-              label="Motivo (opcional)"
-              value={draft.reason}
-              onChange={(value) => setDraft((prev) => ({ ...prev, reason: value }))}
-              error={Boolean(blockErrors?.reason)}
-              helperText={blockErrors?.reason}
-              maxLength={200}
-            />
-            <Button variant="primary" onClick={addBlock}>
-              Bloquear
-            </Button>
-          </Stack>
+              </Field>
+
+              <Stack direction="row" justifyContent="flex-start">
+                <Button variant="primary" onClick={addBlock}>
+                  Bloquear
+                </Button>
+              </Stack>
+            </Stack>
+          </Box>
 
           {items.length > 0 ? (
-            <Stack spacing={1}>
+            <Stack spacing={1.5}>
               {items.map((block) => (
-                <Stack
-                  key={block.id}
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  spacing={2}
-                  sx={{ borderBottom: 1, borderColor: 'divider', pb: 1 }}
-                >
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {formatBlock(block)}
-                    </Typography>
-                    {isFullDay(block) ? (
-                      <Badge pill status="neutral">
-                        Día completo
-                      </Badge>
-                    ) : null}
-                    {block.reason ? (
-                      <Typography variant="caption" color="text.secondary">
-                        {block.reason}
+                <Box key={block.id} sx={[CARD_ROW_SX, { p: 2 }]}>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={1.5}
+                    alignItems={{ xs: 'stretch', sm: 'center' }}
+                    justifyContent="space-between"
+                  >
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {formatBlock(block)}
                       </Typography>
-                    ) : null}
+                      {isFullDay(block) ? (
+                        <Badge pill status="neutral">
+                          Día completo
+                        </Badge>
+                      ) : null}
+                      {block.reason ? (
+                        <Typography variant="caption" color="text.secondary">
+                          {block.reason}
+                        </Typography>
+                      ) : null}
+                    </Stack>
+                    <Button variant="destructive" onClick={() => setDeleteTarget(block)}>
+                      Desbloquear
+                    </Button>
                   </Stack>
-                  <Button variant="destructive" onClick={() => setDeleteTarget(block)}>
-                    Desbloquear
-                  </Button>
-                </Stack>
+                </Box>
               ))}
             </Stack>
           ) : (

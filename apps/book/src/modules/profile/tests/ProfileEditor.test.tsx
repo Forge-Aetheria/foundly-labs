@@ -82,8 +82,6 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
     // Existing policy rendered.
     expect(screen.getByDisplayValue('Cancelación')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Avisa con 24 h.')).toBeInTheDocument();
-    // Hours summary.
-    expect(screen.getAllByText('09:00 – 18:00').length).toBeGreaterThan(0);
 
     const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
     expect(results.violations).toHaveLength(0);
@@ -103,7 +101,7 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
     const arg = updateMock.mock.calls[0]![0] as { name: string; policies: unknown[] };
     expect(arg.name).toBe('Estudio Ana Renovado');
     expect(arg.policies).toHaveLength(1);
-    expect(await screen.findByText('Guardado')).toBeInTheDocument();
+    expect(await screen.findByText('Perfil guardado.')).toBeInTheDocument();
   });
 
   it('surfaces an inline field error returned by the save action', async () => {

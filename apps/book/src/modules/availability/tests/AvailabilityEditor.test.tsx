@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -91,6 +91,34 @@ describe('AvailabilityEditor (admin schedules, features 015/022)', () => {
       ]),
     });
     expect(await screen.findByText('Guardado')).toBeInTheDocument();
+  });
+
+  it('renders a card row per day with labelled time inputs only when open', () => {
+    renderEditor();
+
+    // Monday is seeded open → its compact time inputs are labelled.
+    expect(screen.getByLabelText('Hora de inicio · Lunes')).toHaveValue('09:00');
+    expect(screen.getByLabelText('Hora de fin · Lunes')).toHaveValue('18:00');
+    // A closed day shows the "Cerrado" badge instead of time inputs.
+    expect(screen.queryByLabelText('Hora de inicio · Martes')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Cerrado').length).toBeGreaterThan(0);
+  });
+
+  it('edits a day schedule and saves the updated time', async () => {
+    saveMock.mockResolvedValue({ ok: true, data: { updated: true } });
+    const user = userEvent.setup();
+    renderEditor();
+
+    fireEvent.change(screen.getByLabelText('Hora de inicio · Lunes'), {
+      target: { value: '10:30' },
+    });
+    await user.click(screen.getByRole('button', { name: 'Guardar horario semanal' }));
+
+    expect(saveMock).toHaveBeenCalledWith({
+      days: expect.arrayContaining([
+        { weekday: 1, isOpen: true, startTime: '10:30', endTime: '18:00' },
+      ]),
+    });
   });
 
   it('adds a time-range block through the server action', async () => {

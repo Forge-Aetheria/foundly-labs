@@ -51,7 +51,7 @@ useSubmitReview(): (input: unknown) => Promise<ActionResult<Review>>;
 - **Route**: `src/app/admin/profile/page.tsx` renders `<ProfileView/>` (unchanged thin route).
 - **Server view**: resolves the tenant via `getAdminTenantId()` and calls `getProfile(tenantId)`; passes the profile + error to `ProfileEditor`.
 - **`ProfileEditor` props**: `{ profile: Tenant | null; error?: string | null }`.
-- **Behaviors**: editable fields (name, category, slug, logo, cover, address, phone, Instagram, WhatsApp, bio); a **policies list** (add/edit/remove entries with title + body); validation inline; `Guardar perfil` persists via `useUpdateProfile`; read-only weekly-hours summary.
+- **Behaviors**: editable fields (name, category, slug, logo, cover, address, phone, Instagram, WhatsApp, bio); **logo/cover** edited in dedicated vertical media cards (preview on top, upload + URL below); a **policies list** (add/edit/remove entries with title + body); validation inline; `Guardar perfil` persists via `useUpdateProfile`. The weekly-hours summary was removed (managed in `/admin/availability`).
 
 ## Public portal (`/book/<slug>`)
 

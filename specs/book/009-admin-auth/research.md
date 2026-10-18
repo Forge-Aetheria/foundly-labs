@@ -20,6 +20,7 @@ This document resolves the open technical decisions for the feature. There were 
   1. **Middleware** (`src/middleware.ts`) — after the existing session refresh, compute `authenticated` and redirect: `/admin/*` without a session → `/login`; `/login` with a session → `/admin/agenda`.
   2. **Server backstops** — the admin layout and `getAdminTenantId` redirect to `/login`; the `/login` page redirects signed-in users to `/admin/agenda`.
 - **Rationale**: Middleware gives an early, uniform redirect for all `/admin/*` (the spec's explicit requirement) and covers not-yet-rendered navigations; the server backstop protects against middleware gaps and keeps tenant scoping authoritative from the session. Matches the existing middleware's `getClaims()` (Edge-safe JWKS verification) already used for refresh.
+- **Bounded auth calls (feature 012 follow-up)**: the middleware's `getClaims()` and the server `getClaims()`/`getSession()` are wrapped in `withTimeout` (`shared/auth/withTimeout.ts`, `AUTH_CALL_TIMEOUT_MS`) so a slow/unreachable identity provider degrades to "no session" instead of hanging every request until the platform timeout.
 - **Alternatives considered**:
   - **Layout guard only** — rejected: the layout is a server component and cannot stop a request before rendering; the spec explicitly asks for middleware protection.
   - **Middleware only** — rejected: defence-in-depth and the "session ends mid-panel" edge case are better handled with a server-side decision.

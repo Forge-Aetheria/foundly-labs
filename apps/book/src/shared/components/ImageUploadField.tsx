@@ -7,6 +7,7 @@ import type { ActionResult } from '../types/result';
 import { ACCEPTED_IMAGE_TYPES, validateImageFile } from '../utils/uploadImage';
 
 export type ImagePreviewShape = 'square' | 'circle' | 'banner';
+export type ImageUploadLayout = 'row' | 'column';
 
 export interface ImageUploadFieldProps {
   /** Field heading / base name; also the file input's accessible name (`Subir {label}`). */
@@ -23,25 +24,38 @@ export interface ImageUploadFieldProps {
   error?: boolean;
   /** Preview shape (default `square`). */
   preview?: ImagePreviewShape;
+  /** `row` (preview beside controls) or `column` (preview on top, controls below). */
+  layout?: ImageUploadLayout;
+  /** Hide the internal heading (when the parent supplies its own card title). */
+  hideLabel?: boolean;
   /** Label of the URL fallback input (default `${label} (URL)`). */
   urlLabel?: string;
   urlPlaceholder?: string;
   disabled?: boolean;
 }
 
-const PREVIEW_SX: Record<ImagePreviewShape, object> = {
+const ROW_PREVIEW_SX: Record<ImagePreviewShape, object> = {
   square: { width: 96, height: 96, borderRadius: 2 },
   circle: { width: 88, height: 88, borderRadius: '50%' },
   banner: { width: { xs: '100%', sm: 240 }, aspectRatio: '3 / 1', borderRadius: 2 },
 };
 
+const COLUMN_PREVIEW_SX: Record<ImagePreviewShape, object> = {
+  square: { width: 128, height: 128, borderRadius: 2 },
+  circle: { width: 112, height: 112, borderRadius: '50%' },
+  banner: { width: '100%', aspectRatio: '3 / 1', borderRadius: 2 },
+};
+
 /**
- * Reusable media control (feature 021): file picker + drag & drop + immediate
- * preview, with the URL text input kept as a manual alternative. One component
- * is shared by profile (logo/cover), staff (avatar) and gallery (photo).
+ * Reusable media control (features 021/022): file picker + drag & drop + immediate
+ * preview, with the URL text input kept as a manual alternative. One component is
+ * shared by profile (logo/cover), staff (avatar) and gallery (photo).
  *
- * Placed in `apps/book/src/shared/components` rather than `packages/ui` because
- * it is a client component (file input / drag & drop state); see code-rules §8.2.
+ * `layout="column"` stacks the preview above the upload zone + URL field (used by the
+ * profile cards); `layout="row"` (default) keeps the compact side-by-side variant.
+ *
+ * Placed in `apps/book/src/shared/components` rather than `packages/ui` because it is
+ * a client component (file input / drag & drop state); see code-rules §8.2.
  */
 export function ImageUploadField({
   label,
@@ -51,6 +65,8 @@ export function ImageUploadField({
   helperText,
   error = false,
   preview = 'square',
+  layout = 'row',
+  hideLabel = false,
   urlLabel,
   urlPlaceholder = 'https://…',
   disabled = false,
@@ -92,74 +108,110 @@ export function ImageUploadField({
 
   const trimmed = value.trim();
   const urlError = error || Boolean(localError);
+  const previewSx = layout === 'column' ? COLUMN_PREVIEW_SX[preview] : ROW_PREVIEW_SX[preview];
+
+  const previewNode = trimmed ? (
+    <Box
+      component="img"
+      src={trimmed}
+      alt={`Vista previa de ${label}`}
+      sx={[previewSx, { objectFit: 'cover', border: 1, borderColor: 'divider', flexShrink: 0 }]}
+    />
+  ) : layout === 'column' ? (
+    <Box
+      sx={[
+        previewSx,
+        {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '1px dashed',
+          borderColor: 'border.lavender',
+          backgroundColor: 'background.default',
+        },
+      ]}
+    >
+      <Typography variant="caption" color="text.secondary">
+        Sin imagen
+      </Typography>
+    </Box>
+  ) : null;
+
+  const controls = (
+    <Stack spacing={1} sx={layout === 'row' ? { flexGrow: 1, minWidth: { xs: 0, sm: 240 } } : { width: '100%' }}>
+      <Box
+        onDragOver={(event: DragEvent<HTMLDivElement>) => {
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          p: 1.5,
+          borderRadius: 2,
+          border: 1,
+          borderStyle: 'dashed',
+          borderColor: dragging ? 'primary.main' : 'divider',
+        }}
+      >
+        <Button
+          variant="secondary"
+          onClick={() => inputRef.current?.click()}
+          disabled={disabled || busy}
+        >
+          {busy ? 'Subiendo…' : 'Subir imagen'}
+        </Button>
+        <Typography variant="caption" color="text.secondary">
+          Arrastra una imagen aquí o usa el botón (PNG, JPG o WEBP, máx. 5 MB).
+        </Typography>
+        <input
+          ref={inputRef}
+          type="file"
+          hidden
+          accept={ACCEPTED_IMAGE_TYPES.join(',')}
+          aria-label={`Subir ${label}`}
+          onChange={handleInput}
+          disabled={disabled || busy}
+        />
+      </Box>
+      <TextField
+        label={urlLabel ?? `${label} (URL)`}
+        placeholder={urlPlaceholder}
+        value={value}
+        onChange={onChange}
+        error={urlError}
+        helperText={localError ?? helperText}
+        disabled={disabled}
+        fullWidth
+      />
+    </Stack>
+  );
+
+  const heading = hideLabel ? null : (
+    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+      {label}
+    </Typography>
+  );
+
+  if (layout === 'column') {
+    return (
+      <Stack spacing={1.5}>
+        {heading}
+        {previewNode}
+        {controls}
+      </Stack>
+    );
+  }
 
   return (
     <Stack spacing={1}>
-      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-        {label}
-      </Typography>
+      {heading}
       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-        {trimmed ? (
-          <Box
-            component="img"
-            src={trimmed}
-            alt={`Vista previa de ${label}`}
-            sx={[
-              PREVIEW_SX[preview],
-              { objectFit: 'cover', border: 1, borderColor: 'divider', flexShrink: 0 },
-            ]}
-          />
-        ) : null}
-        <Stack spacing={1} sx={{ flexGrow: 1, minWidth: { xs: 0, sm: 240 } }}>
-          <Box
-            onDragOver={(event: DragEvent<HTMLDivElement>) => {
-              event.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              p: 1.5,
-              borderRadius: 2,
-              border: 1,
-              borderStyle: 'dashed',
-              borderColor: dragging ? 'primary.main' : 'divider',
-            }}
-          >
-            <Button
-              variant="secondary"
-              onClick={() => inputRef.current?.click()}
-              disabled={disabled || busy}
-            >
-              {busy ? 'Subiendo…' : 'Subir imagen'}
-            </Button>
-            <Typography variant="caption" color="text.secondary">
-              Arrastra una imagen aquí o usa el botón (PNG, JPG o WEBP, máx. 5 MB).
-            </Typography>
-            <input
-              ref={inputRef}
-              type="file"
-              hidden
-              accept={ACCEPTED_IMAGE_TYPES.join(',')}
-              aria-label={`Subir ${label}`}
-              onChange={handleInput}
-              disabled={disabled || busy}
-            />
-          </Box>
-          <TextField
-            label={urlLabel ?? `${label} (URL)`}
-            placeholder={urlPlaceholder}
-            value={value}
-            onChange={onChange}
-            error={urlError}
-            helperText={localError ?? helperText}
-            disabled={disabled}
-            fullWidth
-          />
-        </Stack>
+        {previewNode}
+        {controls}
       </Stack>
     </Stack>
   );

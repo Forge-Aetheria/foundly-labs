@@ -94,7 +94,8 @@ As a maintainer, I want a missing token to be treated as a session problem (redi
 - **FR-008**: A missing bearer token MUST be treated as a session problem (redirect), never sent as an unauthenticated request.
 - **FR-009**: Session/transient/inline handling MUST apply across the admin data surfaces (services, team, agenda, availability, profile).
 - **FR-010**: All authorized data access MUST go through the session-aware transport; public/guest flows remain unaffected by the session handler.
-- **FR-011**: All book gates (`build`, `typecheck`, `test`, lint) MUST pass with no regressions under strict TypeScript.
+- **FR-011**: The GraphQL transport and the session/auth reads MUST apply a **bounded request timeout** so an unreachable or unresponsive API or identity provider fails fast (mapped to a transient error / no session) instead of hanging a server render, Server Action or middleware until the platform kills the request (Vercel: 300 s).
+- **FR-012**: All book gates (`build`, `typecheck`, `test`, lint) MUST pass with no regressions under strict TypeScript.
 
 ### Key Entities
 
@@ -111,6 +112,7 @@ As a maintainer, I want a missing token to be treated as a session problem (redi
 - **SC-003**: 100% of transient section-load failures render a clean, dismissible alert.
 - **SC-004**: A backend that rejects the session blocks sign-in and surfaces the failure on `/login`.
 - **SC-005**: Book gates pass with zero regressions.
+- **SC-006**: 0 server renders/actions/middleware invocations hang indefinitely on an unreachable API or identity provider; every outbound call is bounded and degrades to a typed failure.
 
 ## Assumptions
 

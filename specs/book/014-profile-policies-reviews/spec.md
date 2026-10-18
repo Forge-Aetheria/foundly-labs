@@ -88,7 +88,7 @@ As a maintainer, I want the profile module to follow the canonical data layer an
 
 ### Functional Requirements
 
-- **FR-001**: `/admin/profile` MUST allow editing the business identity (name, category, public URL/slug, logo/cover preview), contact/social (address, phone, Instagram, WhatsApp), the "About" description and the reservation/cancellation policies, using the current backend values.
+- **FR-001**: `/admin/profile` MUST allow editing the business identity (name, category, public URL/slug, logo/cover preview), contact/social (address, phone, Instagram, WhatsApp), the "About" description and the reservation/cancellation policies, using the current backend values. **Logo** (1:1) and **Portada** (3:1) MUST each be edited in their own clear card with the preview on top (full width of the card) and the upload zone + URL field below (feature 022 follow-up).
 - **FR-002**: Saving MUST persist the changes on the backend and reflect them in `/book/<slug>` (header, sticky card, "Acerca de", "Dirección y horarios", footer).
 - **FR-003**: Inputs MUST be validated (URLs for Instagram/WhatsApp/logo/cover; slug format and uniqueness; bounded text lengths) with inline errors; invalid values MUST NOT persist.
 - **FR-004**: Policies MUST be managed as a list of entries (title + body), supporting zero, one or many, with the public policies card rendering them.
@@ -120,6 +120,6 @@ As a maintainer, I want the profile module to follow the canonical data layer an
 
 - **Backend dependency**: relies on the profile-update and reviews surface delivered by `specs/api/013-profile-policies-reviews` (reviews are **publicly submittable** by any visitor, no account).
 - **Gallery is already integrated** (`013-gallery-integration`); it is not part of this feature even though it is mentioned alongside the public sections.
-- **Images are URL-based or uploaded** (feature `021-tenant-media-uploads`); the opening-hours summary is read-only and sourced from the availability configuration.
+- **Images are URL-based or uploaded** (feature `021-tenant-media-uploads`), edited in dedicated vertical media cards (logo 1:1, cover 3:1) with the preview on top. The weekly schedule is **not duplicated** in the profile editor — it is managed in `/admin/availability` (feature `022-admin-payments-schedules-refactor` follow-up); the previous read-only "Horario de atención" summary was removed.
 - **Tenant scoping** for admin reads/writes comes from the session (never the URL).
 - **Respect for the governance hierarchy**: follows `specs/business-model.md` and the authority order of `constitution.md`.

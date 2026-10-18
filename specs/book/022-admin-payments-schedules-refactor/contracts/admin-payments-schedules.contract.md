@@ -19,10 +19,10 @@ Documents the redesigned `/admin/configuracion` (payments) and `/admin/availabil
 
 | Area | Contract |
 | ---- | -------- |
-| Weekly | One row per weekday (Lunes–Domingo) with a `Switch` toggle and, when open, **Inicio**/**Fin** `type="time"` inputs; primary **"Guardar horario semanal"** persists open/closed + times. |
-| Blocks | Dedicated card: a **"Rango de horas" / "Días completos"** selector + **Fecha** (+ **Hora de inicio/fin** only in range mode) + **Motivo (opcional)** + **Bloquear**. |
+| Weekly | One **card row per weekday** (Lunes–Domingo; Monday-first) with uniform padding, subtle border, rounded corners and neutral surface. The `Switch` sits on the left/start of the row, followed by **compact token-styled time inputs** (subtle border, rounded, base surface, primary focus ring) for Inicio/Fin; a closed day shows a neutral **"Cerrado"** badge instead of inputs. Primary **"Guardar horario semanal"** persists open/closed + times. |
+| Blocks | The new-block form lives in its **own card** (`surface.cardLight`, subtle border, 16px radius, generous padding). Block type is a grouped neutral **pill selector** ("Rango de horas" / "Días completos", `role="group"`). Fields use a **label above** (subtle typography) with **compact token-styled inputs** — Fecha, Hora de inicio/fin (range mode) — and a full-width **Motivo (opcional)** row. The primary **"Bloquear"** button sits at the bottom-left. |
 | Full day | Sent as `00:00–23:59`; the list shows a "Día completo" badge. |
-| List | Each block shows date + range + reason and a **Desbloquear** action with confirmation. |
+| List | Each existing block renders as a clean card row (subtle border, 16px radius, `surface.cardLight`) with date + range + reason and a **Desbloquear** action with confirmation. |
 | Validation | Range end not after start, or missing date → inline error, nothing persisted. |
 
 ## Tokens & accessibility

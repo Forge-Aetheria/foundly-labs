@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Badge, Button, Card, Stack, TextField, Typography } from '@foundly/ui';
-import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
+import Box from '@mui/material/Box';
+import { Button, Card, Stack, TextField, Typography } from '@foundly/ui';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
-import { WEEKDAY_LABELS } from '../../../shared/utils/format';
-import type { BusinessHours, Tenant } from '../../../shared/types/tenancy';
+import type { Tenant } from '../../../shared/types/tenancy';
 import { useUpdateProfile, useUploadProfileImage } from '../hooks';
 import { AVATAR_RULE, COVER_RULE, checkImage, ruleGuidance } from '../utils/image-rules';
 
@@ -17,6 +16,15 @@ export interface ProfileEditorProps {
   /** Backend/load error surfaced cleanly (no raw text). */
   error?: string | null;
 }
+
+/** Neutral, bordered card wrapper for a single media resource (feature 022 follow-up). */
+const MEDIA_CARD_SX = {
+  p: 2,
+  border: '1px solid',
+  borderColor: 'border.subtle',
+  borderRadius: '16px',
+  backgroundColor: 'surface.cardLight',
+} as const;
 
 interface PolicyDraft {
   title: string;
@@ -53,30 +61,11 @@ function toDraft(profile: Tenant | null): Draft {
   };
 }
 
-function HoursSummary({ hours }: { hours: BusinessHours[] }) {
-  return (
-    <Stack spacing={0.5}>
-      {WEEKDAY_LABELS.map((label, weekday) => {
-        const day = hours.find((item) => item.weekday === weekday);
-        const text = day?.isOpen ? `${day.startTime} – ${day.endTime}` : 'Cerrado';
-        return (
-          <Stack key={label} direction="row" justifyContent="space-between">
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {label}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {text}
-            </Typography>
-          </Stack>
-        );
-      })}
-    </Stack>
-  );
-}
-
 /**
  * Perfil y Acerca de (feature 014): editable identity, contact, About and
  * reservation/cancellation policies, persisted through `useUpdateProfile`.
+ * Media (logo/cover) lives in its own vertical card (feature 022 follow-up);
+ * the weekly schedule is managed in `/admin/availability` and is not repeated here.
  */
 export function ProfileEditor({ profile, error }: ProfileEditorProps) {
   const toast = useToast();
@@ -86,16 +75,13 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
   const [draft, setDraft] = useState<Draft>(() => toDraft(profile));
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
   function patch(value: Partial<Draft>) {
-    setSaved(false);
     setDraft((prev) => ({ ...prev, ...value }));
   }
 
   function patchPolicy(index: number, value: Partial<PolicyDraft>) {
-    setSaved(false);
     setDraft((prev) => ({
       ...prev,
       policies: prev.policies.map((policy, i) => (i === index ? { ...policy, ...value } : policy)),
@@ -103,18 +89,15 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
   }
 
   function addPolicy() {
-    setSaved(false);
     setDraft((prev) => ({ ...prev, policies: [...prev.policies, { title: '', body: '' }] }));
   }
 
   function removePolicy(index: number) {
-    setSaved(false);
     setDraft((prev) => ({ ...prev, policies: prev.policies.filter((_, i) => i !== index) }));
   }
 
   async function save() {
     setSaving(true);
-    setSaved(false);
     setFieldErrors(null);
     setActionNotice(null);
 
@@ -152,7 +135,6 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
       return;
     }
     setDraft(toDraft(result.data));
-    setSaved(true);
     toast.success('Perfil guardado.');
   }
 
@@ -209,24 +191,52 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
             required
             fullWidth
           />
-          <ImageUploadField
-            label="Logo"
-            preview="circle"
-            value={draft.logo}
-            onChange={(value) => patch({ logo: value })}
-            onUpload={uploadLogo}
-            error={Boolean(fieldErrors?.logo)}
-            helperText={fieldErrors?.logo ?? ruleGuidance(AVATAR_RULE)}
-          />
-          <ImageUploadField
-            label="Portada"
-            preview="banner"
-            value={draft.cover}
-            onChange={(value) => patch({ cover: value })}
-            onUpload={uploadCover}
-            error={Boolean(fieldErrors?.cover)}
-            helperText={fieldErrors?.cover ?? ruleGuidance(COVER_RULE)}
-          />
+          <Box sx={MEDIA_CARD_SX}>
+            <Stack spacing={2}>
+              <Stack spacing={0.25}>
+                <Typography variant="h6" component="h2">
+                  Logo
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Imagen cuadrada (1:1) que acompaña al nombre del negocio.
+                </Typography>
+              </Stack>
+              <ImageUploadField
+                label="Logo"
+                hideLabel
+                layout="column"
+                preview="square"
+                value={draft.logo}
+                onChange={(value) => patch({ logo: value })}
+                onUpload={uploadLogo}
+                error={Boolean(fieldErrors?.logo)}
+                helperText={fieldErrors?.logo ?? ruleGuidance(AVATAR_RULE)}
+              />
+            </Stack>
+          </Box>
+          <Box sx={MEDIA_CARD_SX}>
+            <Stack spacing={2}>
+              <Stack spacing={0.25}>
+                <Typography variant="h6" component="h2">
+                  Portada
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Banner (3:1) que encabeza tu página pública.
+                </Typography>
+              </Stack>
+              <ImageUploadField
+                label="Portada"
+                hideLabel
+                layout="column"
+                preview="banner"
+                value={draft.cover}
+                onChange={(value) => patch({ cover: value })}
+                onUpload={uploadCover}
+                error={Boolean(fieldErrors?.cover)}
+                helperText={fieldErrors?.cover ?? ruleGuidance(COVER_RULE)}
+              />
+            </Stack>
+          </Box>
 
           <Typography variant="h6" component="h2">
             Contacto y redes
@@ -317,26 +327,6 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
               Todavía no hay políticas. Añade una con «+ Añadir política».
             </Typography>
           )}
-
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Typography variant="h6" component="h2">
-              Horario de atención
-            </Typography>
-            {saved ? (
-              <Badge pill status="positive">
-                Guardado
-              </Badge>
-            ) : null}
-          </Stack>
-          <Card sx={GLASS_CARD_SX}>
-            {profile && profile.businessHours.length > 0 ? (
-              <HoursSummary hours={profile.businessHours} />
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                El resumen de horario se sincroniza con la sección Disponibilidad.
-              </Typography>
-            )}
-          </Card>
         </Stack>
       </Card>
     </Stack>

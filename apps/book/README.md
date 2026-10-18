@@ -101,7 +101,11 @@ de sesión y redirección global a `/login?reason=session-expired` (ruta `app/au
 formulario. Los mensajes se localizan en español; nunca se muestra el texto del proveedor. El transporte
 autenticado (`shared/api/admin-request.ts`, `apiRequestAdmin`) inyecta el bearer y trata un token ausente o
 rechazado como problema de sesión. Al iniciar sesión se valida además que la API acepta el token (query
-`Viewer`), por lo que un desajuste de autenticación se ve en `/login`, no repartido por el panel. Detalle:
+`Viewer`), por lo que un desajuste de autenticación se ve en `/login`, no repartido por el panel. Todas las
+llamadas salientes aplican un **timeout acotado** para que un API o proveedor de identidad que no responde no
+cuelgue un render/Server Action/middleware hasta el límite de la plataforma (Vercel: 300 s): el transporte
+GraphQL usa `API_REQUEST_TIMEOUT_MS` (`shared/api/client.ts`) y las lecturas de sesión usan `withTimeout` +
+`AUTH_CALL_TIMEOUT_MS` (`shared/auth/withTimeout.ts`). Detalle:
 `specs/book/012-centralized-api-errors/` y `specs/api/011-jwt-algorithm-support/`.
 
 ## Notificaciones, moderación y UX del panel (feature `016-admin-ux-hardening`)
@@ -117,15 +121,27 @@ rechazado como problema de sesión. Al iniciar sesión se valida además que la 
   Backend: `specs/api/015-review-moderation`.
 - **Reglas de imagen del perfil**: el logo se recomienda cuadrado (1:1, 512×512) y la portada banner (3:1, 1200×400);
   cuando la imagen es medible se bloquea el guardado si no cumple el aspecto, y si no es medible se muestra la guía.
+  El logo y la portada se editan en **tarjetas verticales** (previsualización arriba, zona de carga + campo URL
+  debajo) con **subida directa de archivo** (`shared/components/ImageUploadField`, features `021`/`022`); el resumen
+  de "Horario de atención" se retiró de este formulario (se gestiona en `/admin/availability`).
+- **Favicons y manifest**: `apps/book/public/` incluye `favicon.ico` (16/32/48), `favicon-16x16.png`,
+  `favicon-32x32.png`, `apple-touch-icon.png` (180) e `icon-192/512.png`; `app/manifest.ts` publica el Web App
+  Manifest (`theme_color #6c5ce7`, `background_color #faf8ff`) y `layout.tsx` los enlaza vía `metadata.icons`.
+  La landing (`apps/landing`) añade `favicon.ico` + `apple-touch-icon.png` junto a su `favicon.svg`.
 - **Acciones antes huérfanas**: `/admin/services` crea/edita/elimina servicios de verdad (antes era un placeholder)
   y `/admin/agenda` "Nueva cita" compone un instante ISO con offset (antes fallaba la validación y no persistía).
 
 ## Reserva con adelanto, calendario y control de agenda (feature `017-advance-payments-booking`)
 
-- **Configuración de pagos** (`/admin/configuracion`): la vista dejó de ser un placeholder. El módulo
-  `configuration` permite configurar los tres métodos (Pago Móvil, Transferencia bancaria, Binance) con sus
-  datos de recepción, instrucciones y un interruptor de activo. Solo los métodos activos se ofrecen en la
-  reserva pública. Backend: `specs/api/016-advance-payments`.
+- **Configuración de pagos** (`/admin/configuracion`): el módulo `configuration` muestra una **tarjeta por método**
+  con un **modal estructurado** (feature `022`). El conjunto de tipos es cerrado: **Pago Móvil, Binance Pay,
+  Zelle, Transferencia y Efectivo**; cada tipo expone sus campos (Cédula/RIF, Teléfono, Banco, Titular, Pay ID,
+  Email, Cuenta) y los guarda como `details` estructurado + `title` + `instructions` + activo. Solo los métodos
+  activos se ofrecen en la reserva pública. Backend: `specs/api/016-advance-payments` (ampliado).
+- **Horario y bloqueos** (`/admin/availability`): el horario semanal se edita en **una tarjeta por día**
+  (toggle + inputs de hora compactos) y los bloqueos en una **tarjeta de formulario** con selector
+  "Rango de horas"/"Días completos", campos etiquetados y lista de bloqueos como tarjetas (feature `022`).
+  Spec: `specs/book/022-admin-payments-schedules-refactor`.
 - **Calendario real**: el paso "Fecha y hora" del booking público (`dialogs/CalendarStep.tsx`) sustituye las
   píldoras de fecha por un calendario mensual real; al elegir un día se muestran sus huecos debajo y la
   disponibilidad se consulta por todo el mes visible.
