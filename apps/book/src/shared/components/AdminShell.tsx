@@ -160,6 +160,7 @@ function DrawerContent({
       <Stack sx={{ px: 3, py: 3, alignItems: 'center' }}>
         <Link
           href="/admin/agenda"
+          prefetch
           aria-label="Foundly Book — inicio"
           style={{ display: 'flex' }}
           onClick={onNavigate}
@@ -214,6 +215,7 @@ function NavListItem({
     <ListItemButton
       component={Link}
       href={item.href}
+      prefetch
       selected={active}
       onClick={onNavigate}
       sx={{

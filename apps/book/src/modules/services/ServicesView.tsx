@@ -1,13 +1,23 @@
+'use client';
+
 import { ServiceCatalog } from './components/ServiceCatalog';
 import { listServices } from './actions';
-import { getAdminTenantId } from '../../shared/tenancy/queries';
+import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
+import { useAdminResource } from '../../shared/hooks/useAdminResource';
+import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
 
-/** Services module view (server): catalog + current rates for the tenant. */
-export async function ServicesView() {
-  const tenantId = await getAdminTenantId();
-  const result = await listServices(tenantId);
-  if (!result.ok) {
-    return <ServiceCatalog services={[]} rates={[]} error={result.error.message} />;
+/** Services module view (client): catalog + rates, loaded after mount. */
+export function ServicesView() {
+  const workspace = useAdminWorkspace();
+  const state = useAdminResource(workspace?.tenantId, listServices);
+
+  if (state.status === 'loading') {
+    return <ModuleSkeleton />;
   }
-  return <ServiceCatalog services={result.data.services} rates={result.data.rates} />;
+
+  if (state.status === 'error') {
+    return <ServiceCatalog services={[]} rates={[]} error={state.message} />;
+  }
+
+  return <ServiceCatalog services={state.data.services} rates={state.data.rates} />;
 }

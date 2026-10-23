@@ -37,6 +37,16 @@ export interface ProductPricingPlan {
   highlighted?: boolean;
 }
 
+/** Sector showcase card backed by a looping demo video. */
+export interface ProductIndustry {
+  id: string;
+  title: string;
+  /** Public path under `apps/book/public`. */
+  video: string;
+  /** Directory search term used by the card's link. */
+  searchQuery: string;
+}
+
 export const BOOK_HERO = {
   title: 'Tu agenda en piloto automático',
   subtitle:
@@ -145,14 +155,32 @@ export const BOOK_PRICING: ProductPricingPlan[] = [
   },
 ];
 
-export const BOOK_INDUSTRIES = [
-  'Salud',
-  'Belleza',
-  'Consultoría',
-  'Deportes',
-  'Educación',
-  'Servicios profesionales',
-] as const;
+export const BOOK_INDUSTRIES: ProductIndustry[] = [
+  {
+    id: 'barber-shop',
+    title: 'Barberías y Peluquerías',
+    video: '/videos/barber_shop.mp4',
+    searchQuery: 'Peluquería',
+  },
+  {
+    id: 'wellness',
+    title: 'Salud y Bienestar / Masajes',
+    video: '/videos/massage.mp4',
+    searchQuery: 'Salud',
+  },
+  {
+    id: 'training',
+    title: 'Deportes y Entrenamiento',
+    video: '/videos/training.mp4',
+    searchQuery: 'Deportes',
+  },
+  {
+    id: 'consulting',
+    title: 'Consultoría y Servicios',
+    video: '/videos/consulting.mp4',
+    searchQuery: 'Consultoría',
+  },
+];
 
 export const BOOK_FINAL_CTA = {
   eyebrow: 'Empieza en 3 pasos',

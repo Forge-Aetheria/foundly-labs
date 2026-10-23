@@ -19,7 +19,8 @@ export default async function NegociosPage({ searchParams }: NegociosPageProps) 
   const raw = params.q;
   const query = typeof raw === 'string' ? raw : Array.isArray(raw) ? (raw[0] ?? '') : '';
 
-  const result = await getDirectoryBusinesses(query);
+  // Load the full catalog once; the client view filters instantly by term/category.
+  const result = await getDirectoryBusinesses('');
 
   return (
     <DirectoryView

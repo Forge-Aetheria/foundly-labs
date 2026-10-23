@@ -1,24 +1,51 @@
-import { redirect } from 'next/navigation';
-import type { ReactNode } from 'react';
-import { resolveTenantSession } from '../../shared/auth/authServer';
-import { getCurrentTenant } from '../../shared/tenancy/queries';
+'use client';
+
+import { useEffect, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { AdminShell } from '../../shared/components/AdminShell';
-import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '../../shared/auth/authConstants';
+import { AdminWorkspaceProvider } from '../../shared/admin/AdminWorkspaceContext';
+import { LOGIN_ROUTE } from '../../shared/auth/authConstants';
+import { loadAdminWorkspace, type AdminWorkspaceData } from '../../shared/tenancy/adminWorkspace';
 
 /**
- * Private workspace: session/tenant guard (FR-016, feature 009 — US2) + shared
- * Drawer shell. Unauthenticated → `/login`; authenticated but unbound → onboarding.
+ * Admin shell layout (Client Component): renders the navigation instantly and
+ * resolves the workspace (tenant + public slug) asynchronously. Route protection
+ * lives in `middleware.ts`, so child navigations never wait on server rendering.
  */
-export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const auth = await resolveTenantSession();
-  if (!auth.ok) {
-    redirect(auth.error.code === 'FORBIDDEN' ? REGISTRATION_ROUTE : LOGIN_ROUTE);
-  }
-  const tenant = await getCurrentTenant(auth.data);
-  const publicHref = tenant.ok && tenant.data.slug ? `/${tenant.data.slug}` : null;
+export default function AdminLayout({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const [workspace, setWorkspace] = useState<AdminWorkspaceData | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    loadAdminWorkspace()
+      .then((result) => {
+        if (!active) {
+          return;
+        }
+        if (!result.ok) {
+          router.replace(result.redirectTo);
+          return;
+        }
+        setWorkspace(result.data);
+      })
+      .catch(() => {
+        if (active) {
+          router.replace(LOGIN_ROUTE);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
   return (
-    <AdminShell tenantName={tenant.ok ? tenant.data.name : undefined} publicHref={publicHref}>
-      {children}
-    </AdminShell>
+    <AdminWorkspaceProvider value={workspace}>
+      <AdminShell tenantName={workspace?.tenantName} publicHref={workspace?.publicHref}>
+        {children}
+      </AdminShell>
+    </AdminWorkspaceProvider>
   );
 }

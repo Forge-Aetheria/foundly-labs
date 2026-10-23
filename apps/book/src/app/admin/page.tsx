@@ -1,6 +1,16 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-/** `/book/admin` index: send the owner to the agenda, the default section. */
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
+
+/** `/admin` index: client-side redirect to the default section (Agenda). */
 export default function AdminIndexPage() {
-  redirect('/admin/agenda');
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/admin/agenda');
+  }, [router]);
+
+  return <ModuleSkeleton />;
 }

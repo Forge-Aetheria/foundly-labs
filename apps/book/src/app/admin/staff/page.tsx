@@ -1,6 +1,6 @@
-import { StaffView } from '../../../modules/staff/StaffView';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { StaffView } from '../../../modules/staff/StaffView';
 
 export default function StaffPage() {
   return <StaffView />;

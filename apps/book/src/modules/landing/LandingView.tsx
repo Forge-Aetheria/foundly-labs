@@ -1,16 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import CheckIcon from '@mui/icons-material/Check';
-import EventBusyIcon from '@mui/icons-material/EventBusy';
-import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
-import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import PaymentsIcon from '@mui/icons-material/Payments';
-import { Button, Card, Container, Stack, TextField, Typography } from '@foundly/ui';
+import { Button, Card, Container, Stack, Typography } from '@foundly/ui';
 import type {
   ProductFeature,
+  ProductIndustry,
   ProductPricingPlan,
   ProductSpotlight,
   ProductStep,
@@ -23,13 +18,10 @@ import {
 } from '../../shared/utils/landingCanon';
 import { PublicHeader } from '../../shared/components/PublicHeader';
 import { PublicFooter } from '../../shared/components/PublicFooter';
-
-const BENEFIT_ICONS = {
-  reminders: NotificationsActiveIcon,
-  payments: PaymentsIcon,
-  'no-shows': EventBusyIcon,
-  integrations: IntegrationInstructionsIcon,
-} as const;
+import { HeroBand } from './components/HeroBand';
+import { ProcessStepsSection } from './components/ProcessStepsSection';
+import { BenefitsSection } from './components/BenefitsSection';
+import { IndustriesSection } from './components/IndustriesSection';
 
 export interface ProductLandingProps {
   hero: { title: string; subtitle: string; badge: string };
@@ -39,7 +31,7 @@ export interface ProductLandingProps {
   spotlight: ProductSpotlight;
   steps: ProductStep[];
   benefits: ProductFeature[];
-  industries: readonly string[];
+  industries: readonly ProductIndustry[];
   pricing: ProductPricingPlan[];
   finalCta: {
     eyebrow: string;
@@ -66,119 +58,12 @@ export function LandingView({
       <PublicHeader cta={cta} />
       <HeroBand hero={hero} heroCapture={heroCapture} cta={cta} />
       <SpotlightSection spotlight={spotlight} />
-      <StepsSection steps={steps} />
+      <ProcessStepsSection steps={steps} />
       <BenefitsSection benefits={benefits} />
       <IndustriesSection industries={industries} />
       <PricingSection pricing={pricing} />
       <FinalCtaBand finalCta={finalCta} />
       <PublicFooter />
-    </Stack>
-  );
-}
-
-function HeroBand({
-  hero,
-  heroCapture,
-  cta,
-}: {
-  hero: ProductLandingProps['hero'];
-  heroCapture: ProductLandingProps['heroCapture'];
-  cta: ProductLandingProps['cta'];
-}) {
-  const [email, setEmail] = useState('');
-
-  return (
-    <Stack
-      sx={{
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Foundly "F" isotipo watermark (low opacity, mirrors the landing hero) */}
-      <Stack
-        aria-hidden="true"
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 0,
-          opacity: 0.22,
-          mixBlendMode: 'multiply',
-          pointerEvents: 'none',
-        }}
-      >
-        <Image src="/icon.png" alt="" width={720} height={720} priority />
-      </Stack>
-
-      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 12 }, position: 'relative', zIndex: 1 }}>
-        <Stack spacing={3} sx={{ maxWidth: 780 }}>
-          <Stack sx={[PILL_SX, { alignSelf: 'flex-start' }]}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-              {hero.badge}
-            </Typography>
-          </Stack>
-          <Typography variant="h1">{hero.title}</Typography>
-          <Typography
-            variant="h5"
-            component="p"
-            color="text.secondary"
-            sx={{ fontWeight: 400, lineHeight: 1.55 }}
-          >
-            {hero.subtitle}
-          </Typography>
-
-          {/* Business search → /negocios?q=... */}
-          <form action="/negocios" method="get">
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={1}
-              sx={{ maxWidth: 560 }}
-            >
-              <TextField
-                label="Buscar negocios"
-                name="q"
-                placeholder="Nombre, categoría o ciudad"
-                sx={{ flex: 1 }}
-              />
-              <Button variant="secondary" type="submit" sx={SECONDARY_BUTTON_SX}>
-                Buscar
-              </Button>
-            </Stack>
-          </form>
-
-          {/* Fast email capture */}
-          <Stack
-            component="form"
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1}
-            sx={{ maxWidth: 560 }}
-            onSubmit={(event) => {
-              event.preventDefault();
-              window.location.href = '/onboarding';
-            }}
-          >
-            <TextField
-              label={heroCapture.placeholder}
-              type="email"
-              value={email}
-              onChange={setEmail}
-              sx={{ flex: 1 }}
-            />
-            <Button variant="primary" type="submit" sx={PRIMARY_BUTTON_SX}>
-              {heroCapture.button}
-            </Button>
-          </Stack>
-
-          <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }}>
-            <Link href={cta.href}>
-              <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
-                {cta.label}
-              </Button>
-            </Link>
-          </Stack>
-        </Stack>
-      </Container>
     </Stack>
   );
 }
@@ -322,113 +207,6 @@ function BookingPreview({ preview }: { preview: ProductSpotlight['preview'] }) {
         </Stack>
       </Stack>
     </Stack>
-  );
-}
-
-function StepsSection({ steps }: { steps: ProductStep[] }) {
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack component="section" spacing={2}>
-        <Typography variant="h4" component="h2">
-          Empieza en 3 pasos
-        </Typography>
-        <Stack direction={{ xs: 'column', md: 'row' }} sx={{ gap: 2 }}>
-          {steps.map((step) => (
-            <Card key={step.step} sx={[GLASS_CARD_SX, { flex: 1 }]}>
-              <Stack spacing={1}>
-                <Stack
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    backgroundColor: 'primary.main',
-                    color: 'background.paper',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                    {step.step}
-                  </Typography>
-                </Stack>
-                <Typography variant="h6" component="h3">
-                  {step.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {step.description}
-                </Typography>
-              </Stack>
-            </Card>
-          ))}
-        </Stack>
-      </Stack>
-    </Container>
-  );
-}
-
-function BenefitsSection({ benefits }: { benefits: ProductFeature[] }) {
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack component="section" spacing={2}>
-        <Typography variant="h4" component="h2">
-          Beneficios clave
-        </Typography>
-        <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 2 }}>
-          {benefits.map((benefit) => {
-            const Icon = BENEFIT_ICONS[benefit.icon];
-            return (
-              <Card
-                key={benefit.title}
-                sx={[GLASS_CARD_SX, { flex: { xs: '1 1 100%', md: '1 1 calc(25% - 16px)' } }]}
-              >
-                <Stack spacing={1}>
-                  <Stack
-                    sx={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 1.5,
-                      backgroundColor: 'surface.badgePill',
-                      color: 'primary.main',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Icon fontSize="small" />
-                  </Stack>
-                  <Typography variant="h6" component="h3">
-                    {benefit.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {benefit.description}
-                  </Typography>
-                </Stack>
-              </Card>
-            );
-          })}
-        </Stack>
-      </Stack>
-    </Container>
-  );
-}
-
-function IndustriesSection({ industries }: { industries: readonly string[] }) {
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack component="section" spacing={2}>
-        <Typography variant="h4" component="h2">
-          Ideal para tu sector
-        </Typography>
-        <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
-          {industries.map((industry) => (
-            <Stack key={industry} component="span" sx={PILL_SX}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                {industry}
-              </Typography>
-            </Stack>
-          ))}
-        </Stack>
-      </Stack>
-    </Container>
   );
 }
 

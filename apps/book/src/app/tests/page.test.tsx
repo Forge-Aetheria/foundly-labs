@@ -28,12 +28,15 @@ describe('product page (FR-001/FR-002/FR-019)', () => {
     expect(ctaLinks.length).toBeGreaterThan(0);
     expect(ctaLinks.some((link) => link.getAttribute('href') === '/onboarding')).toBe(true);
 
-    const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
+    const results = await axe(container, {
+      preload: false,
+      rules: { 'color-contrast': { enabled: false } },
+    });
     expect(results.violations).toHaveLength(0);
   });
 
   it('renders the conversion sections: hero capture, spotlight, steps and pricing', () => {
-    renderHome();
+    const { container } = renderHome();
 
     // Hero email capture + primary button
     expect(screen.getByLabelText(/Tu email/)).toBeInTheDocument();
@@ -46,10 +49,37 @@ describe('product page (FR-001/FR-002/FR-019)', () => {
     expect(screen.getByText('Corte de cabello')).toBeInTheDocument();
 
     // Steps to success
-    expect(screen.getByRole('heading', { name: /Empieza en 3 pasos/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /3 pasos para el éxito/ })).toBeInTheDocument();
     expect(screen.getByText('Crea tu página')).toBeInTheDocument();
     expect(screen.getByText('Personaliza tu marca')).toBeInTheDocument();
     expect(screen.getByText('Comparte y agenda')).toBeInTheDocument();
+    // ...with their embedded UI previews
+    expect(screen.getByText('foundlylabs.lat/')).toBeInTheDocument();
+    expect(screen.getByText('tu-negocio')).toBeInTheDocument();
+    expect(screen.getByText('Estudio Luna')).toBeInTheDocument();
+    expect(screen.getByText('4,9 · 128 reseñas')).toBeInTheDocument();
+    expect(screen.getByText('WhatsApp')).toBeInTheDocument();
+    expect(screen.getByText('Instagram')).toBeInTheDocument();
+    expect(screen.getByText('Web')).toBeInTheDocument();
+
+    // Sector cards link to the directory search and autoplay their demo video
+    const sector = screen.getByRole('link', { name: /Salud y Bienestar/ });
+    expect(sector).toHaveAttribute('href', '/negocios?q=Salud');
+
+    const videos = Array.from(container.querySelectorAll('video'));
+    expect(videos).toHaveLength(4);
+    for (const video of videos) {
+      expect(video.autoplay).toBe(true);
+      expect(video.loop).toBe(true);
+      expect(video.muted).toBe(true);
+      expect(video.playsInline).toBe(true);
+    }
+    expect(videos.map((video) => video.querySelector('source')?.getAttribute('src'))).toEqual([
+      '/videos/barber_shop.mp4',
+      '/videos/massage.mp4',
+      '/videos/training.mp4',
+      '/videos/consulting.mp4',
+    ]);
 
     // Pricing plans
     expect(screen.getByRole('heading', { name: /Precios sencillos/ })).toBeInTheDocument();

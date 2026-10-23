@@ -1,7 +1,16 @@
-import { ProfileView } from '../../../modules/profile/ProfileView';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ModuleSkeleton } from '../../../shared/components/ModuleSkeleton';
 
+/** Legacy route: the business profile now lives inside Configuración. */
 export default function ProfilePage() {
-  return <ProfileView />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/admin/configuracion?tab=perfil');
+  }, [router]);
+
+  return <ModuleSkeleton rows={3} />;
 }

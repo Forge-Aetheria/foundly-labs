@@ -9,5 +9,7 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     globals: false,
     css: false,
+    // Integration tests drive long userEvent flows (forms, dialogs, uploads).
+    testTimeout: 15000,
   },
 });

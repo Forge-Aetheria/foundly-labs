@@ -1,12 +1,18 @@
+'use client';
+
 import { Card, Stack, Typography } from '@foundly/ui';
 import { PasswordForm } from './components/PasswordForm';
 
 /** Security settings view (feature 009 — US5): change the account password. */
-export function SecurityView() {
+export function SecurityView({ embedded = false }: { embedded?: boolean }) {
   return (
     <Stack spacing={3}>
       <Stack spacing={0.5}>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
+        <Typography
+          variant="h5"
+          component={embedded ? 'h2' : 'h1'}
+          sx={{ fontWeight: 700 }}
+        >
           Seguridad
         </Typography>
         <Typography variant="body2" color="text.secondary">

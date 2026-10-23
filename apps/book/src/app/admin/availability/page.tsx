@@ -1,6 +1,6 @@
-import { AvailabilityView } from '../../../modules/availability/AvailabilityView';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { AvailabilityView } from '../../../modules/availability/AvailabilityView';
 
 export default function AvailabilityPage() {
   return <AvailabilityView />;

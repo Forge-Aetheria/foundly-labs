@@ -1,13 +1,23 @@
+'use client';
+
 import { ProfileEditor } from './components/ProfileEditor';
 import { getProfile } from './actions';
-import { getAdminTenantId } from '../../shared/tenancy/queries';
+import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
+import { useAdminResource } from '../../shared/hooks/useAdminResource';
+import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
 
-/** Profile module view (server): real editable profile for the tenant. */
-export async function ProfileView() {
-  const tenantId = await getAdminTenantId();
-  const profile = await getProfile(tenantId);
-  if (!profile.ok) {
-    return <ProfileEditor profile={null} error={profile.error.message} />;
+/** Profile module view (client): real editable profile loaded after mount. */
+export function ProfileView({ embedded = false }: { embedded?: boolean }) {
+  const workspace = useAdminWorkspace();
+  const state = useAdminResource(workspace?.tenantId, getProfile);
+
+  if (state.status === 'loading') {
+    return <ModuleSkeleton rows={3} />;
   }
-  return <ProfileEditor profile={profile.data} />;
+
+  if (state.status === 'error') {
+    return <ProfileEditor profile={null} error={state.message} embedded={embedded} />;
+  }
+
+  return <ProfileEditor profile={state.data} embedded={embedded} />;
 }

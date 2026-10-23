@@ -11,8 +11,14 @@ export function DirectorySkeleton() {
     <Box
       sx={{
         display: 'grid',
+        width: '100%',
+        alignItems: 'stretch',
         gap: 3,
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+        gridTemplateColumns: {
+          xs: 'minmax(0, 1fr)',
+          md: 'repeat(2, minmax(0, 1fr))',
+          lg: 'repeat(3, minmax(0, 1fr))',
+        },
       }}
       aria-busy="true"
       aria-label="Cargando negocios"
@@ -20,10 +26,20 @@ export function DirectorySkeleton() {
       {[0, 1, 2, 3, 4, 5].map((key) => (
         <Card key={key}>
           <Stack spacing={2}>
-            <Skeleton variant="rectangular" height={120} />
-            <Skeleton variant="text" width="60%" />
-            <Skeleton variant="text" width="40%" />
+            <Skeleton variant="rounded" height={160} />
+            <Stack direction="row" spacing={1.5} alignItems="flex-end" sx={{ mt: -6 }}>
+              <Skeleton variant="circular" width={68} height={68} />
+              <Stack spacing={0.75} sx={{ flex: 1 }}>
+                <Skeleton variant="text" width="65%" height={28} />
+                <Skeleton variant="rounded" width={92} height={22} />
+              </Stack>
+            </Stack>
+            <Skeleton variant="text" width="100%" />
             <Skeleton variant="text" width="80%" />
+            <Stack direction="row" spacing={1}>
+              <Skeleton variant="rounded" height={40} sx={{ flex: 1 }} />
+              <Skeleton variant="rounded" height={40} sx={{ flex: 1 }} />
+            </Stack>
           </Stack>
         </Card>
       ))}
@@ -31,7 +47,7 @@ export function DirectorySkeleton() {
   );
 }
 
-/** Friendly error state with a retry that re-runs the server read. */
+/** Friendly error state with a retry that re-runs the read. */
 export function DirectoryError() {
   const router = useRouter();
   return (

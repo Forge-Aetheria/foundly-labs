@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 import { DirectoryView } from '../DirectoryView';
@@ -52,5 +53,26 @@ describe('DirectoryView (019)', () => {
     renderView({ businesses: [], error: true });
     expect(screen.getByText('No pudimos cargar los negocios')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+  });
+
+  it('filters businesses instantly by category pills', async () => {
+    const user = userEvent.setup();
+    renderView({
+      businesses: [
+        business,
+        {
+          ...business,
+          tenantId: 't2',
+          slug: 'clinica-sol',
+          name: 'Clínica Sol',
+          category: 'Salud',
+        },
+      ],
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Salud' }));
+
+    expect(screen.getByRole('heading', { name: 'Clínica Sol' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Estudio Ana' })).not.toBeInTheDocument();
   });
 });

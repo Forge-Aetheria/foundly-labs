@@ -15,6 +15,8 @@ export interface ProfileEditorProps {
   profile: Tenant | null;
   /** Backend/load error surfaced cleanly (no raw text). */
   error?: string | null;
+  /** Renders the title as `h2` when embedded in the Configuración tabs. */
+  embedded?: boolean;
 }
 
 /** Neutral, bordered card wrapper for a single media resource (feature 022 follow-up). */
@@ -67,7 +69,7 @@ function toDraft(profile: Tenant | null): Draft {
  * Media (logo/cover) lives in its own vertical card (feature 022 follow-up);
  * the weekly schedule is managed in `/admin/availability` and is not repeated here.
  */
-export function ProfileEditor({ profile, error }: ProfileEditorProps) {
+export function ProfileEditor({ profile, error, embedded = false }: ProfileEditorProps) {
   const toast = useToast();
   const updateProfile = useUpdateProfile();
   const uploadLogo = useUploadProfileImage(profile?.id ?? '', 'logo');
@@ -147,7 +149,7 @@ export function ProfileEditor({ profile, error }: ProfileEditorProps) {
         header={
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
             <Stack spacing={0.25}>
-              <Typography variant="h5" component="h1">
+              <Typography variant="h5" component={embedded ? 'h2' : 'h1'}>
                 Perfil y Acerca de
               </Typography>
               <Typography variant="body2" color="text.secondary">

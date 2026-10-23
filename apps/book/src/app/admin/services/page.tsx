@@ -1,6 +1,6 @@
-import { ServicesView } from '../../../modules/services/ServicesView';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { ServicesView } from '../../../modules/services/ServicesView';
 
 export default function ServicesPage() {
   return <ServicesView />;

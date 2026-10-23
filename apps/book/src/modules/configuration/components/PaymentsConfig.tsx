@@ -60,7 +60,16 @@ function draftFrom(method: PaymentMethod): Draft {
  * create/edit modal. Each type exposes its own detail fields (Pago Móvil, Binance Pay,
  * Zelle, Transferencia, Efectivo); the structured object is persisted via the API.
  */
-export function PaymentsConfig({ methods, error }: { methods: PaymentMethod[]; error?: string | null }) {
+export function PaymentsConfig({
+  methods,
+  error,
+  embedded = false,
+}: {
+  methods: PaymentMethod[];
+  error?: string | null;
+  /** Renders the title as `h2` when embedded in the Configuración tabs. */
+  embedded?: boolean;
+}) {
   const router = useRouter();
   const toast = useToast();
   const upsert = useUpsertPaymentMethod();
@@ -185,7 +194,7 @@ export function PaymentsConfig({ methods, error }: { methods: PaymentMethod[]; e
 
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
         <Stack spacing={0.25}>
-          <Typography variant="h5" component="h1">
+          <Typography variant="h5" component={embedded ? 'h2' : 'h1'}>
             Métodos de pago
           </Typography>
           <Typography variant="body2" color="text.secondary">

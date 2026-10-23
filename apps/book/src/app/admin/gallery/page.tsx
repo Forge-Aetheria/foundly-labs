@@ -1,6 +1,6 @@
-import { GalleryView } from '../../../modules/gallery/GalleryView';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { GalleryView } from '../../../modules/gallery/GalleryView';
 
 export default function GalleryPage() {
   return <GalleryView />;

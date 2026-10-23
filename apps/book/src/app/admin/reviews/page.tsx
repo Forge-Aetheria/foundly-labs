@@ -1,6 +1,6 @@
-import { ModerationView } from '../../../modules/reviews/ModerationView';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { ModerationView } from '../../../modules/reviews/ModerationView';
 
 export default function AdminReviewsPage() {
   return <ModerationView />;

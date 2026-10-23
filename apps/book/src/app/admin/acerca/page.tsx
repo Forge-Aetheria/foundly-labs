@@ -1,3 +1,5 @@
+'use client';
+
 import { PlaceholderPanel } from '../../../shared/components/PlaceholderPanel';
 
 export default function AcercaPage() {
