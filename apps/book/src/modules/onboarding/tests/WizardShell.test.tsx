@@ -49,6 +49,12 @@ describe('WizardShell (US1, contracts/onboarding.contract.md)', () => {
     await user.type(screen.getByLabelText(/Nombre del negocio/), 'Estudio Nuevo');
     await user.type(screen.getByLabelText(/URL pública/), 'estudio-nuevo');
     await user.type(screen.getByLabelText(/Categoría/), 'Estética');
+
+    // The phone preview mirrors the typed business data before continuing.
+    expect(screen.getAllByText('Estudio Nuevo').length).toBeGreaterThan(0);
+    expect(screen.getByText('foundlylabs.lat/book/estudio-nuevo')).toBeInTheDocument();
+    expect(screen.getAllByText('Estética').length).toBeGreaterThan(0);
+
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
 
     // Step 3 — setup
@@ -67,6 +73,18 @@ describe('WizardShell (US1, contracts/onboarding.contract.md)', () => {
         <WizardShell />
       </FoundlyThemeProvider>,
     );
+
+    expect(screen.getByRole('link', { name: /Iniciar sesión/ })).toHaveAttribute('href', '/login');
+    expect(screen.getByRole('link', { name: 'Términos de Servicio' })).toHaveAttribute(
+      'href',
+      '/terms',
+    );
+    expect(screen.getByRole('link', { name: 'Política de Privacidad' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    );
+    expect(screen.getByText(/Foundly Labs/)).toBeInTheDocument();
+
     const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
     expect(results.violations).toHaveLength(0);
   });

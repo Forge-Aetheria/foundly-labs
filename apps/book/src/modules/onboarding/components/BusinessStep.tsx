@@ -9,12 +9,14 @@ import { businessSchema, type BusinessFields } from '../utils/schemas';
 export interface BusinessStepProps {
   initial: BusinessFields | null;
   onComplete: (business: BusinessFields) => void;
+  /** Notifies the wizard so the live preview mirrors the typed business data. */
+  onChange?: (business: BusinessFields) => void;
 }
 
 type SlugStatus = 'idle' | 'format' | 'reserved';
 
 /** Step 2 — business data with public-URL feedback (FR-008/FR-009). */
-export function BusinessStep({ initial, onComplete }: BusinessStepProps) {
+export function BusinessStep({ initial, onComplete, onChange }: BusinessStepProps) {
   const checkSlugAvailability = useValidateSlug();
   const [values, setValues] = useState<BusinessFields>(
     initial ?? { name: '', slug: '', category: '' },
@@ -24,7 +26,9 @@ export function BusinessStep({ initial, onComplete }: BusinessStepProps) {
   const [slugHint, setSlugHint] = useState<string | null>(null);
 
   function setField(field: keyof BusinessFields, value: string) {
-    setValues((prev) => ({ ...prev, [field]: value }));
+    const next = { ...values, [field]: value };
+    setValues(next);
+    onChange?.(next);
     if (field === 'slug') {
       const check = validateSlugRules(value.trim());
       if (check.ok === true) {
