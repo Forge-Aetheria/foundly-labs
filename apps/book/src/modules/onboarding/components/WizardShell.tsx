@@ -1,14 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import MuiLink from '@mui/material/Link';
 import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import { Card, Container, Stack, Typography } from '@foundly/ui';
 import { useCreateBusiness } from '../hooks';
+import { PublicHeader } from '../../../shared/components/PublicHeader';
+import { PublicFooter } from '../../../shared/components/PublicFooter';
 import {
   clearActiveDraftId,
   clearDraft,
@@ -41,14 +40,25 @@ function emptyDraft(draftId: string): BookingDraft {
   return { draftId, step: 1, account: null, business: null, setup: null };
 }
 
+function withInitialEmail(draft: BookingDraft, email?: string): BookingDraft {
+  if (!email || draft.account?.email) return draft;
+  return { ...draft, account: { fullName: draft.account?.fullName ?? '', email, password: draft.account?.password ?? '' } };
+}
+
+export interface WizardShellProps {
+  /** Email captured in the landing hero (`?email=`), pre-filled in step 1. */
+  initialEmail?: string;
+}
+
 /** Three-step onboarding wizard (FR-003, FR-013): local-first draft + one submit. */
-export function WizardShell() {
+export function WizardShell({ initialEmail }: WizardShellProps) {
   const router = useRouter();
   const createBusiness = useCreateBusiness();
   const [draft, setDraft] = useState<BookingDraft>(() => {
     const draftId = loadActiveDraftId() ?? crypto.randomUUID();
     saveActiveDraftId(draftId);
-    return loadDraft(draftId) ?? emptyDraft(draftId);
+    const loaded = loadDraft(draftId) ?? emptyDraft(draftId);
+    return withInitialEmail(loaded, initialEmail);
   });
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -87,17 +97,8 @@ export function WizardShell() {
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        py: 4,
-        px: { xs: 2, md: 4 },
-      }}
-    >
-      <OnboardingHeader />
+    <Stack sx={{ minHeight: '100vh' }}>
+      <PublicHeader variant="auth" />
 
       <Container
         maxWidth="lg"
@@ -179,82 +180,7 @@ export function WizardShell() {
         </Box>
       </Container>
 
-      <OnboardingFooter />
-    </Box>
-  );
-}
-
-function OnboardingHeader() {
-  return (
-    <Stack
-      component="header"
-      direction="row"
-      alignItems="center"
-      justifyContent="space-between"
-      spacing={2}
-      sx={{ width: '100%' }}
-    >
-      <Link href="/" aria-label="Foundly Book — inicio" style={{ display: 'flex' }}>
-        <Image src="/branding-logo.png" alt="Foundly Book" width={132} height={66} priority />
-      </Link>
-
-      <Stack direction="row" alignItems="center" spacing={0.5}>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ display: { xs: 'none', sm: 'inline' } }}
-        >
-          ¿Ya tienes cuenta?
-        </Typography>
-        <MuiLink
-          component={Link}
-          href="/login"
-          underline="none"
-          aria-label="¿Ya tienes cuenta? Iniciar sesión"
-          sx={{
-            color: 'primary.main',
-            fontWeight: 600,
-            fontSize: '0.875rem',
-            px: 1,
-            py: 0.5,
-            borderRadius: 1,
-            '&:visited': { color: 'primary.main' },
-            '&:hover': { backgroundColor: 'surface.badgePill' },
-          }}
-        >
-          Iniciar sesión
-        </MuiLink>
-      </Stack>
-    </Stack>
-  );
-}
-
-function OnboardingFooter() {
-  const linkSx = {
-    color: 'text.secondary',
-    fontSize: '0.75rem',
-    '&:visited': { color: 'text.secondary' },
-    '&:hover': { color: 'primary.main' },
-  } as const;
-
-  return (
-    <Stack component="footer" spacing={1} alignItems="center" sx={{ width: '100%', pt: 2 }}>
-      <Stack
-        direction="row"
-        spacing={2}
-        useFlexGap
-        sx={{ flexWrap: 'wrap', justifyContent: 'center', rowGap: 0.5 }}
-      >
-        <MuiLink component={Link} href="/terms" underline="none" sx={linkSx}>
-          Términos de Servicio
-        </MuiLink>
-        <MuiLink component={Link} href="/privacy" underline="none" sx={linkSx}>
-          Política de Privacidad
-        </MuiLink>
-      </Stack>
-      <Typography variant="caption" sx={{ color: 'text.disabled', textAlign: 'center' }}>
-        © 2026 Foundly Labs. Todos los derechos reservados.
-      </Typography>
+      <PublicFooter />
     </Stack>
   );
 }

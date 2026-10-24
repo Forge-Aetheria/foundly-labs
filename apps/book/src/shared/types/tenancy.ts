@@ -38,7 +38,7 @@ export interface Tenant {
   businessHours: BusinessHours[];
   currency: string;
   timezone: string;
-  onlineBookingEnabled: boolean;
+  isPublic: boolean;
   license: TenantLicense | null;
   /** Portal profile (003): identity, about and contact. */
   avatar: string | null;

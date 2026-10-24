@@ -9,6 +9,7 @@ export interface AdminWorkspaceData {
   tenantId: string;
   tenantName?: string;
   publicHref: string | null;
+  isPublic: boolean;
 }
 
 export type AdminWorkspaceResult =
@@ -39,6 +40,7 @@ export async function loadAdminWorkspace(): Promise<AdminWorkspaceResult> {
       tenantId: auth.data.tenantId,
       tenantName: tenant.ok ? tenant.data.name : undefined,
       publicHref: tenant.ok && tenant.data.slug ? `/${tenant.data.slug}` : null,
+      isPublic: tenant.ok ? tenant.data.isPublic : true,
     },
   };
 }

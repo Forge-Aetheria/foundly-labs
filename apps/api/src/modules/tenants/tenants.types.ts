@@ -140,6 +140,9 @@ export class TenantObject {
   @Field(() => String)
   currency!: string;
 
+  @Field(() => Boolean)
+  isPublic!: boolean;
+
   @Field(() => BusinessProfileObject, { nullable: true })
   profile?: BusinessProfileObject | null;
 
@@ -255,6 +258,9 @@ export class UpdateBusinessProfileInput {
 
   @Field(() => String, { nullable: true })
   cover?: string | null;
+
+  @Field(() => Boolean, { nullable: true })
+  isPublic?: boolean | null;
 
   @Field(() => [BusinessPolicyInput], { nullable: true })
   policies?: BusinessPolicyInput[] | null;

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button, Stack, TextField } from '@foundly/ui';
 import { accountSchema, type AccountFields } from '../utils/schemas';
+import { PasswordField } from '../../../shared/components/PasswordField';
 
 export interface AccountStepProps {
   initial: AccountFields | null;
@@ -57,10 +58,9 @@ export function AccountStep({ initial, onComplete }: AccountStepProps) {
         error={Boolean(errors.email)}
         helperText={errors.email}
       />
-      <TextField
+      <PasswordField
         label="Contraseña"
         name="password"
-        type="password"
         required
         fullWidth
         value={values.password}

@@ -88,6 +88,14 @@ Cards representing features, testimonials, or pricing tiers must strictly follow
 
 > Nota: el literal `border-[#E2E8F0]` refleja el borde canónico de `specs/system-design.md` v3.0.0. En código de producción se prefiere la utilidad por token `border-border-subtle` (evita valores arbitrarios y satisface el ESLint guard de §4.1).
 
+### 4.3 Public Chrome Reuse Rule
+
+La estructura común de las vistas públicas (`Header`/`Navbar` y `Footer`) es **single source of truth** y no puede reimplementarse ad hoc.
+
+- En `apps/book`, toda vista pública (landing `/`, directorio `/negocios`, onboarding/registro `/onboarding`, legal `/terms` y `/privacy`) DEBE montar `src/shared/components/PublicHeader` y `src/shared/components/PublicFooter`.
+- Queda prohibido declarar headers o footers locales por vista o por módulo (p. ej. un header "¿Ya tienes cuenta? Iniciar sesión" o un footer con enlaces de términos/privacidad propio del onboarding).
+- Si una vista no necesita el chrome completo, se configura mediante props del componente compartido compatible por convención (por ejemplo `variant="auth"` en `PublicHeader`), **nunca** duplicando el componente.
+
 ## 5. Separation of Content and Components
 
 - Declaring static content arrays, pricing lists, FAQ text, or feature descriptions directly inside layout or section components is strictly forbidden.

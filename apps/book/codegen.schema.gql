@@ -69,6 +69,7 @@ type TenantObject {
   status: String!
   timezone: String!
   currency: String!
+  isPublic: Boolean!
   profile: BusinessProfileObject
   services: [ServiceObject!]!
 }
@@ -471,6 +472,7 @@ input UpdateBusinessProfileInput {
   whatsapp: String
   logo: String
   cover: String
+  isPublic: Boolean
   policies: [BusinessPolicyInput!]
 }
 

@@ -69,13 +69,14 @@ describe('TenantsService.searchBusinesses (018-business-directory)', () => {
     });
   });
 
-  it('scopes to active businesses with a profile and at least one active service', async () => {
+  it('scopes to active, public businesses with a profile and at least one active service', async () => {
     const { service, findMany } = makeService([]);
     await service.searchBusinesses({});
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           status: 'active',
+          isPublic: true,
           profile: { isNot: null },
           services: { some: { active: true } },
         }),

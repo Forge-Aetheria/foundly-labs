@@ -38,7 +38,7 @@ A registered business that owns an agenda and a public booking portal.
 | `businessHours`                     | `BusinessHours`         | required                                          |
 | `currency`                          | string (ISO-4217)       | required, default `EUR`                           |
 | `timezone`                          | string (IANA)           | required, default business timezone               |
-| `onlineBookingEnabled`              | boolean                 | default `true` (portal availability)              |
+| `isPublic`                          | boolean                 | default `true` (whether the public booking page is visible) |
 | `license`                           | `TenantLicense` \| null | optional; Foundly Pass license reference (future) |
 | `createdAt`                         | string                  | required                                          |
 | `updatedAt`                         | string                  | required                                          |

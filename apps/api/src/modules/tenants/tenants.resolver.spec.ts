@@ -37,6 +37,7 @@ interface FakeTenant {
   status: string;
   timezone: string;
   currency: string;
+  isPublic: boolean;
   profile: FakeProfile | null;
   services: FakeService[];
 }
@@ -62,6 +63,7 @@ const seededTenant: FakeTenant = {
   status: 'active',
   timezone: 'America/Liberia',
   currency: 'EUR',
+  isPublic: true,
   profile: seededProfile,
   services: [
     {
@@ -103,6 +105,7 @@ const fakeClient = {
           status: 'active',
           timezone: args.data.timezone,
           currency: args.data.currency ?? 'EUR',
+          isPublic: true,
           profile: {
             id: 'p2',
             slug,
@@ -150,7 +153,7 @@ describe('TenantsResolver (GraphQL e2e, 003-db-first-graphql-core)', () => {
   it('lists tenants over POST /graphql', async () => {
     const response = await request(app.getHttpServer())
       .post('/graphql')
-      .send({ query: '{ tenants { id name profile { slug } services { id name } } }' })
+      .send({ query: '{ tenants { id name isPublic profile { slug } services { id name } } }' })
       .expect(200);
 
     expect(response.body.errors).toBeUndefined();
@@ -158,6 +161,7 @@ describe('TenantsResolver (GraphQL e2e, 003-db-first-graphql-core)', () => {
       {
         id: 't1',
         name: 'Estudio Ana',
+        isPublic: true,
         profile: { slug: 'estudio-ana' },
         services: [{ id: 's1', name: 'Corte' }],
       },

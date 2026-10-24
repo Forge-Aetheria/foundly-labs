@@ -42,7 +42,7 @@ import { deriveWeeklyHours } from './utils/availability';
  */
 
 export type ResolveResult =
-  | { status: 'unavailable'; reason: 'not-found' | 'draft' | 'suspended' }
+  | { status: 'unavailable'; reason: 'not-found' | 'draft' | 'suspended' | 'disabled' }
   | { status: 'available'; business: PublicBusinessProfile };
 
 const MINUTE_MS = 60_000;
@@ -188,6 +188,9 @@ async function resolve(slug: string, serviceId: string): Promise<ActionResult<Re
   if (!tenant || tenant.status !== 'active') {
     return fail('NOT_FOUND', 'Ese negocio no está disponible.');
   }
+  if (tenant.isPublic === false) {
+    return fail('NOT_FOUND', 'Ese negocio no está disponible.');
+  }
   const service = tenant.services.find((item) => item.id === serviceId && item.active);
   if (!service) return fail('NOT_FOUND', 'Servicio no encontrado.');
 
@@ -213,6 +216,9 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
   if (!tenant) return { status: 'unavailable', reason: 'not-found' };
   if (tenant.status !== 'active') {
     return { status: 'unavailable', reason: tenant.status === 'draft' ? 'draft' : 'suspended' };
+  }
+  if (tenant.isPublic === false) {
+    return { status: 'unavailable', reason: 'disabled' };
   }
 
   const services: PublicService[] = tenant.services

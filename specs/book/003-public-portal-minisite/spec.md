@@ -128,16 +128,19 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 
 **Content guardrails & data**
 
-- **FR-016**: The public page MUST expose no data for unknown, draft or suspended tenants (unavailable state only).
+- **FR-016**: The public page MUST expose no data for unknown, draft, suspended or unpublished tenants (unavailable state only). A tenant with `isPublic === false` MUST show a clean "Página no disponible temporalmente" state instead of its agenda/services.
 - **FR-017**: The presented service price MUST be the tenant's current applicable rate.
 - **FR-018**: Every surface MUST use the shared design system and its tokens; no ad-hoc brand styling is permitted. Every surface MUST render over the module's continuous brand canvas (`004-book-brand-canvas`) with no opaque full-screen background layer; cards and pills MUST replicate the landing's glassmorphism and pill style (`landingCanon.ts`).
 - **FR-019**: The page MUST be fully keyboard-operable and pass automated accessibility checks with zero critical violations.
 - **FR-020**: The page MUST adapt to small viewports without horizontal overflow.
 - **FR-026**: The store MUST seed a full provider test business (`rona-piercing`) with identity, gallery photo URLs, categories/services with durations and rates, team, business hours, policies and client reviews, so the landing can be visualised with the existing mock data.
+- **FR-027**: The `Tenant` domain model, the Prisma schema and the API (`TenantObject`) MUST expose a boolean `isPublic` (default `true`) that controls whether the public booking page is published. It MUST be persisted and editable by the owner.
+- **FR-028**: The business configuration surface (Configuración → Perfil) MUST provide a toggle ("Habilitar la página pública") that persists `isPublic` through the existing profile update flow.
+- **FR-029**: When the owner disables `isPublic`, the `/admin/*` shell MUST show a warning banner at the top of the layout — "Tu página pública está actualmente deshabilitada. Tus clientes no pueden realizar reservas online." — with a direct action to Configuración. The banner MUST NOT render when `isPublic` is enabled.
 
 ### Key Entities _(include if feature involves data)_
 
-- **Tenant (Negocio)**: extended with provider-landing fields: `gallery` (photo URLs) and existing portal profile (bio, avatar/logo, cover, address, phone, social links). Existing fields (name, category, slug, status, hours, timezone) remain the contract.
+- **Tenant (Negocio)**: extended with provider-landing fields: `gallery` (photo URLs) and existing portal profile (bio, avatar/logo, cover, address, phone, social links). Existing fields (name, category, slug, status, hours, timezone) remain the contract; a boolean `isPublic` (default `true`) controls whether the page is published.
 - **Service (Servicio)**: card content is name, description, duration in minutes, the current rate and a `category` used to group the catalog; "Reservar" triggers the booking flow.
 - **Specialist (Especialista)**: an active resource of the business with avatar, name, role and bio, surfaced in the team section and as an optional booking step.
 - **Review (Reseña)**: a mock client review `{ author, rating (1–5), comment, date }` scoped to a tenant; the rating average and review list are computed in the public queries.
@@ -153,7 +156,7 @@ As any user, I want the public page to feel like the rest of the ecosystem (Clea
 - **SC-001**: A client can go from opening a business page to a confirmed booking in under 3 minutes.
 - **SC-002**: 100% of confirmed bookings never overlap another active appointment for the same specialist.
 - **SC-003**: 100% of offered slots respect business hours, blocks, lead time, horizon and existing appointments.
-- **SC-004**: 0% of unknown, draft or suspended tenants expose any business data.
+- **SC-004**: 0% of unknown, draft, suspended or unpublished (`isPublic === false`) tenants expose any business data.
 - **SC-005**: 0 critical accessibility violations across the nav, sections and the booking flow; the whole flow is keyboard-operable.
 - **SC-006**: 100% of the provider landing uses the shared design system components and tokens (glass cards, pill buttons, `#6C5CE7`).
 - **SC-007**: 0 horizontal overflow on mobile viewports; the sticky sidebar collapses into a compact header card.

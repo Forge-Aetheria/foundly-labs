@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Box from '@mui/material/Box';
-import { Button, Card, Stack, TextField, Typography } from '@foundly/ui';
+import { Button, Card, Stack, Switch, TextField, Typography } from '@foundly/ui';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
@@ -44,6 +44,7 @@ interface Draft {
   instagram: string;
   whatsapp: string;
   bio: string;
+  isPublic: boolean;
   policies: PolicyDraft[];
 }
 
@@ -59,6 +60,7 @@ function toDraft(profile: Tenant | null): Draft {
     instagram: profile?.social?.instagram ?? '',
     whatsapp: profile?.social?.whatsapp ?? '',
     bio: profile?.bio ?? '',
+    isPublic: profile?.isPublic ?? true,
     policies: (profile?.policies ?? []).map((policy) => ({ title: policy.title, body: policy.body })),
   };
 }
@@ -125,6 +127,7 @@ export function ProfileEditor({ profile, error, embedded = false }: ProfileEdito
       whatsapp: draft.whatsapp || null,
       logo: draft.logo || null,
       cover: draft.cover || null,
+      isPublic: draft.isPublic,
       policies: draft.policies,
     });
     setSaving(false);
@@ -193,6 +196,23 @@ export function ProfileEditor({ profile, error, embedded = false }: ProfileEdito
             required
             fullWidth
           />
+          <Stack spacing={0.25}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+              <Stack spacing={0.25}>
+                <Typography variant="h6" component="h2">
+                  Página pública
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Cuando está activa, tus clientes pueden ver tu página y reservar online.
+                </Typography>
+              </Stack>
+              <Switch
+                checked={draft.isPublic}
+                onChange={(checked) => patch({ isPublic: checked })}
+                aria-label="Habilitar la página pública"
+              />
+            </Stack>
+          </Stack>
           <Box sx={MEDIA_CARD_SX}>
             <Stack spacing={2}>
               <Stack spacing={0.25}>

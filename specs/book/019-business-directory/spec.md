@@ -98,7 +98,7 @@ As an anonymous visitor, I want "Ver perfil" to take me to the business's public
 ### Functional Requirements
 
 - **FR-001**: The application MUST expose a **public** directory route (default `/directorio`) reachable without authentication.
-- **FR-002**: The route MUST render a responsive list of **business cards** for the eligible active businesses returned by the public listing.
+- **FR-002**: The route MUST render a responsive list of **business cards** for the eligible active businesses returned by the public listing. A business is eligible only when it is `active` **and published** (`isPublic = true`) and has a public profile with at least one active service; businesses with `isPublic = false` MUST NOT appear in the directory.
 - **FR-003**: The page MUST provide a **text search** input that filters businesses by **name, category or city**, case-insensitively, without a full page reload.
 - **FR-004**: An empty or whitespace-only search term MUST show the full eligible list; a term with no matches MUST show a clear "no results" state.
 - **FR-005**: Each **business card** MUST show the business logo/avatar, cover, name, short description, location/address and general weekly opening hours.

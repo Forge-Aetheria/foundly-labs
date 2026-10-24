@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import { Button, Container, Stack, TextField, Typography } from '@foundly/ui';
 import { PILL_SX, PRIMARY_BUTTON_SX } from '../../../shared/utils/landingCanon';
+import { heroCaptureHref } from '../utils/heroCapture';
 import { BookingAppMockup } from './BookingAppMockup';
 
 export interface HeroCopy {
@@ -46,7 +47,7 @@ export function HeroBand({ hero, heroCapture, cta }: HeroBandProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.location.href = '/onboarding';
+    window.location.href = heroCaptureHref(email);
   }
 
   return (
@@ -132,6 +133,7 @@ export function HeroBand({ hero, heroCapture, cta }: HeroBandProps) {
             <Box
               component="form"
               onSubmit={handleSubmit}
+              noValidate
               sx={{ width: '100%', maxWidth: 560 }}
               aria-label="Empieza gratis con Foundly Book"
             >
@@ -142,7 +144,6 @@ export function HeroBand({ hero, heroCapture, cta }: HeroBandProps) {
                   name="email"
                   value={email}
                   onChange={setEmail}
-                  required
                   sx={{
                     flex: 1,
                     '& .MuiOutlinedInput-root': {

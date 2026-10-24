@@ -35,7 +35,7 @@ Mappings reference the actual API contracts: catalog
 | `cover`                                 | `profile.cover`                                     | ✅ (create) |
 | `ownerUserId`                           | — (derived from identity `sub`)                     | ⛔ local / implicit |
 | `defaultAppointmentDurationMinutes`     | —                                                    | ⛔ local (out of scope) |
-| `businessHours` / `onlineBookingEnabled` | —                                                   | ⛔ local (out of scope) |
+| `businessHours` / `isPublic` | —                                                   | ⛔ local (out of scope) |
 | `license`                               | —                                                    | ⛔ local (Foundly Pass future) |
 | `gallery`                               | — (`GalleryPhoto` exists in DB, no GraphQL yet)      | ⛔ local (unmigrated domain) |
 | `social` as object / `createdAt`/`updatedAt` | `profile.*` fields as listed; timestamps exist in DB | ✅/n/a |

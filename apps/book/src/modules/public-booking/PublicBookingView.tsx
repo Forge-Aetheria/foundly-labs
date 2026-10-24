@@ -7,6 +7,14 @@ export async function PublicBookingView({ slug }: { slug: string }) {
   const resolved = await getPublicBusinessRemote(slug);
 
   if (resolved.status !== 'available') {
+    if (resolved.reason === 'disabled') {
+      return (
+        <UnavailablePanel
+          title="Página no disponible temporalmente"
+          message="Este negocio ha desactivado temporalmente su página pública y no acepta reservas online."
+        />
+      );
+    }
     const message =
       resolved.reason === 'not-found'
         ? 'No encontramos ese negocio.'

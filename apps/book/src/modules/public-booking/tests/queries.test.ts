@@ -12,7 +12,7 @@ import { deriveWeeklyHours } from '../utils/availability';
 const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));
 vi.mock('../../../shared/api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
 
-function makeTenant(status = 'active') {
+function makeTenant(status = 'active', isPublic = true) {
   return {
     id: 'ten-ana',
     name: 'Estudio Ana',
@@ -20,6 +20,7 @@ function makeTenant(status = 'active') {
     status,
     timezone: 'Europe/Madrid',
     currency: 'EUR',
+    isPublic,
     profile: {
       slug: 'estudio-ana',
       bio: 'Estudio de referencia en Madrid.',
@@ -163,6 +164,13 @@ describe('public-booking queries (feature 011 — server-only)', () => {
     const suspended = await getPublicBusinessRemote('suspended-shop');
     expect(suspended.status).toBe('unavailable');
     if (suspended.status === 'unavailable') expect(suspended.reason).toBe('suspended');
+  });
+
+  it('shows the unavailable state when the page is disabled (isPublic false)', async () => {
+    apiMock.mockResolvedValueOnce({ ok: true, data: { tenant: makeTenant('active', false) } });
+    const result = await getPublicBusinessRemote('estudio-ana');
+    expect(result.status).toBe('unavailable');
+    if (result.status === 'unavailable') expect(result.reason).toBe('disabled');
   });
 
   it('renders empty when the API is unreachable (no fallback)', async () => {

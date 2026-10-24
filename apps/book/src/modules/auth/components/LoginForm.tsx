@@ -4,6 +4,7 @@ import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
 import { useSignIn } from '../hooks';
+import { PasswordField } from '../../../shared/components/PasswordField';
 
 /** Sign-in form (feature 009 — US1; feature 012 session-expiry notice). Interacts through `useSignIn`. */
 export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean }) {
@@ -62,10 +63,9 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
           error={Boolean(fields.email)}
           helperText={fields.email}
         />
-        <TextField
+        <PasswordField
           label="Contraseña"
           name="password"
-          type="password"
           required
           fullWidth
           value={password}

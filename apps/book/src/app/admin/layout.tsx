@@ -43,7 +43,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <AdminWorkspaceProvider value={workspace}>
-      <AdminShell tenantName={workspace?.tenantName} publicHref={workspace?.publicHref}>
+      <AdminShell
+        tenantName={workspace?.tenantName}
+        publicHref={workspace?.publicHref}
+        isPublic={workspace?.isPublic}
+      >
         {children}
       </AdminShell>
     </AdminWorkspaceProvider>

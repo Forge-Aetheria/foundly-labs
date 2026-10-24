@@ -1,6 +1,6 @@
 import MuiTextField from '@mui/material/TextField';
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, ReactNode } from 'react';
 
 export interface TextFieldProps {
   label?: string;
@@ -22,6 +22,8 @@ export interface TextFieldProps {
   maxLength?: number;
   /** Extra styles merged over the material TextField root (e.g. layout sizing). */
   sx?: SxProps<Theme>;
+  /** Optional trailing adornment rendered inside the input (e.g. password visibility toggle). */
+  endAdornment?: ReactNode;
 }
 
 export function TextField({
@@ -40,6 +42,7 @@ export function TextField({
   rows,
   maxLength,
   sx,
+  endAdornment,
 }: TextFieldProps) {
   return (
     <MuiTextField
@@ -62,6 +65,7 @@ export function TextField({
       multiline={multiline}
       rows={rows}
       inputProps={maxLength ? { maxLength } : undefined}
+      slotProps={endAdornment ? { input: { endAdornment } } : undefined}
       sx={sx}
     />
   );

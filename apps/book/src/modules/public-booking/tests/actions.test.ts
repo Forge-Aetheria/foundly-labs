@@ -21,6 +21,7 @@ function makeTenant() {
     status: 'active',
     timezone: 'Europe/Madrid',
     currency: 'EUR',
+    isPublic: true,
     profile: {
       slug: 'estudio-ana',
       bio: null,
@@ -172,6 +173,18 @@ describe('public-booking actions (feature 011 — remote-only)', () => {
     const closed = await bookPublicAppointment(input);
     expect(closed.ok).toBe(false);
     if (!closed.ok) expect(closed.error.code).toBe('NOT_FOUND');
+  });
+
+  it('rejects booking when the public page is disabled (isPublic false)', async () => {
+    apiMock.mockImplementation(async (document: unknown) => {
+      if (document === TenantBySlugDocument)
+        return { ok: true, data: { tenant: { ...makeTenant(), isPublic: false } } };
+      if (document === SpecialistsDocument) return { ok: true, data: { specialists: [makeSpecialist()] } };
+      return { ok: false, error: { code: 'STATE_ERROR', message: 'unexpected' } };
+    });
+    const result = await bookPublicAppointment(input);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('NOT_FOUND');
   });
 
   it('rejects a service that does not belong to the tenant', async () => {

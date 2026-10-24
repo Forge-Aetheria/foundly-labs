@@ -46,7 +46,7 @@ export function mapTenant(dto: ApiTenant): Tenant {
     businessHours: [],
     currency: dto.currency,
     timezone: dto.timezone,
-    onlineBookingEnabled: true,
+    isPublic: dto.isPublic,
     license: null,
     avatar: profile?.logo ?? null,
     cover: profile?.cover ?? null,

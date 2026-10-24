@@ -10,7 +10,7 @@ Exported from `apps/book/src/shared/types/tenancy.ts`:
 
 | Interface       | Purpose                               | Key fields                                                                                                                                                                 |
 | --------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Tenant`        | Registered business                   | `id`, `name`, `slug`, `category`, `status`, `ownerUserId`, `defaultAppointmentDurationMinutes`, `businessHours`, `currency`, `timezone`, `onlineBookingEnabled`, `license` |
+| `Tenant`        | Registered business                   | `id`, `name`, `slug`, `category`, `status`, `ownerUserId`, `defaultAppointmentDurationMinutes`, `businessHours`, `currency`, `timezone`, `isPublic`, `license` |
 | `User`          | Account able to administer a business | `id`, `fullName`, `email`, `credential`, `role`, `tenantId`, `status`, `createdAt`                                                                                         |
 | `BusinessHours` | General opening schedule              | `weekday`, `isOpen`, `startTime`, `endTime`                                                                                                                                |
 | `Session`       | Identity seam context                 | `userId`, `tenantId`, `role`                                                                                                                                               |

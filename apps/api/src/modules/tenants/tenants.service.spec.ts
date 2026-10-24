@@ -35,6 +35,7 @@ interface FakeTenant {
   status: string;
   timezone: string;
   currency: string;
+  isPublic: boolean;
   profile: FakeProfile | null;
   services: FakeService[];
 }
@@ -64,6 +65,7 @@ function makeTenant(profile: FakeProfile | null = makeProfile()): FakeTenant {
     status: 'active',
     timezone: 'Europe/Madrid',
     currency: 'EUR',
+    isPublic: true,
     profile,
     services: [
       {
@@ -255,5 +257,19 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
     await expect(
       service.updateProfile(scoped('t1'), { policies: [{ title: '', body: 'x' }] }),
     ).rejects.toMatchObject({ extensions: { code: 'VALIDATION_ERROR' } });
+  });
+
+  it('toggles the public page visibility (isPublic)', async () => {
+    expect(tenant.isPublic).toBe(true);
+    const updated = await service.updateProfile(scoped('t1'), { isPublic: false });
+    expect(updated.isPublic).toBe(false);
+    // Other tenant/profile fields are preserved by the partial update.
+    expect(updated.name).toBe('Estudio Ana');
+    expect(updated.profile?.slug).toBe('estudio-ana');
+  });
+
+  it('exposes isPublic on the aggregate read', async () => {
+    const found = await service.findBySlug('estudio-ana');
+    expect(found?.isPublic).toBe(true);
   });
 });

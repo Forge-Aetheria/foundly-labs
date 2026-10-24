@@ -6,6 +6,7 @@ mutation UpdateBusinessProfile($input: UpdateBusinessProfileInput!) {
     status
     timezone
     currency
+    isPublic
     profile {
       slug
       bio

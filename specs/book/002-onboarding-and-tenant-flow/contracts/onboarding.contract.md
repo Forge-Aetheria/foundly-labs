@@ -14,6 +14,9 @@ Defines the public surface of the onboarding feature: the three step inputs (Zod
 
 On invalid email or weak password the step blocks progress with inline errors (FR-007).
 
+- **Email pre-population**: the wizard reads the `email` query parameter (forwarded by `/register`) and pre-fills the step-1 email field, without overwriting an email already present in a local-first draft (FR-024).
+- **Password visibility**: the step-1 password field exposes an Eye/EyeOff toggle inside the input that switches the field type between `password` and `text` (FR-025).
+
 ## Step 2 — Business (`BusinessFields`)
 
 | Field      | Rule                                                       |

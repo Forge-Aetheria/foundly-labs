@@ -151,6 +151,7 @@ export class TenantsService {
 
     const where: Prisma.TenantWhereInput = {
       status: 'active',
+      isPublic: true,
       profile: { isNot: null },
       services: { some: { active: true } },
       ...(term
@@ -277,6 +278,9 @@ export class TenantsService {
     if (input.policies !== undefined) {
       profileData.policies = this.validatePolicies(input.policies ?? []);
     }
+    if (input.isPublic !== undefined && input.isPublic !== null) {
+      tenantData.isPublic = input.isPublic;
+    }
 
     const existing = await this.prismaService.client.tenant.findUnique({
       where: { id: tenantId },
@@ -395,6 +399,7 @@ export class TenantsService {
       status: row.status,
       timezone: row.timezone,
       currency: row.currency,
+      isPublic: row.isPublic ?? true,
       profile: row.profile ? this.toProfileObject(row.profile) : null,
       services: row.services.map((service) => this.toServiceObject(service)),
     };

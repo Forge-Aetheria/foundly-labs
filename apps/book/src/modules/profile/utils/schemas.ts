@@ -19,6 +19,7 @@ export const updateProfileSchema = z.object({
   whatsapp: z.string().trim().url('El enlace de WhatsApp no es válido.').nullish(),
   logo: z.string().trim().url('La URL del logo no es válida.').nullish(),
   cover: z.string().trim().url('La URL de la portada no es válida.').nullish(),
+  isPublic: z.boolean(),
   policies: z.array(policySchema).default([]),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

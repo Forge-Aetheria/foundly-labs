@@ -8,6 +8,7 @@ query TenantBySlug($slug: String!) {
     status
     timezone
     currency
+    isPublic
     profile {
       slug
       bio
@@ -46,6 +47,7 @@ query Tenants {
     status
     timezone
     currency
+    isPublic
     profile {
       slug
       bio

@@ -74,18 +74,27 @@ describe('WizardShell (US1, contracts/onboarding.contract.md)', () => {
       </FoundlyThemeProvider>,
     );
 
-    expect(screen.getByRole('link', { name: /Iniciar sesión/ })).toHaveAttribute('href', '/login');
-    expect(screen.getByRole('link', { name: 'Términos de Servicio' })).toHaveAttribute(
+    const loginLinks = screen.getAllByRole('link', { name: 'Iniciar sesión' });
+    expect(loginLinks.length).toBeGreaterThan(0);
+    expect(loginLinks[0]).toHaveAttribute('href', '/login');
+    expect(screen.getByRole('link', { name: 'Registrar mi negocio' })).toHaveAttribute(
       'href',
-      '/terms',
+      '/onboarding',
     );
-    expect(screen.getByRole('link', { name: 'Política de Privacidad' })).toHaveAttribute(
-      'href',
-      '/privacy',
-    );
+    expect(screen.getByRole('link', { name: 'Privacidad' })).toHaveAttribute('href', '/privacy');
     expect(screen.getByText(/Foundly Labs/)).toBeInTheDocument();
 
     const results = await axe(container, { rules: { 'color-contrast': { enabled: false } } });
     expect(results.violations).toHaveLength(0);
+  });
+
+  it('pre-fills the email captured in the landing hero', () => {
+    render(
+      <FoundlyThemeProvider>
+        <WizardShell initialEmail="ana@negocio.dev" />
+      </FoundlyThemeProvider>,
+    );
+
+    expect(screen.getByLabelText(/Email/)).toHaveValue('ana@negocio.dev');
   });
 });

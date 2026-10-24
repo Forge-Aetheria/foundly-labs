@@ -48,6 +48,7 @@ export async function updateProfile(input: unknown): Promise<ActionResult<Tenant
       whatsapp: data.whatsapp ?? null,
       logo: data.logo ?? null,
       cover: data.cover ?? null,
+      isPublic: data.isPublic,
       policies: data.policies.map((policy) => ({ title: policy.title, body: policy.body })),
     },
   });

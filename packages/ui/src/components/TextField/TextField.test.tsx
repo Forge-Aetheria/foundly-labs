@@ -54,4 +54,18 @@ describe('TextField', () => {
     expect(root).not.toBeNull();
     expect(root).toHaveStyle({ maxWidth: '320px' });
   });
+
+  it('renders a trailing endAdornment inside the input', () => {
+    render(
+      <FoundlyThemeProvider>
+        <TextField
+          label="Contraseña"
+          type="password"
+          value=""
+          endAdornment={<div data-testid="adornment">toggle</div>}
+        />
+      </FoundlyThemeProvider>,
+    );
+    expect(screen.getByTestId('adornment')).toBeInTheDocument();
+  });
 });

@@ -3,6 +3,7 @@
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -30,6 +31,8 @@ export interface AdminShellProps {
   tenantName?: string;
   /** Public booking page path for the owner's slug (feature 009 — US4); null hides the link. */
   publicHref?: string | null;
+  /** Whether the public booking page is enabled; `false` pins a warning banner. */
+  isPublic?: boolean;
 }
 
 /**
@@ -37,7 +40,7 @@ export interface AdminShellProps {
  * drawer on small viewports), the module navigation and the Clean Light UI
  * lavender canvas for the routed screens.
  */
-export function AdminShell({ children, tenantName, publicHref }: AdminShellProps) {
+export function AdminShell({ children, tenantName, publicHref, isPublic = true }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleOpen = () => setMobileOpen(true);
   const handleClose = () => setMobileOpen(false);
@@ -78,6 +81,7 @@ export function AdminShell({ children, tenantName, publicHref }: AdminShellProps
       </Drawer>
 
       <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
+        {isPublic ? null : <PublicDisabledBanner />}
         <MobileBar onOpen={handleOpen} />
         <Box component="main" id="main" sx={{ flexGrow: 1 }}>
           <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -86,6 +90,41 @@ export function AdminShell({ children, tenantName, publicHref }: AdminShellProps
         </Box>
       </Stack>
     </Box>
+  );
+}
+
+function PublicDisabledBanner() {
+  return (
+    <Stack
+      role="alert"
+      direction="row"
+      alignItems="center"
+      justifyContent="space-between"
+      spacing={2}
+      sx={{
+        position: 'sticky',
+        top: 0,
+        zIndex: (theme) => theme.zIndex.appBar,
+        gap: 1,
+        px: { xs: 2, md: 3 },
+        py: 1,
+        flexWrap: 'wrap',
+        backgroundColor: 'warning.light',
+        borderBottom: 1,
+        borderColor: 'warning.main',
+      }}
+    >
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flexGrow: 1 }}>
+        <WarningAmberIcon sx={{ color: 'warning.main', flexShrink: 0 }} />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          Tu página pública está actualmente deshabilitada. Tus clientes no pueden realizar
+          reservas online.
+        </Typography>
+      </Stack>
+      <Button component={Link} href="/admin/configuracion" variant="contained" size="small">
+        Ir a Configuración
+      </Button>
+    </Stack>
   );
 }
 

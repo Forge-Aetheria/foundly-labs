@@ -38,7 +38,7 @@ function makeTenant(): Tenant {
     ),
     currency: 'EUR',
     timezone: 'Europe/Madrid',
-    onlineBookingEnabled: true,
+    isPublic: true,
     license: null,
     avatar: null,
     cover: null,
@@ -158,6 +158,19 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
   it('shows a clean error dialog when the profile cannot be loaded', () => {
     renderEditor(null, 'No se pudo cargar el perfil.');
     expect(screen.getByRole('dialog')).toHaveTextContent('No se pudo cargar el perfil.');
+  });
+
+  it('toggles the public page visibility and persists it (isPublic)', async () => {
+    updateMock.mockResolvedValue({ ok: true, data: makeTenant() });
+    const user = userEvent.setup();
+    renderEditor();
+
+    const toggle = screen.getByLabelText('Habilitar la página pública');
+    await user.click(toggle);
+    await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
+
+    const arg = updateMock.mock.calls[0]![0] as { isPublic: boolean };
+    expect(arg.isPublic).toBe(false);
   });
 
   it('blocks saving when a measured image violates its rule', async () => {

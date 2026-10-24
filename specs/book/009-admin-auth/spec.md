@@ -125,6 +125,7 @@ As a business owner, I want to update my account password from a security/settin
 - **FR-013**: Expired or invalid sessions MUST cause protected actions to be denied and MUST redirect the user to sign in again, without breaking already-rendered content.
 - **FR-014**: Every sign-in, sign-out, public-link and password-change surface MUST use the shared design-system components and tokens, with no ad-hoc brand styling or magic colors.
 - **FR-015**: Authentication secrets MUST NOT be exposed to the browser, and all admin data MUST remain scoped to the authenticated owner's business.
+- **FR-016**: The sign-in password field MUST provide a visibility toggle (Eye/EyeOff) inside the input that switches the input type between `password` and `text` without submitting the form.
 
 ### Key Entities _(include if feature involves data)_
 

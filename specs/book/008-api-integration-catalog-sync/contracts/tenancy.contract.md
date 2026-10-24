@@ -52,7 +52,7 @@ local draft (idempotent by draftId) → createTenant(input) → bind tenant_id (
 - Authoritative fields from `tenant(slug)`: `name`, `category`, `status` (must be `active`),
   `profile.*` (slug, bio, address, phone, instagram, whatsapp, logo, cover).
 - Local merge (unchanged rendering): `gallery`, `reviews`, `policies`, `businessHours`,
-  `onlineBookingEnabled` — read from the in-memory seam until those domains migrate.
+  `isPublic` — read from the in-memory seam until those domains migrate.
 - If `tenant(slug)` returns null or unmigrated fields are missing, the portal renders with the local
   data it already has (graceful degradation per FR-006/FR-007).
 

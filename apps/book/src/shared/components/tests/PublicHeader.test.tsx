@@ -11,6 +11,14 @@ function renderHeader() {
   );
 }
 
+function renderAuthHeader() {
+  return render(
+    <FoundlyThemeProvider>
+      <PublicHeader variant="auth" />
+    </FoundlyThemeProvider>,
+  );
+}
+
 describe('PublicHeader', () => {
   it('renders the navigation options and the primary CTA', () => {
     renderHeader();
@@ -29,5 +37,13 @@ describe('PublicHeader', () => {
   it('does not render the removed "Ver Demo" option', () => {
     renderHeader();
     expect(screen.queryByText(/demo/i)).not.toBeInTheDocument();
+  });
+
+  it('reduces to the login affordance in the auth variant', () => {
+    renderAuthHeader();
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/login');
+    expect(screen.queryByRole('link', { name: 'Buscar negocios' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Precios' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Registrar mi negocio' })).not.toBeInTheDocument();
   });
 });

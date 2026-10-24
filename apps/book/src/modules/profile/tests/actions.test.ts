@@ -63,6 +63,7 @@ describe('profile actions (feature 014)', () => {
       name: 'Estudio Ana',
       category: 'Peluquería',
       slug: 'estudio-ana',
+      isPublic: true,
       instagram: 'not-a-url',
       policies: [],
     });
@@ -87,6 +88,7 @@ describe('profile actions (feature 014)', () => {
       whatsapp: null,
       logo: null,
       cover: null,
+      isPublic: true,
       policies: [{ title: 'Depósito', body: '20%' }],
     });
     expect(apiMock).toHaveBeenCalledWith(UpdateBusinessProfileDocument, {
@@ -101,6 +103,7 @@ describe('profile actions (feature 014)', () => {
         whatsapp: null,
         logo: null,
         cover: null,
+        isPublic: true,
         policies: [{ title: 'Depósito', body: '20%' }],
       },
     });
@@ -114,6 +117,7 @@ describe('profile actions (feature 014)', () => {
       name: 'X',
       category: 'Y',
       slug: 'estudio-ana',
+      isPublic: true,
       policies: [],
     });
     expect(result.ok).toBe(false);

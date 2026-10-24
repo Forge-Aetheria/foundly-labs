@@ -11,6 +11,12 @@ import { PRIMARY_BUTTON_SX, SECONDARY_BUTTON_SX } from '../utils/landingCanon';
 export interface PublicHeaderProps {
   /** Primary call to action (defaults to the onboarding entry). */
   cta?: { href: string; label: string };
+  /**
+   * Chrome variant. `default` renders the directory search, the full nav and the
+   * primary CTA; `auth` reduces it to the brand + login affordance for flows that
+   * do not need the complete navigation (register/onboarding).
+   */
+  variant?: 'default' | 'auth';
 }
 
 const DEFAULT_CTA = { href: '/onboarding', label: 'Registrar mi negocio' };
@@ -55,9 +61,12 @@ const SEARCH_LINK_SX = {
 /**
  * Global public header (landing + directory): transparent so it blends with the page
  * background, with the business-directory search, modern borderless nav and the
- * primary `Registrar mi negocio` CTA. Shared so `/negocios` keeps the landing chrome.
+ * primary `Registrar mi negocio` CTA. Shared so `/negocios`, the legal pages and the
+ * onboarding wizard keep the landing chrome (`variant="auth"` trims it for auth flows).
  */
-export function PublicHeader({ cta = DEFAULT_CTA }: PublicHeaderProps) {
+export function PublicHeader({ cta = DEFAULT_CTA, variant = 'default' }: PublicHeaderProps) {
+  const isAuth = variant === 'auth';
+
   return (
     <Stack
       component="header"
@@ -70,38 +79,44 @@ export function PublicHeader({ cta = DEFAULT_CTA }: PublicHeaderProps) {
       <Link href="/" aria-label="Foundly Book — inicio" style={{ display: 'flex' }}>
         <Image src="/branding-logo.png" alt="Foundly Book" width={140} height={70} priority />
       </Link>
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        <MuiLink
-          component={Link}
-          href="/negocios"
-          underline="none"
-          aria-label="Buscar negocios"
-          sx={[SEARCH_LINK_SX, { px: { xs: 1.25, sm: 2 } }]}
-        >
-          <SearchIcon sx={{ fontSize: 18 }} />
-          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-            Buscar negocios
-          </Box>
+      {isAuth ? (
+        <MuiLink component={Link} href="/login" underline="none" sx={NAV_LINK_SX}>
+          Iniciar sesión
         </MuiLink>
-        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
-          {NAV_ITEMS.map((item) => (
-            <MuiLink
-              key={item.href}
-              component={Link}
-              href={item.href}
-              underline="none"
-              sx={NAV_LINK_SX}
-            >
-              {item.label}
-            </MuiLink>
-          ))}
+      ) : (
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <MuiLink
+            component={Link}
+            href="/negocios"
+            underline="none"
+            aria-label="Buscar negocios"
+            sx={[SEARCH_LINK_SX, { px: { xs: 1.25, sm: 2 } }]}
+          >
+            <SearchIcon sx={{ fontSize: 18 }} />
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Buscar negocios
+            </Box>
+          </MuiLink>
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
+            {NAV_ITEMS.map((item) => (
+              <MuiLink
+                key={item.href}
+                component={Link}
+                href={item.href}
+                underline="none"
+                sx={NAV_LINK_SX}
+              >
+                {item.label}
+              </MuiLink>
+            ))}
+          </Stack>
+          <Link href={cta.href} style={{ marginLeft: 8 }}>
+            <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
+              {cta.label}
+            </Button>
+          </Link>
         </Stack>
-        <Link href={cta.href} style={{ marginLeft: 8 }}>
-          <Button variant="primary" sx={PRIMARY_BUTTON_SX}>
-            {cta.label}
-          </Button>
-        </Link>
-      </Stack>
+      )}
     </Stack>
   );
 }
