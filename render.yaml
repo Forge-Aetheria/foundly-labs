@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: foundly-api
+    runtime: node
+    rootDir: apps/api
+    buildCommand: cd ../.. && corepack enable && pnpm install --frozen-lockfile && pnpm --filter @foundly/database generate && pnpm --filter @foundly/api build
+    preDeployCommand: cd ../.. && pnpm --filter @foundly/database exec prisma migrate deploy
+    startCommand: node dist/main.js
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 24.11.1
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_AUTH_URL
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://book.foundlylabs.com,https://foundly-book.vercel.app
