@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import MuiButton from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
 import Link from 'next/link';
-import { Badge, Card, Stack, Typography } from '@foundly/ui';
+import { Badge, Card, Chip, Stack, Typography } from '@foundly/ui';
 import { BusinessDescription } from './BusinessDescription';
 import { formatDirectoryHours } from '../utils/hours';
 import type { DirectoryBusiness } from '../utils/types';
@@ -96,11 +96,7 @@ export function BusinessCard({ business }: BusinessCardProps) {
           />
 
           <Box sx={{ position: 'absolute', top: 12, right: 12 }}>
-            <Badge
-              pill
-              status="positive"
-              icon={<EventAvailableIcon sx={{ fontSize: 14 }} />}
-            >
+            <Badge pill status="positive" icon={<EventAvailableIcon sx={{ fontSize: 14 }} />}>
               Reservas online
             </Badge>
           </Box>
@@ -165,30 +161,30 @@ export function BusinessCard({ business }: BusinessCardProps) {
           emptyText="Sin descripción por el momento."
         />
 
+        {business.tags.length > 0 ? (
+          <Stack direction="row" spacing={0.75} sx={{ flexWrap: 'wrap', gap: 0.75 }}>
+            {business.tags.slice(0, 4).map((tag) => (
+              <Chip key={tag} label={tag} color="primary" />
+            ))}
+          </Stack>
+        ) : null}
+
         <Stack spacing={0.75}>
           <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
-            <LocationOnOutlinedIcon
-              sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }}
-            />
+            <LocationOnOutlinedIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
             <Typography variant="body2" color="text.secondary" noWrap sx={{ minWidth: 0 }}>
               {business.address ?? 'Ubicación no indicada'}
             </Typography>
           </Stack>
           <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
-            <ScheduleOutlinedIcon
-              sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }}
-            />
+            <ScheduleOutlinedIcon sx={{ fontSize: 16, color: 'text.disabled', flexShrink: 0 }} />
             <Typography variant="body2" color="text.secondary" noWrap sx={{ minWidth: 0 }}>
               {hours ?? 'Horario no disponible'}
             </Typography>
           </Stack>
         </Stack>
 
-        <Stack
-          direction="row"
-          spacing={1}
-          sx={{ mt: 'auto', pt: 1, alignItems: 'stretch' }}
-        >
+        <Stack direction="row" spacing={1} sx={{ mt: 'auto', pt: 1, alignItems: 'stretch' }}>
           <MuiButton
             component={Link}
             href={profileHref}

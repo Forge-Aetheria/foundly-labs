@@ -27,7 +27,8 @@ function makeTenant(): Tenant {
     id: 'ten-ana',
     name: 'Estudio Ana',
     slug: 'estudio-ana',
-    category: 'Peluquería',
+    category: 'BARBERIAS_PELUQUERIAS',
+    tags: ['Corte', 'Color'],
     status: 'active',
     ownerUserId: 'u-owner-ana',
     defaultAppointmentDurationMinutes: 30,
@@ -46,7 +47,9 @@ function makeTenant(): Tenant {
     address: 'Calle Mayor 7, 28013 Madrid',
     phone: '+34 612 345 678',
     social: { instagram: 'https://instagram.com/estudioana' },
-    policies: [{ id: 'policy-0', tenantId: 'ten-ana', title: 'Cancelación', body: 'Avisa con 24 h.' }],
+    policies: [
+      { id: 'policy-0', tenantId: 'ten-ana', title: 'Cancelación', body: 'Avisa con 24 h.' },
+    ],
     createdAt: '2026-10-08T00:00:00.000Z',
     updatedAt: '2026-10-08T00:00:00.000Z',
   };
@@ -104,10 +107,30 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
     expect(await screen.findByText('Perfil guardado.')).toBeInTheDocument();
   });
 
+  it('submits the selected master category and tag chips', async () => {
+    updateMock.mockResolvedValue({ ok: true, data: makeTenant() });
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(screen.getByRole('combobox', { name: /Categoría/ }));
+    await user.click(screen.getByRole('option', { name: 'Salud y Bienestar' }));
+    await user.type(screen.getByLabelText('Etiquetas'), 'masaje{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
+
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    const arg = updateMock.mock.calls[0]![0] as { category: string; tags: string[] };
+    expect(arg.category).toBe('SALUD_BIENESTAR');
+    expect(arg.tags).toEqual(['Corte', 'Color', 'Masaje']);
+  });
+
   it('surfaces an inline field error returned by the save action', async () => {
     updateMock.mockResolvedValue({
       ok: false,
-      error: { code: 'CONFLICT', message: 'Esa URL pública ya está en uso.', fields: { slug: 'Esa URL pública ya está en uso.' } },
+      error: {
+        code: 'CONFLICT',
+        message: 'Esa URL pública ya está en uso.',
+        fields: { slug: 'Esa URL pública ya está en uso.' },
+      },
     });
     const user = userEvent.setup();
     renderEditor();
@@ -183,9 +206,7 @@ describe('ProfileEditor (admin Perfil, feature 014)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Guardar perfil' }));
 
-    expect(
-      await screen.findByText(/La imagen debe ser cuadrada \(1:1\)/),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/La imagen debe ser cuadrada \(1:1\)/)).toBeInTheDocument();
     expect(updateMock).not.toHaveBeenCalled();
   });
 });

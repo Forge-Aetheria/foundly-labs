@@ -55,6 +55,39 @@ export async function getEffectiveSession(): Promise<Session | null> {
   return getLiveSession();
 }
 
+export interface AuthIdentity {
+  userId: string;
+  email: string | null;
+  fullName: string;
+  avatarUrl: string | null;
+}
+
+/** Verified identity details used by the admin shell (name, email, avatar). */
+export async function getAuthIdentity(): Promise<AuthIdentity | null> {
+  const supabase = await createServerSupabaseClient();
+  if (!supabase) return null;
+  const { data } = await withTimeout(supabase.auth.getClaims(), AUTH_CALL_TIMEOUT_MS, {
+    data: null,
+    error: null,
+  });
+  const claims = (data?.claims ?? null) as Record<string, unknown> | null;
+  if (!claims || typeof claims.sub !== 'string') return null;
+  const metadata =
+    claims.user_metadata !== null && typeof claims.user_metadata === 'object'
+      ? (claims.user_metadata as Record<string, unknown>)
+      : {};
+  const email = typeof claims.email === 'string' ? claims.email : null;
+  const fullName =
+    (typeof metadata.full_name === 'string' && metadata.full_name) ||
+    (typeof metadata.name === 'string' && metadata.name) ||
+    (email ? (email.split('@')[0] ?? 'Administrador') : 'Administrador');
+  const avatarUrl =
+    (typeof metadata.avatar_url === 'string' && metadata.avatar_url) ||
+    (typeof metadata.picture === 'string' && metadata.picture) ||
+    null;
+  return { userId: claims.sub, email, fullName, avatarUrl };
+}
+
 /** Access token for GraphQL bearer injection (server-side only). */
 export async function getAccessToken(): Promise<string | null> {
   const supabase = await createServerSupabaseClient();

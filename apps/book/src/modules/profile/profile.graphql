@@ -3,6 +3,7 @@ mutation UpdateBusinessProfile($input: UpdateBusinessProfileInput!) {
     id
     name
     category
+    tags
     status
     timezone
     currency

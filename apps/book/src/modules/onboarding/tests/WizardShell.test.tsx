@@ -48,12 +48,13 @@ describe('WizardShell (US1, contracts/onboarding.contract.md)', () => {
     expect(screen.getByLabelText(/Nombre del negocio/)).toBeInTheDocument();
     await user.type(screen.getByLabelText(/Nombre del negocio/), 'Estudio Nuevo');
     await user.type(screen.getByLabelText(/URL pública/), 'estudio-nuevo');
-    await user.type(screen.getByLabelText(/Categoría/), 'Estética');
+    await user.click(screen.getByRole('combobox', { name: /Categoría/ }));
+    await user.click(screen.getByRole('option', { name: 'Salud y Bienestar' }));
 
     // The phone preview mirrors the typed business data before continuing.
     expect(screen.getAllByText('Estudio Nuevo').length).toBeGreaterThan(0);
     expect(screen.getByText('foundlylabs.lat/book/estudio-nuevo')).toBeInTheDocument();
-    expect(screen.getAllByText('Estética').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Salud y Bienestar').length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isTenantCategory } from '@foundly/database/categories';
 import { validateSlug } from '../../../shared/utils/slug';
 
 export const accountSchema = z.object({
@@ -20,7 +21,9 @@ export const businessSchema = z.object({
       (value) => validateSlug(value).ok === true,
       'URL no válida: 3–40 caracteres, minúsculas y guiones, y no puede ser una palabra reservada.',
     ),
-  category: z.string().min(1, 'Elige una categoría.').max(80, 'Máximo 80 caracteres.'),
+  category: z
+    .string()
+    .refine((value): boolean => isTenantCategory(value), 'Elige una categoría principal válida.'),
 });
 export type BusinessFields = z.infer<typeof businessSchema>;
 

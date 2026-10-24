@@ -40,6 +40,7 @@ export function mapTenant(dto: ApiTenant): Tenant {
     name: dto.name,
     slug: profile?.slug ?? '',
     category: dto.category,
+    tags: dto.tags,
     status: mapTenantStatus(dto.status),
     ownerUserId: '',
     defaultAppointmentDurationMinutes: 30,

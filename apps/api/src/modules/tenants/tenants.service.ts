@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@foundly/database';
+import { TenantCategory as PrismaTenantCategory, type Prisma } from '@foundly/database';
+import { TENANT_CATEGORIES, categoryFromSearchTerm } from './tenant-categories';
 import { GraphQLError } from 'graphql';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { sanitizeTag, sanitizeTags } from './tenant-tags';
 import type { AuthUser } from '../auth/jwt.types';
 import {
   BusinessProfileObject,
@@ -19,7 +21,6 @@ const RESERVED_SLUGS = ['admin', 'onboarding', 'api', 'www', 'app', 'public', 's
 const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/;
 
 const MAX_NAME_LENGTH = 120;
-const MAX_CATEGORY_LENGTH = 120;
 const MAX_BIO_LENGTH = 2000;
 const MAX_POLICY_TITLE_LENGTH = 120;
 const MAX_POLICY_BODY_LENGTH = 2000;
@@ -47,6 +48,7 @@ type TenantForDirectory = Prisma.TenantGetPayload<{
 
 export interface SearchBusinessesInput {
   query?: string | null;
+  category?: string | null;
   limit?: number | null;
   offset?: number | null;
 }
@@ -67,6 +69,14 @@ function conflictError(message = 'Conflict'): GraphQLError {
   return new GraphQLError(message, {
     extensions: { code: 'CONFLICT' },
   });
+}
+
+function requireCategory(value: string): PrismaTenantCategory {
+  const category = value.trim() as PrismaTenantCategory;
+  if (!TENANT_CATEGORIES.includes(category)) {
+    throw validationError('Invalid tenant category');
+  }
+  return category;
 }
 
 function isUniqueViolation(error: unknown): boolean {
@@ -167,16 +177,21 @@ export class TenantsService {
       isPublic: true,
       profile: { isNot: null },
       services: { some: { active: true } },
-      ...(term
-        ? {
-            OR: [
-              { name: { contains: term, mode: 'insensitive' } },
-              { category: { contains: term, mode: 'insensitive' } },
-              { profile: { is: { address: { contains: term, mode: 'insensitive' } } } },
-            ],
-          }
-        : {}),
     };
+
+    if (input.category != null) {
+      where.category = requireCategory(input.category) as PrismaTenantCategory;
+    }
+
+    if (term) {
+      const matchedCategory = categoryFromSearchTerm(term);
+      where.OR = [
+        { name: { contains: term, mode: 'insensitive' } },
+        { profile: { is: { address: { contains: term, mode: 'insensitive' } } } },
+        { tags: { has: sanitizeTag(term) } },
+        ...(matchedCategory ? [{ category: matchedCategory as PrismaTenantCategory }] : []),
+      ];
+    }
 
     const rows = await this.prismaService.client.tenant.findMany({
       where,
@@ -206,7 +221,8 @@ export class TenantsService {
 
     const data = {
       name: input.name,
-      category: input.category,
+      category: requireCategory(input.category) as PrismaTenantCategory,
+      tags: sanitizeTags(input.tags),
       timezone: input.timezone,
       currency: input.currency ?? 'EUR',
       profile: {
@@ -256,12 +272,10 @@ export class TenantsService {
       tenantData.name = name;
     }
     if (input.category != null) {
-      const category = input.category.trim();
-      if (!category) throw validationError('category is required');
-      if (category.length > MAX_CATEGORY_LENGTH) {
-        throw validationError(`category must be at most ${MAX_CATEGORY_LENGTH} characters`);
-      }
-      tenantData.category = category;
+      tenantData.category = requireCategory(input.category) as PrismaTenantCategory;
+    }
+    if (input.tags != null) {
+      tenantData.tags = sanitizeTags(input.tags);
     }
 
     const profileData: Record<string, unknown> = {};
@@ -401,6 +415,7 @@ export class TenantsService {
       slug: row.profile?.slug ?? '',
       name: row.name,
       category: row.category,
+      tags: row.tags ?? [],
       description: row.profile?.bio ?? null,
       address: row.profile?.address ?? null,
       phone: row.profile?.phone ?? null,
@@ -415,6 +430,7 @@ export class TenantsService {
       id: row.id,
       name: row.name,
       category: row.category,
+      tags: row.tags ?? [],
       status: row.status,
       timezone: row.timezone,
       currency: row.currency,

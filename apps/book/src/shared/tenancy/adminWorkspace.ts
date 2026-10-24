@@ -1,6 +1,6 @@
 'use server';
 
-import { resolveTenantSession } from '../auth/authServer';
+import { getAuthIdentity, resolveTenantSession } from '../auth/authServer';
 import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '../auth/authConstants';
 import { getCurrentTenant } from './queries';
 
@@ -8,13 +8,16 @@ import { getCurrentTenant } from './queries';
 export interface AdminWorkspaceData {
   tenantId: string;
   tenantName?: string;
+  tenantSlug?: string;
   publicHref: string | null;
   isPublic: boolean;
+  userName: string;
+  userEmail: string;
+  userAvatar: string | null;
 }
 
 export type AdminWorkspaceResult =
-  | { ok: true; data: AdminWorkspaceData }
-  | { ok: false; redirectTo: string };
+  { ok: true; data: AdminWorkspaceData } | { ok: false; redirectTo: string };
 
 /**
  * Resolve the authenticated owner's workspace for the client admin shell.
@@ -33,14 +36,18 @@ export async function loadAdminWorkspace(): Promise<AdminWorkspaceResult> {
     return { ok: false, redirectTo: REGISTRATION_ROUTE };
   }
 
-  const tenant = await getCurrentTenant(auth.data);
+  const [tenant, identity] = await Promise.all([getCurrentTenant(auth.data), getAuthIdentity()]);
   return {
     ok: true,
     data: {
       tenantId: auth.data.tenantId,
       tenantName: tenant.ok ? tenant.data.name : undefined,
+      tenantSlug: tenant.ok ? tenant.data.slug || undefined : undefined,
       publicHref: tenant.ok && tenant.data.slug ? `/${tenant.data.slug}` : null,
       isPublic: tenant.ok ? tenant.data.isPublic : true,
+      userName: identity?.fullName ?? 'Administrador',
+      userEmail: identity?.email ?? '',
+      userAvatar: (tenant.ok ? tenant.data.avatar : null) ?? identity?.avatarUrl ?? null,
     },
   };
 }

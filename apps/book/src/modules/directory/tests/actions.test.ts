@@ -3,14 +3,17 @@ import { SearchBusinessesDocument } from '../../../shared/api/generated';
 import { getDirectoryBusinesses } from '../actions';
 
 const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));
-vi.mock('../../../shared/api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
+vi.mock('../../../shared/api/client', () => ({
+  apiRequest: (...args: unknown[]) => apiMock(...args),
+}));
 
 function makeBusiness(overrides: Record<string, unknown> = {}) {
   return {
     tenantId: 't1',
     slug: 'estudio-ana',
     name: 'Estudio Ana',
-    category: 'Peluquería',
+    category: 'BARBERIAS_PELUQUERIAS',
+    tags: ['Corte', 'Madrid'],
     description: 'Estudio de referencia.',
     address: 'Calle Mayor 7, Madrid',
     phone: '+34 612 345 678',
@@ -39,7 +42,8 @@ describe('getDirectoryBusinesses (019)', () => {
         tenantId: 't1',
         slug: 'estudio-ana',
         name: 'Estudio Ana',
-        category: 'Peluquería',
+        category: 'Barberías y Peluquerías',
+        tags: ['Corte', 'Madrid'],
         description: 'Estudio de referencia.',
         address: 'Calle Mayor 7, Madrid',
         logo: 'https://cdn/logo.png',
@@ -52,7 +56,7 @@ describe('getDirectoryBusinesses (019)', () => {
     ]);
     expect(apiMock).toHaveBeenCalledWith(
       SearchBusinessesDocument,
-      expect.objectContaining({ query: 'madrid' }),
+      expect.objectContaining({ query: 'madrid', category: null }),
     );
   });
 
@@ -61,7 +65,7 @@ describe('getDirectoryBusinesses (019)', () => {
     await getDirectoryBusinesses('   ');
     expect(apiMock).toHaveBeenCalledWith(
       SearchBusinessesDocument,
-      expect.objectContaining({ query: null }),
+      expect.objectContaining({ query: null, category: null }),
     );
   });
 

@@ -5,6 +5,7 @@ import StarIcon from '@mui/icons-material/Star';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import { Stack, Typography } from '@foundly/ui';
+import { tenantCategoryLabel } from '@foundly/database/categories';
 import type { BookingDraft } from '../../../shared/types/tenancy';
 import { PILL_SX } from '../../../shared/utils/landingCanon';
 
@@ -17,7 +18,9 @@ const TRUST_POINTS = ['Reservas 24/7', 'Sin tarjeta', 'Configuración guiada'] a
 export function BrandPanel({ draft }: { draft: BookingDraft }) {
   const businessName = draft.business?.name?.trim() || 'Tu negocio';
   const slug = draft.business?.slug?.trim() || 'tu-negocio';
-  const category = draft.business?.category?.trim() || 'Tu categoría';
+  const category = draft.business?.category
+    ? tenantCategoryLabel(draft.business.category)
+    : 'Tu categoría';
   const duration = draft.setup?.defaultAppointmentDurationMinutes ?? 30;
   const initials =
     businessName
@@ -40,12 +43,7 @@ export function BrandPanel({ draft }: { draft: BookingDraft }) {
       </Stack>
 
       <Box sx={{ width: '100%', maxWidth: 380, mx: 'auto' }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.75}
-          sx={{ mb: 1.25, px: 0.5 }}
-        >
+        <Stack direction="row" alignItems="center" spacing={0.75} sx={{ mb: 1.25, px: 0.5 }}>
           <Box
             aria-hidden="true"
             sx={{

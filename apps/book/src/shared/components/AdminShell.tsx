@@ -29,6 +29,10 @@ export interface AdminShellProps {
   children: ReactNode;
   /** The active business shown in the footer user profile (US3). */
   tenantName?: string;
+  /** Authenticated owner identity shown in the footer. */
+  userName?: string;
+  userEmail?: string;
+  userAvatar?: string | null;
   /** Public booking page path for the owner's slug (feature 009 — US4); null hides the link. */
   publicHref?: string | null;
   /** Whether the public booking page is enabled; `false` pins a warning banner. */
@@ -47,6 +51,9 @@ export interface AdminShellProps {
 export function AdminShell({
   children,
   tenantName,
+  userName,
+  userEmail,
+  userAvatar,
   publicHref,
   isPublic = true,
   headerStart,
@@ -75,7 +82,13 @@ export function AdminShell({
           },
         }}
       >
-        <DrawerContent tenantName={tenantName} publicHref={publicHref} />
+        <DrawerContent
+          tenantName={tenantName}
+          userName={userName}
+          userEmail={userEmail}
+          userAvatar={userAvatar}
+          publicHref={publicHref}
+        />
       </Drawer>
 
       <Drawer
@@ -88,7 +101,14 @@ export function AdminShell({
           '& .MuiDrawer-paper': { width: DRAWER_WIDTH, boxSizing: 'border-box' },
         }}
       >
-        <DrawerContent tenantName={tenantName} publicHref={publicHref} onNavigate={handleClose} />
+        <DrawerContent
+          tenantName={tenantName}
+          userName={userName}
+          userEmail={userEmail}
+          userAvatar={userAvatar}
+          publicHref={publicHref}
+          onNavigate={handleClose}
+        />
       </Drawer>
 
       <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -128,8 +148,8 @@ function PublicDisabledBanner() {
       <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flexGrow: 1 }}>
         <WarningAmberIcon sx={{ color: 'warning.main', flexShrink: 0 }} />
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          Tu página pública está actualmente deshabilitada. Tus clientes no pueden realizar
-          reservas online.
+          Tu página pública está actualmente deshabilitada. Tus clientes no pueden realizar reservas
+          online.
         </Typography>
       </Stack>
       <Button component={Link} href="/admin/configuracion" variant="contained" size="small">
@@ -231,10 +251,16 @@ function AdminTopBar({
 function DrawerContent({
   onNavigate,
   tenantName,
+  userName,
+  userEmail,
+  userAvatar,
   publicHref,
 }: {
   onNavigate?: () => void;
   tenantName?: string;
+  userName?: string;
+  userEmail?: string;
+  userAvatar?: string | null;
   publicHref?: string | null;
 }) {
   const pathname = usePathname();
@@ -280,7 +306,12 @@ function DrawerContent({
 
       <Box sx={{ flexGrow: 1 }} />
       <Divider />
-      <UserFooter tenantName={tenantName} />
+      <UserFooter
+        tenantName={tenantName}
+        userName={userName}
+        userEmail={userEmail}
+        userAvatar={userAvatar}
+      />
     </Stack>
   );
 }
@@ -345,11 +376,36 @@ function PublicPageLink({ href, onNavigate }: { href: string; onNavigate?: () =>
   );
 }
 
-function UserFooter({ tenantName }: { tenantName?: string }) {
+function initialsFrom(value: string | undefined): string {
+  if (!value) return 'AD';
+  return (
+    value
+      .trim()
+      .split(/\s+/)
+      .map((part) => part.charAt(0))
+      .join('')
+      .slice(0, 2)
+      .toLocaleUpperCase('es') || 'AD'
+  );
+}
+
+function UserFooter({
+  tenantName,
+  userName,
+  userEmail,
+  userAvatar,
+}: {
+  tenantName?: string;
+  userName?: string;
+  userEmail?: string;
+  userAvatar?: string | null;
+}) {
   const signOut = useSignOut();
   return (
     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 2.5, py: 2 }}>
       <Avatar
+        src={userAvatar ?? undefined}
+        alt={userName ? `Avatar de ${userName}` : 'Avatar del administrador'}
         sx={{
           width: 38,
           height: 38,
@@ -359,20 +415,22 @@ function UserFooter({ tenantName }: { tenantName?: string }) {
           fontWeight: 600,
         }}
       >
-        RG
+        {initialsFrom(userName ?? userEmail)}
       </Avatar>
       <Stack sx={{ minWidth: 0, flexGrow: 1 }}>
         <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-          Raúl Gómez
+          {userName ?? 'Administrador'}
         </Typography>
+        {userEmail ? (
+          <Typography variant="caption" color="text.secondary" noWrap>
+            {userEmail}
+          </Typography>
+        ) : null}
         {tenantName ? (
           <Typography variant="caption" noWrap>
             {tenantName}
           </Typography>
         ) : null}
-        <Typography variant="caption" color="text.secondary" noWrap>
-          Administrador
-        </Typography>
       </Stack>
       <IconButton onClick={() => void signOut()} aria-label="Cerrar sesión" size="small">
         <LogoutIcon fontSize="small" />

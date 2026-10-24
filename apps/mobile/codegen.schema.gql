@@ -73,6 +73,7 @@ type BusinessSummary {
   slug: String!
   name: String!
   category: String!
+  tags: [String!]!
   description: String
   address: String
   phone: String
@@ -85,6 +86,7 @@ type TenantObject {
   id: ID!
   name: String!
   category: String!
+  tags: [String!]!
   status: String!
   timezone: String!
   currency: String!
@@ -396,7 +398,7 @@ type Query {
   tenants: [TenantObject!]!
   tenant(slug: String!): TenantObject
   myBusiness: TenantObject!
-  searchBusinesses(query: String, limit: Int, offset: Int): [BusinessSummary!]!
+  searchBusinesses(query: String, category: String, limit: Int, offset: Int): [BusinessSummary!]!
   services(tenantId: String, tenantSlug: String, category: String, minDuration: Int, maxDuration: Int): [Service!]!
   service(id: String!): Service
   mySubscription: SubscriptionSummary!
@@ -475,6 +477,7 @@ input CreateTenantInput {
   category: String!
   timezone: String!
   currency: String
+  tags: [String!]
   profile: BusinessProfileInput!
 }
 
@@ -503,6 +506,7 @@ input UpdateBusinessProfileInput {
   logo: String
   cover: String
   isPublic: Boolean
+  tags: [String!]
   policies: [BusinessPolicyInput!]
 }
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isTenantCategory } from '@foundly/database/categories';
 
 const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/;
 
@@ -10,7 +11,13 @@ const policySchema = z.object({
 /** Business-profile update input (feature 014). */
 export const updateProfileSchema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio.').max(120),
-  category: z.string().trim().min(1, 'La categoría es obligatoria.').max(120),
+  category: z
+    .string()
+    .trim()
+    .refine(
+      (value): boolean => isTenantCategory(value),
+      'Selecciona una categoría principal válida.',
+    ),
   slug: z.string().trim().regex(SLUG_PATTERN, 'URL pública inválida.'),
   bio: z.string().trim().max(2000, 'Máximo 2000 caracteres.').nullish(),
   address: z.string().trim().nullish(),
@@ -19,6 +26,7 @@ export const updateProfileSchema = z.object({
   whatsapp: z.string().trim().url('El enlace de WhatsApp no es válido.').nullish(),
   logo: z.string().trim().url('La URL del logo no es válida.').nullish(),
   cover: z.string().trim().url('La URL de la portada no es válida.').nullish(),
+  tags: z.array(z.string().trim().min(1).max(30)).max(20).default([]),
   isPublic: z.boolean(),
   policies: z.array(policySchema).default([]),
 });

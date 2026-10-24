@@ -73,6 +73,7 @@ type BusinessSummary {
   slug: String!
   name: String!
   category: String!
+  tags: [String!]!
   description: String
   address: String
   phone: String
@@ -85,6 +86,7 @@ type TenantObject {
   id: ID!
   name: String!
   category: String!
+  tags: [String!]!
   status: String!
   timezone: String!
   currency: String!
@@ -178,6 +180,35 @@ type Availability {
   minLeadTimeMinutes: Int!
   bookingHorizonDays: Int!
   breaks: String
+}
+
+type NotificationObject {
+  id: ID!
+  type: NotificationType!
+  title: String!
+  message: String!
+  read: Boolean!
+  createdAt: String!
+}
+
+enum NotificationType {
+  NEW_BOOKING
+  RESCHEDULE_REQUEST
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_EXPIRED
+  SYSTEM_INFO
+}
+
+type PushTokenObject {
+  id: ID!
+  platform: PushPlatform!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum PushPlatform {
+  IOS
+  ANDROID
 }
 
 type AppointmentService {
@@ -362,28 +393,12 @@ type ManagedBusiness {
   expiresAt: String
 }
 
-type NotificationObject {
-  id: ID!
-  type: NotificationType!
-  title: String!
-  message: String!
-  read: Boolean!
-  createdAt: String!
-}
-
-enum NotificationType {
-  NEW_BOOKING
-  RESCHEDULE_REQUEST
-  SUBSCRIPTION_EXPIRING
-  SUBSCRIPTION_EXPIRED
-  SYSTEM_INFO
-}
-
 type Query {
   health: HealthPayload!
   tenants: [TenantObject!]!
   tenant(slug: String!): TenantObject
-  searchBusinesses(query: String, limit: Int, offset: Int): [BusinessSummary!]!
+  myBusiness: TenantObject!
+  searchBusinesses(query: String, category: String, limit: Int, offset: Int): [BusinessSummary!]!
   services(tenantId: String, tenantSlug: String, category: String, minDuration: Int, maxDuration: Int): [Service!]!
   service(id: String!): Service
   mySubscription: SubscriptionSummary!
@@ -395,6 +410,8 @@ type Query {
   appointment(id: String!): PublicAppointment
   myAppointments(from: String!, to: String!, status: AppointmentStatus, specialistId: ID): [Appointment!]!
   myAppointment(id: ID!): Appointment
+  notifications(read: Boolean, limit: Int, offset: Int): [NotificationObject!]!
+  unreadNotificationCount: Int!
   me: CurrentUser!
   currentTenant: CurrentTenant!
   bookCapability: BookCapability!
@@ -411,8 +428,6 @@ type Query {
   myPaymentMethods: [PaymentMethodObject!]!
   platformMetrics: PlatformMetrics!
   managedBusinesses(query: String, limit: Int, offset: Int): [ManagedBusiness!]!
-  notifications(read: Boolean, limit: Int, offset: Int): [NotificationObject!]!
-  unreadNotificationCount: Int!
 }
 
 type Mutation {
@@ -434,6 +449,11 @@ type Mutation {
   updateAppointmentStatus(id: String!, status: AppointmentStatus!): Appointment!
   cancelAppointment(id: String!, reason: String): Appointment!
   rescheduleAppointment(input: RescheduleAppointmentInput!): Appointment!
+  markNotificationRead(id: ID!): NotificationObject!
+  markAllNotificationsRead: Int!
+  deleteNotification(id: ID!): Boolean!
+  registerPushToken(input: RegisterPushTokenInput!): PushTokenObject!
+  unregisterPushToken(token: String!): Boolean!
   createMyService(input: CreateMyServiceInput!): MyService!
   updateMyService(id: ID!, input: UpdateMyServiceInput!): MyService!
   deleteMyService(id: ID!): Boolean!
@@ -450,9 +470,6 @@ type Mutation {
   upsertPaymentMethod(input: UpsertPaymentMethodInput!): PaymentMethodObject!
   deletePaymentMethod(id: ID!): Boolean!
   overrideTenantSubscription(input: OverrideTenantSubscriptionInput!): ManagedBusiness!
-  markNotificationRead(id: ID!): NotificationObject!
-  markAllNotificationsRead: Int!
-  deleteNotification(id: ID!): Boolean!
 }
 
 input CreateTenantInput {
@@ -460,6 +477,7 @@ input CreateTenantInput {
   category: String!
   timezone: String!
   currency: String
+  tags: [String!]
   profile: BusinessProfileInput!
 }
 
@@ -488,6 +506,7 @@ input UpdateBusinessProfileInput {
   logo: String
   cover: String
   isPublic: Boolean
+  tags: [String!]
   policies: [BusinessPolicyInput!]
 }
 
@@ -589,6 +608,12 @@ input RescheduleAppointmentInput {
   id: ID!
   startAt: String!
   specialistId: ID
+}
+
+input RegisterPushTokenInput {
+  token: String!
+  platform: PushPlatform!
+  deviceId: String
 }
 
 input CreateMyServiceInput {

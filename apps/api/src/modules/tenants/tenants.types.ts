@@ -101,6 +101,9 @@ export class BusinessSummaryObject {
   @Field(() => String)
   category!: string;
 
+  @Field(() => [String])
+  tags!: string[];
+
   @Field(() => String, { nullable: true })
   description?: string | null;
 
@@ -130,6 +133,9 @@ export class TenantObject {
 
   @Field(() => String)
   category!: string;
+
+  @Field(() => [String])
+  tags!: string[];
 
   @Field(() => String)
   status!: string;
@@ -197,6 +203,9 @@ export class CreateTenantInput {
   @Field(() => String, { nullable: true })
   currency?: string | null;
 
+  @Field(() => [String], { nullable: true })
+  tags?: string[] | null;
+
   @Field(() => BusinessProfileInput)
   profile!: BusinessProfileInput;
 }
@@ -261,6 +270,9 @@ export class UpdateBusinessProfileInput {
 
   @Field(() => Boolean, { nullable: true })
   isPublic?: boolean | null;
+
+  @Field(() => [String], { nullable: true })
+  tags?: string[] | null;
 
   @Field(() => [BusinessPolicyInput], { nullable: true })
   policies?: BusinessPolicyInput[] | null;

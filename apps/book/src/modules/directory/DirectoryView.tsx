@@ -5,6 +5,7 @@ import { Container, Stack, Typography } from '@foundly/ui';
 import { BusinessCardGrid } from './components/BusinessCardGrid';
 import { DirectoryError, DirectorySkeleton } from './components/DirectoryStates';
 import { ALL_CATEGORIES, DirectoryFilters } from './components/DirectoryFilters';
+import { TENANT_CATEGORIES, TENANT_CATEGORY_LABELS } from '@foundly/database/categories';
 import type { DirectoryBusiness } from './utils/types';
 
 export interface DirectoryViewProps {
@@ -19,7 +20,13 @@ function matchesTerm(business: DirectoryBusiness, term: string): boolean {
   if (!term) {
     return true;
   }
-  const haystack = [business.name, business.category, business.address ?? '', business.description ?? '']
+  const haystack = [
+    business.name,
+    business.category,
+    business.address ?? '',
+    business.description ?? '',
+    ...business.tags,
+  ]
     .join(' ')
     .toLowerCase();
   return haystack.includes(term);
@@ -32,17 +39,12 @@ export function DirectoryView({ query, businesses, error, loading = false }: Dir
 
   const normalizedTerm = term.trim().toLowerCase();
 
-  const categories = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          businesses
-            .map((business) => business.category.trim())
-            .filter((value) => value.length > 0),
-        ),
-      ).sort((a, b) => a.localeCompare(b, 'es')),
-    [businesses],
-  );
+  const categories = useMemo(() => {
+    const present = new Set(businesses.map((business) => business.category.trim()));
+    return TENANT_CATEGORIES.map((category) => TENANT_CATEGORY_LABELS[category]).filter((label) =>
+      present.has(label),
+    );
+  }, [businesses]);
 
   const filtered = useMemo(
     () =>

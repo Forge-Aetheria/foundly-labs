@@ -1,11 +1,12 @@
 # Public business directory operations (feature 019; consumes the api 018 query).
 
-query SearchBusinesses($query: String, $limit: Int, $offset: Int) {
-  searchBusinesses(query: $query, limit: $limit, offset: $offset) {
+query SearchBusinesses($query: String, $category: String, $limit: Int, $offset: Int) {
+  searchBusinesses(query: $query, category: $category, limit: $limit, offset: $offset) {
     tenantId
     slug
     name
     category
+    tags
     description
     address
     phone

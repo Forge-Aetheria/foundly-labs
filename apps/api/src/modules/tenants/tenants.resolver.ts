@@ -34,10 +34,11 @@ export class TenantsResolver {
   @Query(() => [BusinessSummaryObject])
   searchBusinesses(
     @Args('query', { type: () => String, nullable: true }) query?: string | null,
+    @Args('category', { type: () => String, nullable: true }) category?: string | null,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number | null,
     @Args('offset', { type: () => Int, nullable: true }) offset?: number | null,
   ): Promise<BusinessSummaryObject[]> {
-    return this.tenantsService.searchBusinesses({ query, limit, offset });
+    return this.tenantsService.searchBusinesses({ query, category, limit, offset });
   }
 
   @Mutation(() => TenantObject)

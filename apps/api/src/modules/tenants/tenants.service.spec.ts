@@ -32,6 +32,7 @@ interface FakeTenant {
   id: string;
   name: string;
   category: string;
+  tags?: string[];
   status: string;
   timezone: string;
   currency: string;
@@ -61,7 +62,7 @@ function makeTenant(profile: FakeProfile | null = makeProfile()): FakeTenant {
   return {
     id: 't1',
     name: 'Estudio Ana',
-    category: 'Salud & Belleza',
+    category: 'SALUD_BIENESTAR',
     status: 'active',
     timezone: 'Europe/Madrid',
     currency: 'EUR',
@@ -165,7 +166,7 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
   it('creates a tenant with its public profile and returns the aggregate', async () => {
     const input: CreateTenantInput = {
       name: 'Rona Piercing',
-      category: 'Salud',
+      category: 'SALUD_BIENESTAR',
       timezone: 'Europe/Madrid',
       profile: { slug: 'rona-piercing' },
     };
@@ -173,10 +174,38 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
     expect(created.profile?.slug).toBe('rona-piercing');
   });
 
+  it('sanitizes and persists tags on creation', async () => {
+    const input: CreateTenantInput = {
+      name: 'Rona Piercing',
+      category: 'SALUD_BIENESTAR',
+      tags: ['  corte de PELO ', 'corte de pelo', '###'],
+      timezone: 'Europe/Madrid',
+      profile: { slug: 'rona-piercing' },
+    };
+    await service.create(input);
+    expect(client.tenant.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ tags: ['Corte De Pelo'] }),
+      }),
+    );
+  });
+
+  it('rejects an unknown category before writing', async () => {
+    const input: CreateTenantInput = {
+      name: 'Rona',
+      category: 'PELUQUERIA LIBRE',
+      timezone: 'Europe/Madrid',
+      profile: { slug: 'rona' },
+    };
+    await expect(service.create(input)).rejects.toMatchObject({
+      extensions: { code: 'VALIDATION_ERROR' },
+    });
+  });
+
   it('rejects a duplicate slug with a CONFLICT error and persists nothing', async () => {
     const input: CreateTenantInput = {
       name: 'Otro',
-      category: 'Salud',
+      category: 'SALUD_BIENESTAR',
       timezone: 'Europe/Madrid',
       profile: { slug: 'estudio-ana' },
     };
@@ -186,7 +215,7 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
   it('rejects an invalid or reserved slug with VALIDATION_ERROR before writing', async () => {
     const input: CreateTenantInput = {
       name: 'Otro',
-      category: 'Salud',
+      category: 'SALUD_BIENESTAR',
       timezone: 'Europe/Madrid',
       profile: { slug: 'Mi Slug!' },
     };
@@ -198,13 +227,20 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
   it('rejects malformed JSON brandColors/policies with VALIDATION_ERROR', async () => {
     const input: CreateTenantInput = {
       name: 'Otro',
-      category: 'Salud',
+      category: 'SALUD_BIENESTAR',
       timezone: 'Europe/Madrid',
       profile: { slug: 'rona-piercing', brandColors: '{broken' },
     };
     await expect(service.create(input)).rejects.toMatchObject({
       extensions: { code: 'VALIDATION_ERROR' },
     });
+  });
+
+  it('updates and sanitizes the tenant tags', async () => {
+    const updated = await service.updateProfile(scoped('t1'), {
+      tags: ['  Color ', 'color', 'MADRID'],
+    });
+    expect(updated.tags).toEqual(['Color', 'Madrid']);
   });
 
   it('updates the profile fields and persists policies (partial update keeps the rest)', async () => {

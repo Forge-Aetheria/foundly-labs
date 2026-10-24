@@ -14,6 +14,8 @@ function renderShell(
     isPublic?: boolean;
     headerStart?: ReactNode;
     headerActions?: ReactNode;
+    userName?: string;
+    userEmail?: string;
   } = {},
 ) {
   return render(
@@ -36,6 +38,13 @@ describe('AdminShell (009 — US3/US4)', () => {
   it('hides the public link when there is no slug', () => {
     renderShell({ publicHref: null });
     expect(screen.queryAllByRole('link', { name: /Ver página pública/ })).toHaveLength(0);
+  });
+
+  it('renders the authenticated identity instead of hardcoded data', () => {
+    renderShell({ userName: 'Ana Belén', userEmail: 'ana@foundly.dev' });
+    expect(screen.getAllByText('Ana Belén').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('ana@foundly.dev').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Raúl Gómez')).not.toBeInTheDocument();
   });
 
   it('renders a sign-out control', () => {

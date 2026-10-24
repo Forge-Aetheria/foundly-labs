@@ -29,7 +29,8 @@
     "next": "^15.5.27",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "@foundly/database": "workspace:*"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.5",

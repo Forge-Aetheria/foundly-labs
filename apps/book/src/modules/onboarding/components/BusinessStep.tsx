@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import MenuItem from '@mui/material/MenuItem';
+import MuiTextField from '@mui/material/TextField';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
+import { TENANT_CATEGORIES, TENANT_CATEGORY_LABELS } from '@foundly/database/categories';
 import { suggestSlug, validateSlug as validateSlugRules } from '../../../shared/utils/slug';
 import { useValidateSlug } from '../hooks';
 import { businessSchema, type BusinessFields } from '../utils/schemas';
@@ -95,16 +98,23 @@ export function BusinessStep({ initial, onComplete, onChange }: BusinessStepProp
       <Typography variant="caption" color="text.secondary">
         Tu URL será: foundlylabs.lat/book/{values.slug.trim() || 'tu-negocio'}
       </Typography>
-      <TextField
+      <MuiTextField
+        select
         label="Categoría"
         name="category"
         required
         fullWidth
         value={values.category}
-        onChange={(value) => setField('category', value)}
+        onChange={(event) => setField('category', event.target.value)}
         error={Boolean(errors.category)}
         helperText={errors.category}
-      />
+      >
+        {TENANT_CATEGORIES.map((category) => (
+          <MenuItem key={category} value={category}>
+            {TENANT_CATEGORY_LABELS[category]}
+          </MenuItem>
+        ))}
+      </MuiTextField>
       <Stack direction="row" justifyContent="flex-end">
         <Button variant="primary" onClick={submit}>
           Continuar

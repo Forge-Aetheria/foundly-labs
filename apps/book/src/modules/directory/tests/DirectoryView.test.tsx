@@ -14,7 +14,8 @@ const business: DirectoryBusiness = {
   tenantId: 't1',
   slug: 'estudio-ana',
   name: 'Estudio Ana',
-  category: 'Peluquería',
+  category: 'Barberías y Peluquerías',
+  tags: ['Corte', 'Madrid'],
   description: 'Estudio de referencia.',
   address: 'Calle Mayor 7, Madrid',
   logo: null,
@@ -55,6 +56,13 @@ describe('DirectoryView (019)', () => {
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
   });
 
+  it('searches by tag matches', async () => {
+    const user = userEvent.setup();
+    renderView();
+    await user.type(screen.getByLabelText('Buscar negocios'), 'Corte');
+    expect(screen.getByRole('heading', { name: 'Estudio Ana' })).toBeInTheDocument();
+  });
+
   it('filters businesses instantly by category pills', async () => {
     const user = userEvent.setup();
     renderView({
@@ -65,12 +73,12 @@ describe('DirectoryView (019)', () => {
           tenantId: 't2',
           slug: 'clinica-sol',
           name: 'Clínica Sol',
-          category: 'Salud',
+          category: 'Salud y Bienestar',
         },
       ],
     });
 
-    await user.click(screen.getByRole('button', { name: 'Salud' }));
+    await user.click(screen.getByRole('button', { name: 'Salud y Bienestar' }));
 
     expect(screen.getByRole('heading', { name: 'Clínica Sol' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Estudio Ana' })).not.toBeInTheDocument();

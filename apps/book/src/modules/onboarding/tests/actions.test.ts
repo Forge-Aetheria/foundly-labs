@@ -7,7 +7,9 @@ const { apiMock, envMock } = vi.hoisted(() => ({
   envMock: { liveAuthEnv: vi.fn(), supabaseAdminEnv: vi.fn() },
 }));
 
-vi.mock('../../../shared/api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
+vi.mock('../../../shared/api/client', () => ({
+  apiRequest: (...args: unknown[]) => apiMock(...args),
+}));
 vi.mock('../../../shared/auth/supabase/env', () => ({
   liveAuthEnv: (...args: unknown[]) => envMock.liveAuthEnv(...args),
   supabaseAdminEnv: (...args: unknown[]) => envMock.supabaseAdminEnv(...args),
@@ -16,7 +18,7 @@ vi.mock('../../../shared/auth/supabase/env', () => ({
 const input = {
   draftId: 'draft-1',
   account: { fullName: 'Raúl Gómez', email: 'raul@nuevo.dev', password: 'secreto123' },
-  business: { name: 'Estudio Nuevo', slug: 'estudio-nuevo', category: 'Estética' },
+  business: { name: 'Estudio Nuevo', slug: 'estudio-nuevo', category: 'SALUD_BIENESTAR' },
   setup: {
     defaultAppointmentDurationMinutes: 45,
     businessHours: [0, 1, 2, 3, 4, 5, 6].map((weekday) =>
@@ -42,10 +44,16 @@ describe('onboarding actions (feature 011 — server-only)', () => {
       ok: true,
       data: { tenant: { id: 'ten-ana' } },
     });
-    await expect(validateSlug('estudio-ana')).resolves.toEqual({ available: false, reason: 'taken' });
+    await expect(validateSlug('estudio-ana')).resolves.toEqual({
+      available: false,
+      reason: 'taken',
+    });
 
     await expect(validateSlug('admin')).resolves.toEqual({ available: false, reason: 'reserved' });
-    await expect(validateSlug('Mi Negocio')).resolves.toEqual({ available: false, reason: 'format' });
+    await expect(validateSlug('Mi Negocio')).resolves.toEqual({
+      available: false,
+      reason: 'format',
+    });
   });
 
   it('queries uniqueness through the generated TenantBySlug document', async () => {

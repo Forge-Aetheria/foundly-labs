@@ -12,7 +12,7 @@ function tenantDto(overrides: Record<string, unknown> = {}) {
   return {
     id: 'ten-ana',
     name: 'Estudio Ana',
-    category: 'Peluquería',
+    category: 'BARBERIAS_PELUQUERIAS',
     status: 'active',
     timezone: 'Europe/Madrid',
     currency: 'EUR',
@@ -44,7 +44,10 @@ describe('profile actions (feature 014)', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.name).toBe('Estudio Ana');
-      expect(result.data.social).toEqual({ instagram: 'https://instagram.com/estudioana', whatsapp: undefined });
+      expect(result.data.social).toEqual({
+        instagram: 'https://instagram.com/estudioana',
+        whatsapp: undefined,
+      });
       expect(result.data.policies).toEqual([
         { id: 'policy-0', tenantId: 'ten-ana', title: 'Cancelación', body: 'Avisa con 24 h.' },
       ]);
@@ -61,7 +64,7 @@ describe('profile actions (feature 014)', () => {
   it('rejects an invalid URL before calling the API', async () => {
     const result = await updateProfile({
       name: 'Estudio Ana',
-      category: 'Peluquería',
+      category: 'BARBERIAS_PELUQUERIAS',
       slug: 'estudio-ana',
       isPublic: true,
       instagram: 'not-a-url',
@@ -79,7 +82,7 @@ describe('profile actions (feature 014)', () => {
     });
     const result = await updateProfile({
       name: 'Estudio Ana Nuevo',
-      category: 'Peluquería',
+      category: 'BARBERIAS_PELUQUERIAS',
       slug: 'estudio-ana',
       bio: 'Nueva bio',
       address: '',
@@ -94,7 +97,7 @@ describe('profile actions (feature 014)', () => {
     expect(apiMock).toHaveBeenCalledWith(UpdateBusinessProfileDocument, {
       input: {
         name: 'Estudio Ana Nuevo',
-        category: 'Peluquería',
+        category: 'BARBERIAS_PELUQUERIAS',
         slug: 'estudio-ana',
         bio: 'Nueva bio',
         address: '',
@@ -104,6 +107,7 @@ describe('profile actions (feature 014)', () => {
         logo: null,
         cover: null,
         isPublic: true,
+        tags: [],
         policies: [{ title: 'Depósito', body: '20%' }],
       },
     });
@@ -115,7 +119,7 @@ describe('profile actions (feature 014)', () => {
     apiMock.mockResolvedValue({ ok: false, error: { code: 'CONFLICT', message: 'taken' } });
     const result = await updateProfile({
       name: 'X',
-      category: 'Y',
+      category: 'BARBERIAS_PELUQUERIAS',
       slug: 'estudio-ana',
       isPublic: true,
       policies: [],

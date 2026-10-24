@@ -196,7 +196,7 @@ describe('TenantsResolver (GraphQL e2e, 003-db-first-graphql-core)', () => {
       .post('/graphql')
       .send({
         query:
-          'mutation { createTenant(input: { name: "Rona Piercing", category: "Salud", timezone: "America/Liberia", profile: { slug: "rona-piercing" } }) { id profile { slug } } }',
+          'mutation { createTenant(input: { name: "Rona Piercing", category: "SALUD_BIENESTAR", timezone: "America/Liberia", profile: { slug: "rona-piercing" } }) { id profile { slug } } }',
       })
       .expect(200);
 
@@ -212,7 +212,7 @@ describe('TenantsResolver (GraphQL e2e, 003-db-first-graphql-core)', () => {
       .post('/graphql')
       .send({
         query:
-          'mutation { createTenant(input: { name: "Otro", category: "Salud", timezone: "America/Liberia", profile: { slug: "estudio-ana" } }) { id } }',
+          'mutation { createTenant(input: { name: "Otro", category: "SALUD_BIENESTAR", timezone: "America/Liberia", profile: { slug: "estudio-ana" } }) { id } }',
       })
       .expect(200);
 

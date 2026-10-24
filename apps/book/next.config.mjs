@@ -2,7 +2,7 @@
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
-  transpilePackages: ['@foundly/ui'],
+  transpilePackages: ['@foundly/ui', '@foundly/database'],
   /**
    * ESLint integrado de Next desactivado a propósito:
    * `eslint-config-next` (plugin que Next detecta para su panel) aún exige

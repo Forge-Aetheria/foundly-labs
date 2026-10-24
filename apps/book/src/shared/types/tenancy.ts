@@ -32,6 +32,8 @@ export interface Tenant {
   name: string;
   slug: string;
   category: string;
+  /** Master category tags (Title Case) used by the public directory search. */
+  tags: string[];
   status: TenantStatus;
   ownerUserId: string;
   defaultAppointmentDurationMinutes: number;

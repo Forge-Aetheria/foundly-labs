@@ -41,7 +41,7 @@ describe('onboarding schemas (contracts/onboarding.contract.md)', () => {
   });
 
   describe('business step (FR-008/FR-009)', () => {
-    const base = { name: 'Estudio Nuevo', category: 'Estética' };
+    const base = { name: 'Estudio Nuevo', category: 'SALUD_BIENESTAR' };
 
     it('accepts a valid business with a well-formed slug', () => {
       const result = businessSchema.safeParse({ ...base, slug: 'estudio-nuevo' });

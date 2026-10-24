@@ -18,8 +18,8 @@ export interface DirectoryFiltersProps {
 }
 
 /**
- * Directory filter bar: an integrated search field plus category pills derived
- * from the loaded businesses. Filtering happens on the client, so every
+ * Directory filter bar: an integrated search field plus category pills restricted to the master
+ * categories present in the loaded businesses. Filtering happens on the client, so every
  * keystroke and pill selection updates the grid immediately.
  */
 export function DirectoryFilters({
@@ -39,7 +39,7 @@ export function DirectoryFilters({
           alignItems={{ xs: 'stretch', md: 'center' }}
         >
           <MuiTextField
-            placeholder="Nombre, categoría o ciudad"
+            placeholder="Nombre, categoría, etiqueta o ciudad"
             value={term}
             onChange={(event) => onTermChange(event.target.value)}
             fullWidth

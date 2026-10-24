@@ -2,13 +2,17 @@
 
 import { useState } from 'react';
 import Box from '@mui/material/Box';
+import MuiTextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import { Button, Card, Stack, Switch, TextField, Typography } from '@foundly/ui';
+import { TENANT_CATEGORIES, TENANT_CATEGORY_LABELS } from '@foundly/database/categories';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
 import type { Tenant } from '../../../shared/types/tenancy';
 import { useUpdateProfile, useUploadProfileImage } from '../hooks';
 import { AVATAR_RULE, COVER_RULE, checkImage, ruleGuidance } from '../utils/image-rules';
+import { TagsInput } from './TagsInput';
 
 export interface ProfileEditorProps {
   /** Profile read from the API; `null` when the tenant could not be resolved. */
@@ -36,6 +40,7 @@ interface PolicyDraft {
 interface Draft {
   name: string;
   category: string;
+  tags: string[];
   slug: string;
   logo: string;
   cover: string;
@@ -52,6 +57,7 @@ function toDraft(profile: Tenant | null): Draft {
   return {
     name: profile?.name ?? '',
     category: profile?.category ?? '',
+    tags: profile?.tags ?? [],
     slug: profile?.slug ?? '',
     logo: profile?.avatar ?? '',
     cover: profile?.cover ?? '',
@@ -61,7 +67,10 @@ function toDraft(profile: Tenant | null): Draft {
     whatsapp: profile?.social?.whatsapp ?? '',
     bio: profile?.bio ?? '',
     isPublic: profile?.isPublic ?? true,
-    policies: (profile?.policies ?? []).map((policy) => ({ title: policy.title, body: policy.body })),
+    policies: (profile?.policies ?? []).map((policy) => ({
+      title: policy.title,
+      body: policy.body,
+    })),
   };
 }
 
@@ -119,6 +128,7 @@ export function ProfileEditor({ profile, error, embedded = false }: ProfileEdito
     const result = await updateProfile({
       name: draft.name,
       category: draft.category,
+      tags: draft.tags,
       slug: draft.slug,
       bio: draft.bio,
       address: draft.address,
@@ -178,14 +188,27 @@ export function ProfileEditor({ profile, error, embedded = false }: ProfileEdito
             required
             fullWidth
           />
-          <TextField
+          <MuiTextField
+            select
             label="Categoría"
             value={draft.category}
-            onChange={(value) => patch({ category: value })}
+            onChange={(event) => patch({ category: event.target.value })}
             error={Boolean(fieldErrors?.category)}
             helperText={fieldErrors?.category}
             required
             fullWidth
+          >
+            {TENANT_CATEGORIES.map((category) => (
+              <MenuItem key={category} value={category}>
+                {TENANT_CATEGORY_LABELS[category]}
+              </MenuItem>
+            ))}
+          </MuiTextField>
+          <TagsInput
+            value={draft.tags}
+            onChange={(tags) => patch({ tags })}
+            error={Boolean(fieldErrors?.tags)}
+            helperText={fieldErrors?.tags}
           />
           <TextField
             label="URL pública (slug)"
@@ -320,7 +343,11 @@ export function ProfileEditor({ profile, error, embedded = false }: ProfileEdito
           {draft.policies.length > 0 ? (
             <Stack spacing={1.5}>
               {draft.policies.map((policy, index) => (
-                <Stack key={index} spacing={1} sx={{ borderBottom: 1, borderColor: 'divider', pb: 1.5 }}>
+                <Stack
+                  key={index}
+                  spacing={1}
+                  sx={{ borderBottom: 1, borderColor: 'divider', pb: 1.5 }}
+                >
                   <TextField
                     label={`Título · política ${index + 1}`}
                     value={policy.title}

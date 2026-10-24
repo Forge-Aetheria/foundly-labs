@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import { tenantCategoryLabel } from '@foundly/database/categories';
 import { apiRequest } from '../../shared/api/client';
 import {
   AppointmentStatus,
@@ -194,7 +195,10 @@ async function resolve(slug: string, serviceId: string): Promise<ActionResult<Re
   const service = tenant.services.find((item) => item.id === serviceId && item.active);
   if (!service) return fail('NOT_FOUND', 'Servicio no encontrado.');
 
-  const specialistsResult = await apiRequest(SpecialistsDocument, { tenantId: null, tenantSlug: slug });
+  const specialistsResult = await apiRequest(SpecialistsDocument, {
+    tenantId: null,
+    tenantSlug: slug,
+  });
   if (!specialistsResult.ok) return specialistsResult;
   const specialists = specialistsResult.data.specialists
     .filter((specialist) => specialist.active)
@@ -236,7 +240,10 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
       advanceValue: service.advanceValue ?? null,
     }));
 
-  const specialistsResult = await apiRequest(SpecialistsDocument, { tenantId: null, tenantSlug: slug });
+  const specialistsResult = await apiRequest(SpecialistsDocument, {
+    tenantId: null,
+    tenantSlug: slug,
+  });
   const specialists: PublicSpecialist[] = specialistsResult.ok
     ? specialistsResult.data.specialists.filter((item) => item.active).map(mapSpecialist)
     : [];
@@ -246,7 +253,9 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
     tenantSlug: slug,
     specialistId: null,
   });
-  const weeklyHours = availabilityResult.ok ? deriveWeeklyHours(availabilityResult.data.availability) : [];
+  const weeklyHours = availabilityResult.ok
+    ? deriveWeeklyHours(availabilityResult.data.availability)
+    : [];
 
   const galleryResult = await apiRequest(GalleryDocument, { tenantId: null, tenantSlug: slug });
   const gallery: PublicGalleryPhoto[] = galleryResult.ok
@@ -276,7 +285,7 @@ export async function getPublicBusinessRemote(slug: string): Promise<ResolveResu
     business: {
       slug: profile?.slug ?? slug,
       name: tenant.name,
-      category: tenant.category,
+      category: tenantCategoryLabel(tenant.category),
       avatar: profile?.logo ?? null,
       cover: profile?.cover ?? null,
       bio: profile?.bio ?? null,
@@ -320,7 +329,11 @@ export async function fetchOfferedSlots(input: unknown): Promise<SlotDay[]> {
       specialistId: resourceId,
       status: null,
     }),
-    apiRequest(TimeBlocksDocument, { tenantId: null, tenantSlug: parsed.data.tenantSlug, specialistId: resourceId }),
+    apiRequest(TimeBlocksDocument, {
+      tenantId: null,
+      tenantSlug: parsed.data.tenantSlug,
+      specialistId: resourceId,
+    }),
   ]);
 
   const rules = availabilityResult.ok

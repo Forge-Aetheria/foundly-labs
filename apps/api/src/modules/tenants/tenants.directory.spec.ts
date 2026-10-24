@@ -6,6 +6,7 @@ interface DirectoryRow {
   id: string;
   name: string;
   category: string;
+  tags: string[];
   profile: {
     slug: string;
     bio: string | null;
@@ -21,7 +22,8 @@ function makeRow(): DirectoryRow {
   return {
     id: 't1',
     name: 'Estudio Ana',
-    category: 'Peluquería',
+    category: 'BARBERIAS_PELUQUERIAS',
+    tags: ['Corte', 'Color'],
     profile: {
       slug: 'estudio-ana',
       bio: 'Estudio de referencia en Madrid.',
@@ -57,7 +59,8 @@ describe('TenantsService.searchBusinesses (018-business-directory)', () => {
       tenantId: 't1',
       slug: 'estudio-ana',
       name: 'Estudio Ana',
-      category: 'Peluquería',
+      category: 'BARBERIAS_PELUQUERIAS',
+      tags: ['Corte', 'Color'],
       description: 'Estudio de referencia en Madrid.',
       address: 'Calle Mayor 7, Madrid',
       phone: '+34 612 345 678',
@@ -87,15 +90,26 @@ describe('TenantsService.searchBusinesses (018-business-directory)', () => {
     expect(findMany.mock.calls[0]?.[0].where).not.toHaveProperty('OR');
   });
 
-  it('searches name, category and address case-insensitively when a term is given', async () => {
+  it('searches name, address and tags case-insensitively when a term is given', async () => {
     const { service, findMany } = makeService([]);
     await service.searchBusinesses({ query: '  Madrid  ' });
     const where = findMany.mock.calls[0]?.[0].where as { OR: unknown[] };
     expect(where.OR).toEqual([
       { name: { contains: 'Madrid', mode: 'insensitive' } },
-      { category: { contains: 'Madrid', mode: 'insensitive' } },
       { profile: { is: { address: { contains: 'Madrid', mode: 'insensitive' } } } },
+      { tags: { has: 'Madrid' } },
     ]);
+  });
+
+  it('matches a master category label or key and filters explicitly by category', async () => {
+    const { service, findMany } = makeService([]);
+    await service.searchBusinesses({ query: 'Peluquería' });
+    const where = findMany.mock.calls[0]?.[0].where as { OR: unknown[] };
+    expect(where.OR).toContainEqual({ category: 'BARBERIAS_PELUQUERIAS' });
+    expect(where.OR).toContainEqual({ tags: { has: 'Peluquería' } });
+
+    await service.searchBusinesses({ category: 'SALUD_BIENESTAR' });
+    expect(findMany.mock.calls[1]?.[0].where).toMatchObject({ category: 'SALUD_BIENESTAR' });
   });
 
   it('applies a default limit, caps the maximum and honors the offset', async () => {

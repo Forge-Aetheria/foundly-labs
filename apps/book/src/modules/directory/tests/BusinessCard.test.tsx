@@ -10,7 +10,8 @@ function makeBusiness(overrides: Partial<DirectoryBusiness> = {}): DirectoryBusi
     tenantId: 't1',
     slug: 'estudio-ana',
     name: 'Estudio Ana',
-    category: 'Peluquería',
+    category: 'Barberías y Peluquerías',
+    tags: ['Corte', 'Color'],
     description: 'Estudio de referencia en Madrid.',
     address: 'Calle Mayor 7, Madrid',
     logo: 'https://cdn/logo.png',
@@ -32,11 +33,14 @@ describe('BusinessCard (019)', () => {
   it('renders the full card content', () => {
     renderCard();
     expect(screen.getByRole('heading', { name: 'Estudio Ana' })).toBeInTheDocument();
-    expect(screen.getByText('Peluquería')).toBeInTheDocument();
+    expect(screen.getByText('Barberías y Peluquerías')).toBeInTheDocument();
     expect(screen.getByText('Estudio de referencia en Madrid.')).toBeInTheDocument();
     expect(screen.getByText('Calle Mayor 7, Madrid')).toBeInTheDocument();
     expect(screen.getByText('Lun–Vie 09:00–18:00')).toBeInTheDocument();
-    expect(screen.getByAltText('Portada de Estudio Ana')).toHaveAttribute('src', 'https://cdn/cover.png');
+    expect(screen.getByAltText('Portada de Estudio Ana')).toHaveAttribute(
+      'src',
+      'https://cdn/cover.png',
+    );
     expect(screen.getByAltText('Logo de Estudio Ana')).toBeInTheDocument();
   });
 
@@ -49,7 +53,9 @@ describe('BusinessCard (019)', () => {
   });
 
   it('degrades gracefully with placeholders when optional fields are missing', () => {
-    renderCard(makeBusiness({ description: null, cover: null, logo: null, address: null, hours: [] }));
+    renderCard(
+      makeBusiness({ description: null, cover: null, logo: null, address: null, hours: [] }),
+    );
     expect(screen.getByText('Sin descripción por el momento.')).toBeInTheDocument();
     expect(screen.getByText('Ubicación no indicada')).toBeInTheDocument();
     expect(screen.getByText('Horario no disponible')).toBeInTheDocument();

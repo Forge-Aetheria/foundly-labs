@@ -49,6 +49,7 @@ export async function updateProfile(input: unknown): Promise<ActionResult<Tenant
       logo: data.logo ?? null,
       cover: data.cover ?? null,
       isPublic: data.isPublic,
+      tags: data.tags,
       policies: data.policies.map((policy) => ({ title: policy.title, body: policy.body })),
     },
   });

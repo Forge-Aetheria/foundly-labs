@@ -50,6 +50,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           tenantName={workspace?.tenantName}
           publicHref={workspace?.publicHref}
           isPublic={workspace?.isPublic}
+          userName={workspace?.userName}
+          userEmail={workspace?.userEmail}
+          userAvatar={workspace?.userAvatar}
           headerActions={<NotificationBell />}
         >
           {children}

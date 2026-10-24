@@ -14,7 +14,8 @@ datasource db {
 model Tenant {
   id                    String              @id @default(cuid())
   name                  String
-  category              String
+  category              TenantCategory
+  tags                  String[]            @default([])
   status                String              @default("active")
   plan                  String?
   subscriptionPlan      SubscriptionPlan    @default(FREE)
@@ -308,4 +309,12 @@ model PushDeviceToken {
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
+}
+
+enum TenantCategory {
+  BARBERIAS_PELUQUERIAS
+  SALUD_BIENESTAR
+  DEPORTES_ENTRENAMIENTO
+  CONSULTORIA_SERVICIOS
+  OTROS
 }

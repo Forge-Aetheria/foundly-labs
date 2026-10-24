@@ -16,6 +16,7 @@ export interface DirectoryBusiness {
   slug: string;
   name: string;
   category: string;
+  tags: string[];
   description: string | null;
   address: string | null;
   logo: string | null;

@@ -5,6 +5,7 @@ query TenantBySlug($slug: String!) {
     id
     name
     category
+    tags
     status
     timezone
     currency
@@ -44,6 +45,7 @@ query Tenants {
     id
     name
     category
+    tags
     status
     timezone
     currency

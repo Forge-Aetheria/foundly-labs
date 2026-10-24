@@ -1,10 +1,8 @@
 'use server';
 
 import { apiRequest } from '../../shared/api/client';
-import {
-  SearchBusinessesDocument,
-  type SearchBusinessesQuery,
-} from '../../shared/api/generated';
+import { SearchBusinessesDocument, type SearchBusinessesQuery } from '../../shared/api/generated';
+import { tenantCategoryLabel } from '@foundly/database/categories';
 import { ok, type ActionResult } from '../../shared/types/result';
 import type { DirectoryBusiness, DirectoryHoursRange } from './utils/types';
 
@@ -28,7 +26,8 @@ function mapBusiness(dto: ApiBusiness): DirectoryBusiness {
     tenantId: dto.tenantId,
     slug: dto.slug,
     name: dto.name,
-    category: dto.category,
+    category: tenantCategoryLabel(dto.category),
+    tags: dto.tags,
     description: dto.description ?? null,
     address: dto.address ?? null,
     logo: dto.logo ?? null,
@@ -40,10 +39,12 @@ function mapBusiness(dto: ApiBusiness): DirectoryBusiness {
 /** Public listing of eligible businesses, optionally filtered by a text term. */
 export async function getDirectoryBusinesses(
   query: string,
+  category?: string | null,
 ): Promise<ActionResult<DirectoryBusiness[]>> {
   const term = query.trim();
   const result = await apiRequest(SearchBusinessesDocument, {
     query: term.length > 0 ? term : null,
+    category: category ?? null,
     limit: null,
     offset: null,
   });
