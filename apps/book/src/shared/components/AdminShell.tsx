@@ -33,14 +33,25 @@ export interface AdminShellProps {
   publicHref?: string | null;
   /** Whether the public booking page is enabled; `false` pins a warning banner. */
   isPublic?: boolean;
+  /** Optional left-aligned content in the top bar (breadcrumbs / search). */
+  headerStart?: ReactNode;
+  /** Right-aligned actions rendered in the persistent top bar (e.g. the notifications bell). */
+  headerActions?: ReactNode;
 }
 
 /**
  * Application shell: a persistent brand sidebar (collapsible to a temporary
- * drawer on small viewports), the module navigation and the Clean Light UI
- * lavender canvas for the routed screens.
+ * drawer on small viewports), a sticky top bar with `headerActions`, the module
+ * navigation and the Clean Light UI lavender canvas for the routed screens.
  */
-export function AdminShell({ children, tenantName, publicHref, isPublic = true }: AdminShellProps) {
+export function AdminShell({
+  children,
+  tenantName,
+  publicHref,
+  isPublic = true,
+  headerStart,
+  headerActions,
+}: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleOpen = () => setMobileOpen(true);
   const handleClose = () => setMobileOpen(false);
@@ -82,7 +93,7 @@ export function AdminShell({ children, tenantName, publicHref, isPublic = true }
 
       <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
         {isPublic ? null : <PublicDisabledBanner />}
-        <MobileBar onOpen={handleOpen} />
+        <AdminTopBar onOpen={handleOpen} headerStart={headerStart} headerActions={headerActions} />
         <Box component="main" id="main" sx={{ flexGrow: 1 }}>
           <Container maxWidth="lg" sx={{ py: 4 }}>
             {children}
@@ -153,7 +164,15 @@ function SkipLink() {
   );
 }
 
-function MobileBar({ onOpen }: { onOpen: () => void }) {
+function AdminTopBar({
+  onOpen,
+  headerStart,
+  headerActions,
+}: {
+  onOpen: () => void;
+  headerStart?: ReactNode;
+  headerActions?: ReactNode;
+}) {
   return (
     <Stack
       component="header"
@@ -161,24 +180,50 @@ function MobileBar({ onOpen }: { onOpen: () => void }) {
       alignItems="center"
       spacing={1}
       sx={{
-        display: { xs: 'flex', md: 'none' },
         position: 'sticky',
         top: 0,
         zIndex: (theme) => theme.zIndex.appBar,
-        px: 1,
-        py: 0.5,
+        px: { xs: 1, md: 3 },
+        py: { xs: 0.5, md: 1 },
         backgroundColor: 'background.paper',
         borderBottom: 1,
         borderColor: 'divider',
       }}
     >
-      <IconButton onClick={onOpen} aria-label="Abrir menú de navegación" edge="start">
-        <MenuIcon />
-      </IconButton>
-      <Image src="/icon.png" alt="Foundly Book" width={28} height={28} priority />
-      <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-        Foundly Book
-      </Typography>
+      {/* Left: mobile drawer trigger + brand (mobile only). */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        sx={{ display: { xs: 'flex', md: 'none' }, flexShrink: 0 }}
+      >
+        <IconButton onClick={onOpen} aria-label="Abrir menú de navegación" edge="start">
+          <MenuIcon />
+        </IconButton>
+        <Image src="/icon.png" alt="Foundly Book" width={28} height={28} priority />
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          Foundly Book
+        </Typography>
+      </Stack>
+
+      {/* Left: optional breadcrumbs / search; grows to push actions to the right edge. */}
+      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+        {headerStart ? (
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
+            {headerStart}
+          </Stack>
+        ) : null}
+      </Box>
+
+      {/* Right: notification bell and any other header actions. */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={0.5}
+        sx={{ ml: 'auto', flexShrink: 0, justifyContent: 'flex-end' }}
+      >
+        {headerActions}
+      </Stack>
     </Stack>
   );
 }

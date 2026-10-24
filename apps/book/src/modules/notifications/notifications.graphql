@@ -1,0 +1,35 @@
+# Notification inbox operations — feature 020 (colocated with the module).
+
+query Notifications($read: Boolean, $limit: Int, $offset: Int) {
+  notifications(read: $read, limit: $limit, offset: $offset) {
+    id
+    type
+    title
+    message
+    read
+    createdAt
+  }
+}
+
+query UnreadNotificationCount {
+  unreadNotificationCount
+}
+
+mutation MarkNotificationRead($id: ID!) {
+  markNotificationRead(id: $id) {
+    id
+    type
+    title
+    message
+    read
+    createdAt
+  }
+}
+
+mutation MarkAllNotificationsRead {
+  markAllNotificationsRead
+}
+
+mutation DeleteNotification($id: ID!) {
+  deleteNotification(id: $id)
+}

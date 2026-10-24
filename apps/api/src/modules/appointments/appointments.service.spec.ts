@@ -79,6 +79,7 @@ const seededAppointment: FakeAppointment = {
 function serviceRow(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     id: 's1',
+    name: 'Corte',
     tenantId: 't1',
     durationMinutes: 30,
     priceCents: 2500,
@@ -490,5 +491,63 @@ describe('AppointmentsService (unit, 005-appointments + 016-advance-payments)', 
     await expect(
       service.findMyAppointments(USER, { from: '2026-10-31T00:00:00Z', to: '2026-10-01T00:00:00Z' }),
     ).rejects.toMatchObject({ extensions: { code: 'VALIDATION_ERROR' } });
+  });
+});
+
+describe('AppointmentsService — new booking notification trigger (020 — US3)', () => {
+  function build(failTrigger = false) {
+    const notifyNewOnlineBooking = vi.fn(async () => {
+      if (failTrigger) throw new Error('notification down');
+    });
+    const svc = new AppointmentsService(
+      { client: fakeClient } as unknown as PrismaService,
+      { notifyNewOnlineBooking } as unknown as import('../notifications/notifications.service').NotificationsService,
+    );
+    return { svc, notifyNewOnlineBooking };
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    seededAppointment.notifications = [];
+    fakeClient.service.findUnique.mockImplementation(
+      async (args: { where: { id: string } }): Promise<unknown> =>
+        args.where.id === 's1' ? serviceRow() : null,
+    );
+    fakeClient.specialist.findUnique.mockImplementation(
+      async (args: { where: { id: string } }): Promise<{ id: string; tenantId: string } | null> =>
+        args.where.id === 'sp1' ? { id: 'sp1', tenantId: 't1' } : null,
+    );
+    fakeClient.appointment.findMany.mockImplementation(async () => []);
+  });
+
+  it('creates exactly one notification for a successful online booking', async () => {
+    const { svc, notifyNewOnlineBooking } = build();
+    await svc.createAppointment(baseInput());
+
+    expect(notifyNewOnlineBooking).toHaveBeenCalledTimes(1);
+    expect(notifyNewOnlineBooking).toHaveBeenCalledWith(
+      expect.objectContaining({ tenantId: 't1', serviceName: 'Corte', clientName: 'María' }),
+    );
+  });
+
+  it('does not notify for an admin-origin booking', async () => {
+    const { svc, notifyNewOnlineBooking } = build();
+    await svc.createMyAppointment(USER, baseInput());
+    expect(notifyNewOnlineBooking).not.toHaveBeenCalled();
+  });
+
+  it('does not notify when the booking is rejected', async () => {
+    const { svc, notifyNewOnlineBooking } = build();
+    fakeClient.appointment.findMany.mockResolvedValueOnce([{ id: 'apt-x' }]);
+    await expect(svc.createAppointment(baseInput())).rejects.toMatchObject({
+      extensions: { code: 'CONFLICT' },
+    });
+    expect(notifyNewOnlineBooking).not.toHaveBeenCalled();
+  });
+
+  it('never fails the booking when the notification trigger throws', async () => {
+    const { svc } = build(true);
+    const created = await svc.createAppointment(baseInput());
+    expect(created.id).toBe('apt2');
   });
 });

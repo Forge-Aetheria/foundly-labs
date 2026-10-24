@@ -6,6 +6,8 @@ import { AdminShell } from '../../shared/components/AdminShell';
 import { AdminWorkspaceProvider } from '../../shared/admin/AdminWorkspaceContext';
 import { LOGIN_ROUTE } from '../../shared/auth/authConstants';
 import { loadAdminWorkspace, type AdminWorkspaceData } from '../../shared/tenancy/adminWorkspace';
+import { NotificationsProvider } from '../../modules/notifications/NotificationsProvider';
+import { NotificationBell } from '../../modules/notifications/components/NotificationBell';
 
 /**
  * Admin shell layout (Client Component): renders the navigation instantly and
@@ -43,13 +45,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <AdminWorkspaceProvider value={workspace}>
-      <AdminShell
-        tenantName={workspace?.tenantName}
-        publicHref={workspace?.publicHref}
-        isPublic={workspace?.isPublic}
-      >
-        {children}
-      </AdminShell>
+      <NotificationsProvider>
+        <AdminShell
+          tenantName={workspace?.tenantName}
+          publicHref={workspace?.publicHref}
+          isPublic={workspace?.isPublic}
+          headerActions={<NotificationBell />}
+        >
+          {children}
+        </AdminShell>
+      </NotificationsProvider>
     </AdminWorkspaceProvider>
   );
 }

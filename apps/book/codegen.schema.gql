@@ -62,6 +62,25 @@ enum AdvanceKind {
   percent
 }
 
+type BusinessSchedule {
+  weekday: Int!
+  startTime: String!
+  endTime: String!
+}
+
+type BusinessSummary {
+  tenantId: ID!
+  slug: String!
+  name: String!
+  category: String!
+  description: String
+  address: String
+  phone: String
+  logo: String
+  cover: String
+  schedule: [BusinessSchedule!]!
+}
+
 type TenantObject {
   id: ID!
   name: String!
@@ -77,6 +96,37 @@ type TenantObject {
 type PortalPolicyObject {
   title: String!
   body: String!
+}
+
+type SubscriptionUsage {
+  used: Int!
+  limit: Int!
+  unlimited: Boolean!
+}
+
+type SubscriptionLimits {
+  services: SubscriptionUsage!
+  team: SubscriptionUsage!
+}
+
+type SubscriptionSummary {
+  plan: SubscriptionPlan!
+  effectivePlan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  expiresAt: String
+  limits: SubscriptionLimits!
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  expired
+  canceled
 }
 
 type SpecialistRef {
@@ -312,61 +362,21 @@ type ManagedBusiness {
   expiresAt: String
 }
 
-input OverrideTenantSubscriptionInput {
-  tenantId: ID!
-  plan: SubscriptionPlan
-  status: SubscriptionStatus
-  expiresAt: String
+type NotificationObject {
+  id: ID!
+  type: NotificationType!
+  title: String!
+  message: String!
+  read: Boolean!
+  createdAt: String!
 }
 
-type BusinessSchedule {
-  weekday: Int!
-  startTime: String!
-  endTime: String!
-}
-
-type BusinessSummary {
-  tenantId: ID!
-  slug: String!
-  name: String!
-  category: String!
-  description: String
-  address: String
-  phone: String
-  logo: String
-  cover: String
-  schedule: [BusinessSchedule!]!
-}
-
-type SubscriptionUsage {
-  used: Int!
-  limit: Int!
-  unlimited: Boolean!
-}
-
-type SubscriptionLimits {
-  services: SubscriptionUsage!
-  team: SubscriptionUsage!
-}
-
-type SubscriptionSummary {
-  plan: SubscriptionPlan!
-  effectivePlan: SubscriptionPlan!
-  status: SubscriptionStatus!
-  expiresAt: String
-  limits: SubscriptionLimits!
-}
-
-enum SubscriptionPlan {
-  FREE
-  PRO
-}
-
-enum SubscriptionStatus {
-  active
-  past_due
-  expired
-  canceled
+enum NotificationType {
+  NEW_BOOKING
+  RESCHEDULE_REQUEST
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_EXPIRED
+  SYSTEM_INFO
 }
 
 type Query {
@@ -376,6 +386,7 @@ type Query {
   searchBusinesses(query: String, limit: Int, offset: Int): [BusinessSummary!]!
   services(tenantId: String, tenantSlug: String, category: String, minDuration: Int, maxDuration: Int): [Service!]!
   service(id: String!): Service
+  mySubscription: SubscriptionSummary!
   specialists(tenantId: String, tenantSlug: String): [Specialist!]!
   specialist(id: String!): Specialist
   serviceSpecialists(serviceId: String!): [Specialist!]!
@@ -398,13 +409,13 @@ type Query {
   timeBlocks(tenantId: ID, tenantSlug: String, specialistId: ID): [TimeBlockObject!]!
   paymentMethods(tenantId: ID, tenantSlug: String): [PaymentMethodObject!]!
   myPaymentMethods: [PaymentMethodObject!]!
-  mySubscription: SubscriptionSummary!
   platformMetrics: PlatformMetrics!
   managedBusinesses(query: String, limit: Int, offset: Int): [ManagedBusiness!]!
+  notifications(read: Boolean, limit: Int, offset: Int): [NotificationObject!]!
+  unreadNotificationCount: Int!
 }
 
 type Mutation {
-  overrideTenantSubscription(input: OverrideTenantSubscriptionInput!): ManagedBusiness!
   createTenant(input: CreateTenantInput!): TenantObject!
   updateMyBusinessProfile(input: UpdateBusinessProfileInput!): TenantObject!
   createService(input: CreateServiceInput!): Service!
@@ -438,6 +449,10 @@ type Mutation {
   removeTimeBlock(id: ID!): Boolean!
   upsertPaymentMethod(input: UpsertPaymentMethodInput!): PaymentMethodObject!
   deletePaymentMethod(id: ID!): Boolean!
+  overrideTenantSubscription(input: OverrideTenantSubscriptionInput!): ManagedBusiness!
+  markNotificationRead(id: ID!): NotificationObject!
+  markAllNotificationsRead: Int!
+  deleteNotification(id: ID!): Boolean!
 }
 
 input CreateTenantInput {
@@ -646,4 +661,11 @@ input UpsertPaymentMethodInput {
   details: String
   instructions: String
   active: Boolean
+}
+
+input OverrideTenantSubscriptionInput {
+  tenantId: ID!
+  plan: SubscriptionPlan
+  status: SubscriptionStatus
+  expiresAt: String
 }

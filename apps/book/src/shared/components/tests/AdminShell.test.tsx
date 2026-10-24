@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
 
@@ -7,7 +8,14 @@ vi.mock('../../../modules/auth/hooks', () => ({ useSignOut: () => vi.fn() }));
 
 import { AdminShell } from '../AdminShell';
 
-function renderShell(props: { publicHref?: string | null; isPublic?: boolean } = {}) {
+function renderShell(
+  props: {
+    publicHref?: string | null;
+    isPublic?: boolean;
+    headerStart?: ReactNode;
+    headerActions?: ReactNode;
+  } = {},
+) {
   return render(
     <FoundlyThemeProvider>
       <AdminShell tenantName="Estudio Ana" {...props}>
@@ -47,5 +55,24 @@ describe('AdminShell (009 — US3/US4)', () => {
   it('does not render the disabled-public banner by default', () => {
     renderShell();
     expect(screen.queryByText(/Tu página pública está actualmente deshabilitada/)).toBeNull();
+  });
+
+  it('renders headerActions inside the persistent top bar', () => {
+    renderShell({ headerActions: <span>Acción de cabecera</span> });
+    const header = screen.getByRole('banner');
+    expect(within(header).getByText('Acción de cabecera')).toBeInTheDocument();
+  });
+
+  it('keeps header actions in the last (right-aligned) region, after a left slot', () => {
+    renderShell({
+      headerStart: <span>Migas de pan</span>,
+      headerActions: <span>Acción de cabecera</span>,
+    });
+    const header = screen.getByRole('banner');
+    expect(within(header).getByText('Migas de pan')).toBeInTheDocument();
+
+    const lastRegion = header.lastElementChild;
+    expect(lastRegion).not.toBeNull();
+    expect(within(lastRegion as HTMLElement).getByText('Acción de cabecera')).toBeInTheDocument();
   });
 });

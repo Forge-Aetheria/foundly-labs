@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { GraphQLError } from 'graphql';
 import type { Prisma } from '@foundly/database';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -10,6 +10,7 @@ import {
 } from '../../shared/tenant-scope';
 import { TenantScopeInput } from '../../shared/tenant-scope';
 import type { AuthUser } from '../auth/jwt.types';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentMethodType } from '../payments/payments.types';
 import {
   AppointmentNotificationObject,
@@ -99,7 +100,12 @@ function isAbsoluteHttpUrl(value: string): boolean {
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  private readonly logger = new Logger(AppointmentsService.name);
+
+  constructor(
+    private readonly prismaService: PrismaService,
+    @Optional() private readonly notifications?: NotificationsService,
+  ) {}
 
   /** Resolve the authoritative tenant scope from the authenticated identity (never client input). */
   requireTenant(user: Pick<AuthUser, 'tenantId'> | undefined): string {
@@ -331,6 +337,7 @@ export class AppointmentsService {
       where: { id: input.serviceId },
       select: {
         id: true,
+        name: true,
         tenantId: true,
         durationMinutes: true,
         priceCents: true,
@@ -392,6 +399,25 @@ export class AppointmentsService {
       },
       include: APPOINTMENT_INCLUDE,
     });
+
+    if (origin === 'online') {
+      try {
+        await this.notifications?.notifyNewOnlineBooking({
+          tenantId,
+          serviceName: service.name,
+          clientName: input.clientName.trim(),
+          startAt,
+        });
+      } catch (error) {
+        // Best-effort: the notification must never fail a valid booking.
+        this.logger.warn(
+          `Failed to create new-booking notification for tenant ${tenantId}: ${
+            error instanceof Error ? error.message : 'unknown error'
+          }`,
+        );
+      }
+    }
+
     return this.toAppointmentObject(created);
   }
 

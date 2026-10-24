@@ -20,6 +20,7 @@ import { TimeBlockModule } from './modules/time-block/time-block.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { PlatformModule } from './modules/platform/platform.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SharedPrismaModule } from './shared/prisma/prisma.module';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -49,6 +50,7 @@ const isProduction = process.env.NODE_ENV === 'production';
     PaymentsModule,
     SubscriptionModule,
     PlatformModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [HealthResolver],
