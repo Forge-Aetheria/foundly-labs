@@ -4,6 +4,7 @@ import { registerForPushNotifications } from '../push';
 
 jest.mock('expo-device', () => ({ isDevice: true }));
 jest.mock('expo-constants', () => ({
+  executionEnvironment: 'bare',
   expoConfig: { extra: { eas: { projectId: 'project-1' } } },
 }));
 jest.mock('expo-notifications', () => ({
