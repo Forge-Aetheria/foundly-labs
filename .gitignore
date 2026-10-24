@@ -3,6 +3,9 @@
 # Dependencies
 node_modules/
 
+# Turborepo
+.turbo/
+
 # Build output (Astro / Next.js)
 dist/
 .astro/
@@ -38,3 +41,4 @@ apps/api/src/schema.gql
 # Reproduce via `npm run codegen -w @foundly/book` (auto-run by pretypecheck/prebuild).
 # The schema snapshot (`apps/book/codegen.schema.gql`) IS versioned so codegen runs offline.
 apps/book/src/shared/api/generated.ts
+apps/mobile/src/shared/api/generated.ts

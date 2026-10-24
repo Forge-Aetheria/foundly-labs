@@ -17,10 +17,11 @@ El repositorio es un **monorepo npm workspaces** con dos espacios:
 │   ├── landing/                # Astro 5 — SSG (vitrina, SEO)      → zona raíz
 │   ├── book/                   # Next.js / React 19 — SaaS        → zona /book
 │   ├── store/                  # Next.js / React 19 — e-commerce  → zona /store
+│   ├── mobile/                 # Expo / React Native — app nativa de tenant
 │   └── api/                    # NestJS — servidor HTTP/API       → backend
 ├── packages/                   # Código compartido
 │   └── ui/                     # Design system Clean Light UI (MUI v6)
-├── specs/                      # Especificaciones por dominio (shared-ui, landing, book, store, api)
+├── specs/                      # Especificaciones por dominio (shared-ui, landing, book, store, mobile, api)
 ├── vercel.json                 # Configuración del gateway de ruteo unificado
 ├── constitution.md
 ├── code-rules.md
@@ -109,6 +110,7 @@ Todos los proyectos usan **npm** y resuelven los workspaces desde la raíz del r
 | `foundly-landing` | `apps/landing` | Astro            | `npm install`   | `npm run build` | `dist`              |
 | `foundly-book`    | `apps/book`    | Next.js          | `npm install`   | `npm run build` | `.next`             |
 | `foundly-store`   | `apps/store`   | Next.js          | `npm install`   | `npm run build` | `.next`             |
+| `foundly-mobile`  | `apps/mobile`  | Other            | `pnpm install`  | `pnpm --filter @foundly/mobile build` | `dist` |
 | `foundly-api`     | `apps/api`     | Other            | `npm install`   | `npm run build` | `dist`              |
 
 Notas:

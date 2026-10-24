@@ -90,22 +90,22 @@ function makeFakeClient(tenant: FakeTenant) {
   return {
     tenant: {
       findMany: vi.fn(async (): Promise<FakeTenant[]> => [tenant]),
-      findUnique: vi.fn(
-        async (args: { include?: unknown; select?: unknown }): Promise<unknown> => {
-          if (args.include) return tenant;
-          return { id: tenant.id, profile: tenant.profile ? { id: tenant.profile.id } : null };
-        },
-      ),
+      findUnique: vi.fn(async (args: { include?: unknown; select?: unknown }): Promise<unknown> => {
+        if (args.include) return tenant;
+        return { id: tenant.id, profile: tenant.profile ? { id: tenant.profile.id } : null };
+      }),
       update: vi.fn(async (args: { data: Record<string, unknown> }): Promise<FakeTenant> => {
         Object.assign(tenant, args.data);
         return tenant;
       }),
-      create: vi.fn(async (args: { data: { profile: { create: { slug: string } } } }): Promise<FakeTenant> => {
-        const slug = args.data.profile.create.slug;
-        if (slug === 'estudio-ana') throw duplicateError;
-        tenant.profile = makeProfile({ id: 'p2', slug });
-        return tenant;
-      }),
+      create: vi.fn(
+        async (args: { data: { profile: { create: { slug: string } } } }): Promise<FakeTenant> => {
+          const slug = args.data.profile.create.slug;
+          if (slug === 'estudio-ana') throw duplicateError;
+          tenant.profile = makeProfile({ id: 'p2', slug });
+          return tenant;
+        },
+      ),
     },
     businessProfile: {
       findUnique: vi.fn(async (args: { where: { slug?: string } }): Promise<unknown> => {
@@ -115,7 +115,10 @@ function makeFakeClient(tenant: FakeTenant) {
         return null;
       }),
       update: vi.fn(
-        async (args: { where: { tenantId: string }; data: Record<string, unknown> }): Promise<FakeProfile> => {
+        async (args: {
+          where: { tenantId: string };
+          data: Record<string, unknown>;
+        }): Promise<FakeProfile> => {
           if (args.data.slug === TAKEN_SLUG) throw duplicateError;
           if (tenant.profile) Object.assign(tenant.profile, args.data);
           return tenant.profile as FakeProfile;
@@ -214,9 +217,7 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
     const updated = await service.updateProfile(scoped('t1'), input);
     expect(updated.profile?.bio).toBe('Estudio de referencia');
     expect(updated.profile?.address).toBe('Calle Mayor 7');
-    expect(updated.profile?.policies).toEqual([
-      { title: 'Cancelación', body: 'Avisa con 24 h.' },
-    ]);
+    expect(updated.profile?.policies).toEqual([{ title: 'Cancelación', body: 'Avisa con 24 h.' }]);
     // name/category untouched (partial update)
     expect(updated.name).toBe('Estudio Ana');
   });
@@ -232,12 +233,12 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
   });
 
   it('rejects an anonymous profile update with UNAUTHENTICATED', async () => {
-    await expect(
-      service.updateProfile(undefined, { bio: 'x' }),
-    ).rejects.toMatchObject({ extensions: { code: 'UNAUTHENTICATED' } });
-    await expect(
-      service.updateProfile({}, { bio: 'x' }),
-    ).rejects.toMatchObject({ extensions: { code: 'UNAUTHENTICATED' } });
+    await expect(service.updateProfile(undefined, { bio: 'x' })).rejects.toMatchObject({
+      extensions: { code: 'UNAUTHENTICATED' },
+    });
+    await expect(service.updateProfile({}, { bio: 'x' })).rejects.toMatchObject({
+      extensions: { code: 'UNAUTHENTICATED' },
+    });
   });
 
   it('rejects a malformed URL with VALIDATION_ERROR', async () => {
@@ -247,9 +248,9 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
   });
 
   it('rejects a taken slug with CONFLICT and preserves the previous value', async () => {
-    await expect(
-      service.updateProfile(scoped('t1'), { slug: TAKEN_SLUG }),
-    ).rejects.toMatchObject({ extensions: { code: 'CONFLICT' } });
+    await expect(service.updateProfile(scoped('t1'), { slug: TAKEN_SLUG })).rejects.toMatchObject({
+      extensions: { code: 'CONFLICT' },
+    });
     expect(tenant.profile?.slug).toBe('estudio-ana');
   });
 

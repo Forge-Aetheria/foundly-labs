@@ -18,7 +18,7 @@ $$
 - **`constitution.md`** (este documento): define los principios no negociables de arquitectura, calidad, diseño y flujo de trabajo.
 - **`specs/architecture.md`**: define la topología del monorepo, límites entre apps y paquetes, y las decisiones de arquitectura vigentes.
 - **`code-rules.md`**: define las normas de código TypeScript, Astro, React/Next.js, CSS y estructura de componentes.
-- **`specs de dominio`** (`/specs/<dominio>/<nnn>-<feature>/`): especifican el comportamiento detallado de cada vista, isla interactiva, flujo o servicio, **acotadas a un único dominio** (`shared-ui`, `landing`, `book`, `store` o `api`).
+- **`specs de dominio`** (`/specs/<dominio>/<nnn>-<feature>/`): especifican el comportamiento detallado de cada vista, isla interactiva, flujo o servicio, **acotadas a un único dominio** (`shared-ui`, `landing`, `book`, `store`, `mobile` o `api`).
 
 Ninguna decisión de implementación puede violar un nivel superior de esta jerarquía. Ante conflicto entre dos documentos, prevalece el de mayor autoridad.
 
@@ -34,6 +34,7 @@ Todas las especificaciones del proyecto residen **exclusivamente** en la carpeta
 | `landing`   | `/specs/landing/`   | Vitrina pública `apps/landing` (Astro 5, SSG)                           |
 | `book`      | `/specs/book/`      | Módulo SaaS interactivo `apps/book` (Next.js / React 19)                |
 | `store`     | `/specs/store/`     | Módulo de comercio `apps/store` (Next.js / React 19)                    |
+| `mobile`    | `/specs/mobile/`    | App móvil `apps/mobile` (Expo / React Native, Expo Router)              |
 | `api`       | `/specs/api/`       | Backend / API `apps/api` (NestJS, Node.js)                              |
 
 Cada especificación de dominio vive en `/specs/<dominio>/<nnn>-<feature>/` y usa numeración secuencial **dentro de su propio dominio**.
@@ -50,7 +51,7 @@ Los documentos de gobernanza transversal (no ligados a un dominio) residen en la
 ### III. Reglas de las specs de dominio
 
 - **Ubicación única**: ninguna spec puede residir fuera de `/specs/<dominio>/`.
-- **Regla previa a `/speckit.specify`**: antes de ejecutar cualquier comando `/speckit.specify`, la IA DEBE identificar el dominio de la nueva especificación. Si el usuario no lo especificó, la IA DEBE preguntarlo explícitamente antes de crear nada. Dominios válidos: `shared-ui`, `landing`, `book`, `store`, `api`. La spec DEBE crearse con `SPECIFY_FEATURE_DIRECTORY=specs/<dominio>/<nnn>-<feature>`.
+- **Regla previa a `/speckit.specify`**: antes de ejecutar cualquier comando `/speckit.specify`, la IA DEBE identificar el dominio de la nueva especificación. Si el usuario no lo especificó, la IA DEBE preguntarlo explícitamente antes de crear nada. Dominios válidos: `shared-ui`, `landing`, `book`, `store`, `mobile`, `api`. La spec DEBE crearse con `SPECIFY_FEATURE_DIRECTORY=specs/<dominio>/<nnn>-<feature>`.
 - **Acotadas a un dominio**: solo aplican al dominio que las contiene.
 - **Subordinadas**: NUNCA pueden contradecir `specs/business-model.md`, `constitution.md`, `specs/architecture.md` ni `code-rules.md`.
 - **Sin duplicación normativa**: si una regla aplica a más de un dominio, DEBE promoverse a un documento global en `/specs` o a `shared-ui`, nunca duplicarse.
@@ -92,6 +93,7 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 │   │   ├── public/
 │   │   └── next.config.mjs
 │   │
+│   ├── mobile/                            # Expo / React Native (Expo Router)
 │   └── api/                               # Backend / API (NestJS, Node.js)
 │       ├── src/
 │       ├── nest-cli.json
@@ -109,6 +111,7 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 │   ├── landing/                           # Specs de apps/landing
 │   ├── book/                              # Specs de apps/book
 │   ├── store/                             # Specs de apps/store
+│   ├── mobile/                            # Specs de apps/mobile (Expo)
 │   └── api/                               # Specs de apps/api (backend)
 ├── constitution.md                        # Documento raíz (este archivo)
 ├── code-rules.md
@@ -122,10 +125,12 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 | `apps/landing` | Astro 5            | SSG (estático)          | Vitrina pública del ecosistema, SEO y performance           |
 | `apps/book`    | Next.js / React 19 | Módulo SaaS interactivo | Flujos de producto con estado y datos en tiempo de petición |
 | `apps/store`   | Next.js / React 19 | Módulo SaaS interactivo | Comercio/licencias y flujos transaccionales                 |
+| `apps/mobile`  | Expo / RN 0.88     | App nativa (iOS/Android) | App móvil de administración de tenant                       |
 | `apps/api`     | NestJS (Node.js)   | API (servidor HTTP)     | Backend de servicios/API del ecosistema                     |
 
 - **`apps/landing`**: Astro 5 + Tailwind CSS v4, salida estática (SSG), cero JS por defecto y islas React solo cuando son estrictamente necesarias.
 - **`apps/book` y `apps/store`**: Next.js con React 19, orientadas a módulos SaaS interactivos; pueden usar Server Components y Server Actions.
+- **`apps/mobile`**: Expo SDK 58 + React Native + Expo Router, app nativa iOS/Android para administradores de tenant; su código se especifica bajo `/specs/mobile/`.
 - **`apps/api`**: NestJS (Node.js), servidor HTTP del ecosistema; su código se especifica bajo `/specs/api/`.
 
 **Gates de verificación por app**:
@@ -134,6 +139,7 @@ El repositorio se organiza como **monorepo** con dos espacios: `apps/` (aplicaci
 | ------------ | --------------------------------- | -------------------------------- |
 | `apps/book`  | `npm run build -w @foundly/book`  | `npm run test -w @foundly/book`  |
 | `apps/store` | `npm run build -w @foundly/store` | `npm run test -w @foundly/store` |
+| `apps/mobile`| `pnpm --filter @foundly/mobile build` | `pnpm --filter @foundly/mobile test` |
 | `apps/api`   | `npm run build -w @foundly/api`   | `npm run test -w @foundly/api`   |
 
 ### II. Paquetes compartidos (`packages/`)
@@ -162,7 +168,7 @@ Reglas de los paquetes:
 - "No spec, no code": ninguna línea de código de producción o refactorización mayor debe escribirse sin una especificación previa aprobada.
 - Toda spec DEBE **referenciar explícitamente `specs/business-model.md`**, ya que es la máxima autoridad del ecosistema.
 - El flujo es secuencial: **Spec (EARS) → Plan de Arquitectura → Tareas → Implementación**.
-- Todas las specs residen exclusivamente en `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`, `api`); los documentos transversales viven en la raíz de `/specs`. Antes de `/speckit.specify` la IA DEBE identificar o preguntar el dominio.
+- Todas las specs residen exclusivamente en `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`, `mobile`, `api`); los documentos transversales viven en la raíz de `/specs`. Antes de `/speckit.specify` la IA DEBE identificar o preguntar el dominio.
 
 ### II. Server-First & Zero-JS Default
 
@@ -197,7 +203,7 @@ Aplica a `apps/book` y `apps/store` (Next.js App Router, React 19).
 
 ### VI. Capa de Datos por Módulo y Hooks de Cliente (apps/book, apps/store)
 
-Aplica a `apps/book` y `apps/store`. La lógica de datos de cada módulo de dominio DEBE vivir dentro de su propio módulo (`src/modules/<modulo>/`), nunca dispersa en la UI ni en `shared/infra`.
+Aplica a `apps/book`, `apps/store` y `apps/mobile`. La lógica de datos de cada módulo de dominio DEBE vivir dentro de su propio módulo (`src/modules/<modulo>/`), nunca dispersa en la UI ni en `shared/infra`.
 
 **Estructura canónica de un módulo con datos:**
 
@@ -308,7 +314,7 @@ Estas rutas son las canónicas; cualquier documento que use otras rutas debe cor
 | Código compartido (Next)      | `apps/{book,store}/src/shared/`                                      | kebab-case / PascalCase |
 | Componentes compartidos       | `packages/ui/`                                                       | PascalCase              |
 | Configuración compartida      | `packages/config/`                                                   | kebab-case              |
-| Specs de dominio              | `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`, `api`) | `nnn-feature`           |
+| Specs de dominio              | `/specs/<dominio>/` (`shared-ui`, `landing`, `book`, `store`, `mobile`, `api`) | `nnn-feature`           |
 | Documentos globales           | `/specs/` (raíz)                                                     | kebab-case              |
 
 > **Corrección explícita**: todas las apps comparten el patrón **rutas delgadas + `modules/` + `shared/`**. En `apps/landing` las rutas (`src/pages/`) solo renderizan su `<Modulo>View`; las secciones viven en `src/modules/<modulo>/components/`, las islas en `src/modules/<modulo>/islands/` y lo reutilizable (UI, SEO, layout, datos, tipos, utils) en `src/shared/`. En `apps/book` y `apps/store` las rutas (`src/app/`) también son delgadas y la lógica vive en `src/modules/` y `src/shared/`. Se elimina cualquier referencia previa a `src/components/`, `src/data/`, `src/layouts/`, `src/types/` o `src/utils/`.

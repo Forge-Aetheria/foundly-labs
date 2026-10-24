@@ -38,9 +38,10 @@ function makeRow(): DirectoryRow {
   };
 }
 
-function makeService(
-  rows: DirectoryRow[],
-): { service: TenantsService; findMany: ReturnType<typeof vi.fn> } {
+function makeService(rows: DirectoryRow[]): {
+  service: TenantsService;
+  findMany: ReturnType<typeof vi.fn>;
+} {
   const findMany = vi.fn(async () => rows);
   const client = { tenant: { findMany } };
   const service = new TenantsService({ client } as unknown as PrismaService);

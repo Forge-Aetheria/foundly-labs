@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  type NotificationRow,
-  type NotificationStore,
-} from './notifications.store';
+import { type NotificationRow, type NotificationStore } from './notifications.store';
 import { NotificationsService } from './notifications.service';
 
 function makeRow(overrides: Partial<NotificationRow> = {}): NotificationRow {
@@ -49,7 +46,17 @@ function makeStore(): StoreSpies {
     latestByType,
     getSubscription,
   };
-  return { store, list, countUnread, markRead, markAllRead, remove, create, latestByType, getSubscription };
+  return {
+    store,
+    list,
+    countUnread,
+    markRead,
+    markAllRead,
+    remove,
+    create,
+    latestByType,
+    getSubscription,
+  };
 }
 
 const user = { tenantId: 't1' };
@@ -193,7 +200,11 @@ describe('NotificationsService — subscription expiry sync (020 — US4)', () =
 
   it('does nothing when the expiry is far in the future or absent', async () => {
     const spies = makeStore();
-    spies.getSubscription.mockResolvedValue({ plan: 'PRO', status: 'active', expiresAt: new Date(Date.now() + 30 * DAY) });
+    spies.getSubscription.mockResolvedValue({
+      plan: 'PRO',
+      status: 'active',
+      expiresAt: new Date(Date.now() + 30 * DAY),
+    });
     const service = new NotificationsService(spies.store);
     await service.syncSubscriptionNotifications('t1');
     expect(spies.create).not.toHaveBeenCalled();
@@ -205,7 +216,11 @@ describe('NotificationsService — subscription expiry sync (020 — US4)', () =
 
   it('deduplicates per type within 24 h', async () => {
     const spies = makeStore();
-    spies.getSubscription.mockResolvedValue({ plan: 'PRO', status: 'active', expiresAt: new Date(Date.now() + 2 * DAY) });
+    spies.getSubscription.mockResolvedValue({
+      plan: 'PRO',
+      status: 'active',
+      expiresAt: new Date(Date.now() + 2 * DAY),
+    });
     spies.latestByType.mockResolvedValue(
       makeRow({ type: 'SUBSCRIPTION_EXPIRING', createdAt: new Date() }),
     );
@@ -218,7 +233,11 @@ describe('NotificationsService — subscription expiry sync (020 — US4)', () =
 
   it('runs the sync when listing notifications', async () => {
     const spies = makeStore();
-    spies.getSubscription.mockResolvedValue({ plan: 'PRO', status: 'active', expiresAt: new Date(Date.now() - DAY) });
+    spies.getSubscription.mockResolvedValue({
+      plan: 'PRO',
+      status: 'active',
+      expiresAt: new Date(Date.now() - DAY),
+    });
     const service = new NotificationsService(spies.store);
 
     await service.list(user, {});

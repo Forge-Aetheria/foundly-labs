@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { GraphQLError } from 'graphql';
 import { notFoundError, validationError } from '../../shared/tenant-scope';
 import type { AuthUser } from '../auth/jwt.types';
@@ -8,6 +8,7 @@ import {
   type NotificationStore,
 } from './notifications.store';
 import { NotificationObject, type NotificationType } from './notifications.types';
+import { ExpoPushService } from './expo-push.service';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -57,7 +58,10 @@ function formatWhen(startAt: Date): string {
 export class NotificationsService {
   private readonly syncing = new Set<string>();
 
-  constructor(@Inject(NOTIFICATION_STORE) private readonly store: NotificationStore) {}
+  constructor(
+    @Inject(NOTIFICATION_STORE) private readonly store: NotificationStore,
+    @Optional() private readonly push?: ExpoPushService,
+  ) {}
 
   /** Resolve the authoritative tenant scope from the authenticated identity (never client input). */
   requireTenant(user: Pick<AuthUser, 'tenantId'> | undefined): string {
@@ -117,11 +121,17 @@ export class NotificationsService {
 
   /** Trigger: a successful public online booking raises exactly one NEW_BOOKING notification. */
   async notifyNewOnlineBooking(input: NewOnlineBookingInput): Promise<void> {
-    await this.store.create({
+    const row = await this.store.create({
       tenantId: input.tenantId,
       type: 'NEW_BOOKING',
       title: 'Nueva reserva online',
       message: `${input.clientName} reservó «${input.serviceName}» para el ${formatWhen(input.startAt)}.`,
+    });
+    void this.push?.sendToTenant(input.tenantId, {
+      notificationId: row.id,
+      type: row.type,
+      title: row.title,
+      message: row.message,
     });
   }
 
@@ -161,7 +171,13 @@ export class NotificationsService {
       if (latest && now - latest.createdAt.getTime() < DEDUPE_WINDOW_MS) {
         return;
       }
-      await this.store.create({ tenantId, type, title, message });
+      const row = await this.store.create({ tenantId, type, title, message });
+      void this.push?.sendToTenant(tenantId, {
+        notificationId: row.id,
+        type: row.type,
+        title: row.title,
+        message: row.message,
+      });
     } finally {
       this.syncing.delete(tenantId);
     }

@@ -1,0 +1,692 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type HealthPayload {
+  service: String!
+  status: String!
+  database: String!
+  checkedAt: String!
+}
+
+type PaymentMethodObject {
+  id: ID!
+  tenantId: String!
+  type: PaymentMethodType!
+  title: String
+  details: String
+  instructions: String
+  active: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum PaymentMethodType {
+  pago_movil
+  binance
+  zelle
+  transfer
+  cash
+}
+
+type BusinessProfileObject {
+  id: ID!
+  slug: String!
+  bio: String
+  address: String
+  phone: String
+  instagram: String
+  whatsapp: String
+  logo: String
+  cover: String
+  brandColors: String
+  policies: [PortalPolicyObject!]!
+}
+
+type ServiceObject {
+  id: ID!
+  name: String!
+  description: String
+  durationMinutes: Int!
+  priceCents: Int!
+  currency: String!
+  category: String
+  active: Boolean!
+  requiresAdvance: Boolean!
+  advanceKind: AdvanceKind
+  advanceValue: Int
+}
+
+enum AdvanceKind {
+  fixed
+  percent
+}
+
+type BusinessSchedule {
+  weekday: Int!
+  startTime: String!
+  endTime: String!
+}
+
+type BusinessSummary {
+  tenantId: ID!
+  slug: String!
+  name: String!
+  category: String!
+  description: String
+  address: String
+  phone: String
+  logo: String
+  cover: String
+  schedule: [BusinessSchedule!]!
+}
+
+type TenantObject {
+  id: ID!
+  name: String!
+  category: String!
+  status: String!
+  timezone: String!
+  currency: String!
+  isPublic: Boolean!
+  profile: BusinessProfileObject
+  services: [ServiceObject!]!
+}
+
+type PortalPolicyObject {
+  title: String!
+  body: String!
+}
+
+type SubscriptionUsage {
+  used: Int!
+  limit: Int!
+  unlimited: Boolean!
+}
+
+type SubscriptionLimits {
+  services: SubscriptionUsage!
+  team: SubscriptionUsage!
+}
+
+type SubscriptionSummary {
+  plan: SubscriptionPlan!
+  effectivePlan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  expiresAt: String
+  limits: SubscriptionLimits!
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  expired
+  canceled
+}
+
+type SpecialistRef {
+  id: ID!
+  name: String!
+}
+
+type Service {
+  id: ID!
+  tenantId: String!
+  name: String!
+  description: String
+  durationMinutes: Int!
+  bufferMinutes: Int!
+  category: String
+  priceCents: Int!
+  currency: String!
+  active: Boolean!
+  requiresAdvance: Boolean!
+  advanceKind: AdvanceKind
+  advanceValue: Int
+  specialists: [SpecialistRef!]!
+}
+
+type ServiceRef {
+  id: ID!
+  name: String!
+}
+
+type Specialist {
+  id: ID!
+  tenantId: String!
+  name: String!
+  role: String
+  avatar: String
+  bio: String
+  active: Boolean!
+  services: [ServiceRef!]!
+}
+
+type Availability {
+  id: ID!
+  tenantId: String!
+  specialistId: String
+  weekday: Int!
+  startTime: String!
+  endTime: String!
+  slotGranularityMinutes: Int!
+  minLeadTimeMinutes: Int!
+  bookingHorizonDays: Int!
+  breaks: String
+}
+
+type NotificationObject {
+  id: ID!
+  type: NotificationType!
+  title: String!
+  message: String!
+  read: Boolean!
+  createdAt: String!
+}
+
+enum NotificationType {
+  NEW_BOOKING
+  RESCHEDULE_REQUEST
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_EXPIRED
+  SYSTEM_INFO
+}
+
+type PushTokenObject {
+  id: ID!
+  platform: PushPlatform!
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum PushPlatform {
+  IOS
+  ANDROID
+}
+
+type AppointmentService {
+  id: ID!
+  name: String!
+}
+
+type AppointmentSpecialist {
+  id: ID!
+  name: String!
+}
+
+type AppointmentNotificationObject {
+  id: ID!
+  kind: String!
+  message: String!
+  channel: String!
+  createdAt: String!
+}
+
+type PublicAppointment {
+  id: ID!
+  specialistId: String!
+  startAt: DateTime!
+  endAt: DateTime!
+  status: AppointmentStatus!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+type Appointment {
+  id: ID!
+  tenantId: String!
+  serviceId: String!
+  specialistId: String!
+  clientName: String!
+  clientContact: String
+  startAt: DateTime!
+  endAt: DateTime!
+  status: AppointmentStatus!
+  appliedDurationMinutes: Int!
+  appliedAmountCents: Int!
+  appliedCurrency: String!
+  origin: String!
+  notes: String
+  cancellationReason: String
+  paymentMethodType: PaymentMethodType
+  advanceAmountCents: Int
+  paymentReference: String
+  paymentProofUrl: String
+  paymentSubmittedAt: String
+  notifications: [AppointmentNotificationObject!]!
+  service: AppointmentService!
+  specialist: AppointmentSpecialist!
+}
+
+type CurrentTenant {
+  id: ID!
+  status: String!
+  plan: String
+}
+
+type CurrentUser {
+  userId: ID!
+  role: String!
+  tenant: CurrentTenant!
+}
+
+type BookCapability {
+  tenantId: ID!
+  enabled: Boolean!
+}
+
+type ViewerObject {
+  sub: ID!
+  email: String
+  role: String!
+  aud: String!
+}
+
+type MyService {
+  id: ID!
+  name: String!
+  description: String
+  priceCents: Int!
+  durationMinutes: Int!
+  category: String
+  active: Boolean!
+  requiresAdvance: Boolean!
+  advanceKind: AdvanceKind
+  advanceValue: Int
+}
+
+type MySpecialist {
+  id: ID!
+  name: String!
+  role: String
+  bio: String
+  avatar: String
+  active: Boolean!
+}
+
+type GalleryItem {
+  id: ID!
+  url: String!
+  title: String
+  description: String
+  category: String
+  order: Int!
+}
+
+type ReviewObject {
+  id: ID!
+  author: String!
+  rating: Int!
+  comment: String!
+  state: ReviewState!
+  createdAt: String!
+}
+
+"""Moderation state of a review (015)."""
+enum ReviewState {
+  pending
+  approved
+  rejected
+}
+
+type ReviewSummaryObject {
+  items: [ReviewObject!]!
+  average: Float
+  count: Int!
+}
+
+type TimeBlockObject {
+  id: ID!
+  tenantId: String!
+  specialistId: String
+  startAt: String!
+  endAt: String!
+  reason: String
+}
+
+type PlanDistribution {
+  free: Int!
+  pro: Int!
+}
+
+type UserMetrics {
+  available: Boolean!
+  total: Int
+  active: Int
+}
+
+type BusinessMetrics {
+  total: Int!
+  active: Int!
+}
+
+type PlatformMetrics {
+  businesses: BusinessMetrics!
+  users: UserMetrics!
+  plans: PlanDistribution!
+  proConversion: Float!
+}
+
+type ManagedBusiness {
+  tenantId: ID!
+  slug: String!
+  name: String!
+  plan: SubscriptionPlan!
+  status: SubscriptionStatus!
+  expiresAt: String
+}
+
+type Query {
+  health: HealthPayload!
+  tenants: [TenantObject!]!
+  tenant(slug: String!): TenantObject
+  myBusiness: TenantObject!
+  searchBusinesses(query: String, limit: Int, offset: Int): [BusinessSummary!]!
+  services(tenantId: String, tenantSlug: String, category: String, minDuration: Int, maxDuration: Int): [Service!]!
+  service(id: String!): Service
+  mySubscription: SubscriptionSummary!
+  specialists(tenantId: String, tenantSlug: String): [Specialist!]!
+  specialist(id: String!): Specialist
+  serviceSpecialists(serviceId: String!): [Specialist!]!
+  availability(tenantId: String, tenantSlug: String, specialistId: String): [Availability!]!
+  appointments(tenantId: String, tenantSlug: String, startDate: String, endDate: String, specialistId: String, status: AppointmentStatus): [PublicAppointment!]!
+  appointment(id: String!): PublicAppointment
+  myAppointments(from: String!, to: String!, status: AppointmentStatus, specialistId: ID): [Appointment!]!
+  myAppointment(id: ID!): Appointment
+  notifications(read: Boolean, limit: Int, offset: Int): [NotificationObject!]!
+  unreadNotificationCount: Int!
+  me: CurrentUser!
+  currentTenant: CurrentTenant!
+  bookCapability: BookCapability!
+  viewer: ViewerObject!
+  myServices(active: Boolean): [MyService!]!
+  myService(id: ID!): MyService
+  mySpecialists(active: Boolean): [MySpecialist!]!
+  mySpecialist(id: ID!): MySpecialist
+  gallery(tenantId: ID, tenantSlug: String): [GalleryItem!]!
+  reviews(tenantId: ID, tenantSlug: String): ReviewSummaryObject!
+  myReviews(state: ReviewState): [ReviewObject!]!
+  timeBlocks(tenantId: ID, tenantSlug: String, specialistId: ID): [TimeBlockObject!]!
+  paymentMethods(tenantId: ID, tenantSlug: String): [PaymentMethodObject!]!
+  myPaymentMethods: [PaymentMethodObject!]!
+  platformMetrics: PlatformMetrics!
+  managedBusinesses(query: String, limit: Int, offset: Int): [ManagedBusiness!]!
+}
+
+type Mutation {
+  createTenant(input: CreateTenantInput!): TenantObject!
+  updateMyBusinessProfile(input: UpdateBusinessProfileInput!): TenantObject!
+  createService(input: CreateServiceInput!): Service!
+  updateService(id: String!, input: UpdateServiceInput!): Service!
+  removeService(id: String!): Boolean!
+  createSpecialist(input: CreateSpecialistInput!): Specialist!
+  updateSpecialist(id: String!, input: UpdateSpecialistInput!): Specialist!
+  removeSpecialist(id: String!): Boolean!
+  assignServiceToSpecialist(specialistId: String!, serviceId: String!): Specialist!
+  unassignServiceFromSpecialist(specialistId: String!, serviceId: String!): Specialist!
+  createAvailability(input: CreateAvailabilityInput!): Availability!
+  updateAvailability(id: String!, input: UpdateAvailabilityInput!): Availability!
+  removeAvailability(id: String!): Boolean!
+  createAppointment(input: CreateAppointmentInput!): Appointment!
+  createMyAppointment(input: CreateAppointmentInput!): Appointment!
+  updateAppointmentStatus(id: String!, status: AppointmentStatus!): Appointment!
+  cancelAppointment(id: String!, reason: String): Appointment!
+  rescheduleAppointment(input: RescheduleAppointmentInput!): Appointment!
+  markNotificationRead(id: ID!): NotificationObject!
+  markAllNotificationsRead: Int!
+  deleteNotification(id: ID!): Boolean!
+  registerPushToken(input: RegisterPushTokenInput!): PushTokenObject!
+  unregisterPushToken(token: String!): Boolean!
+  createMyService(input: CreateMyServiceInput!): MyService!
+  updateMyService(id: ID!, input: UpdateMyServiceInput!): MyService!
+  deleteMyService(id: ID!): Boolean!
+  createMySpecialist(input: CreateMySpecialistInput!): MySpecialist!
+  updateMySpecialist(id: ID!, input: UpdateMySpecialistInput!): MySpecialist!
+  deleteMySpecialist(id: ID!): Boolean!
+  addGalleryItem(input: AddGalleryItemInput!): GalleryItem!
+  removeGalleryItem(id: ID!): Boolean!
+  addReview(input: AddReviewInput!): ReviewObject!
+  setReviewState(id: ID!, state: ReviewState!): ReviewObject!
+  deleteReview(id: ID!): Boolean!
+  addTimeBlock(input: AddTimeBlockInput!): TimeBlockObject!
+  removeTimeBlock(id: ID!): Boolean!
+  upsertPaymentMethod(input: UpsertPaymentMethodInput!): PaymentMethodObject!
+  deletePaymentMethod(id: ID!): Boolean!
+  overrideTenantSubscription(input: OverrideTenantSubscriptionInput!): ManagedBusiness!
+}
+
+input CreateTenantInput {
+  name: String!
+  category: String!
+  timezone: String!
+  currency: String
+  profile: BusinessProfileInput!
+}
+
+input BusinessProfileInput {
+  slug: String!
+  bio: String
+  address: String
+  phone: String
+  instagram: String
+  whatsapp: String
+  logo: String
+  cover: String
+  brandColors: String
+  policies: String
+}
+
+input UpdateBusinessProfileInput {
+  name: String
+  category: String
+  slug: String
+  bio: String
+  address: String
+  phone: String
+  instagram: String
+  whatsapp: String
+  logo: String
+  cover: String
+  isPublic: Boolean
+  policies: [BusinessPolicyInput!]
+}
+
+input BusinessPolicyInput {
+  title: String! = ""
+  body: String! = ""
+}
+
+input CreateServiceInput {
+  name: String!
+  description: String
+  durationMinutes: Int!
+  bufferMinutes: Int
+  category: String
+  priceCents: Int!
+  currency: String
+  active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
+  tenantId: String
+  tenantSlug: String
+}
+
+input UpdateServiceInput {
+  name: String
+  description: String
+  durationMinutes: Int
+  bufferMinutes: Int
+  category: String
+  priceCents: Int
+  currency: String
+  active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
+}
+
+input CreateSpecialistInput {
+  name: String!
+  role: String
+  avatar: String
+  bio: String
+  active: Boolean
+  tenantId: String
+  tenantSlug: String
+}
+
+input UpdateSpecialistInput {
+  name: String
+  role: String
+  avatar: String
+  bio: String
+  active: Boolean
+}
+
+input CreateAvailabilityInput {
+  tenantId: String
+  tenantSlug: String
+  specialistId: String
+  weekday: Int!
+  startTime: String!
+  endTime: String!
+  slotGranularityMinutes: Int
+  minLeadTimeMinutes: Int
+  bookingHorizonDays: Int
+  breaks: String
+}
+
+input UpdateAvailabilityInput {
+  specialistId: String
+  weekday: Int
+  startTime: String
+  endTime: String
+  slotGranularityMinutes: Int
+  minLeadTimeMinutes: Int
+  bookingHorizonDays: Int
+  breaks: String
+}
+
+input CreateAppointmentInput {
+  tenantId: String
+  tenantSlug: String
+  serviceId: ID!
+  specialistId: ID!
+  clientName: String!
+  clientContact: String
+  startAt: String!
+  endAt: String!
+  origin: String
+  notes: String
+  paymentMethodType: PaymentMethodType
+  advanceAmountCents: Int
+  paymentReference: String
+  paymentProofUrl: String
+}
+
+input RescheduleAppointmentInput {
+  id: ID!
+  startAt: String!
+  specialistId: ID
+}
+
+input RegisterPushTokenInput {
+  token: String!
+  platform: PushPlatform!
+  deviceId: String
+}
+
+input CreateMyServiceInput {
+  name: String! = ""
+  description: String
+  priceCents: Int! = 0
+  durationMinutes: Int! = 0
+  category: String
+  active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
+}
+
+input UpdateMyServiceInput {
+  name: String
+  description: String
+  priceCents: Int
+  durationMinutes: Int
+  category: String
+  active: Boolean
+  requiresAdvance: Boolean
+  advanceKind: AdvanceKind
+  advanceValue: Int
+}
+
+input CreateMySpecialistInput {
+  name: String! = ""
+  role: String
+  bio: String
+  avatar: String
+  active: Boolean
+}
+
+input UpdateMySpecialistInput {
+  name: String
+  role: String
+  bio: String
+  avatar: String
+  active: Boolean
+}
+
+input AddGalleryItemInput {
+  url: String! = ""
+  title: String
+  description: String
+  category: String
+}
+
+input AddReviewInput {
+  tenantId: ID
+  tenantSlug: String
+  author: String! = ""
+  rating: Int! = 0
+  comment: String! = ""
+}
+
+input AddTimeBlockInput {
+  tenantId: ID
+  tenantSlug: String
+  specialistId: ID
+  startAt: String! = ""
+  endAt: String! = ""
+  reason: String
+}
+
+input UpsertPaymentMethodInput {
+  type: PaymentMethodType!
+  title: String
+  details: String
+  instructions: String
+  active: Boolean
+}
+
+input OverrideTenantSubscriptionInput {
+  tenantId: ID!
+  plan: SubscriptionPlan
+  status: SubscriptionStatus
+  expiresAt: String
+}

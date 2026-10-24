@@ -1,0 +1,18 @@
+query MyAppointments($from: String!, $to: String!) {
+  myAppointments(from: $from, to: $to) {
+    id
+    startAt
+    endAt
+    status
+    clientName
+    notes
+    service {
+      id
+      name
+    }
+    specialist {
+      id
+      name
+    }
+  }
+}

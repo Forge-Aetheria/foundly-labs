@@ -90,7 +90,9 @@ export class PrismaNotificationStore implements NotificationStore {
   }
 
   async remove(tenantId: string, id: string): Promise<boolean> {
-    const result = await this.prismaService.client.notification.deleteMany({ where: { id, tenantId } });
+    const result = await this.prismaService.client.notification.deleteMany({
+      where: { id, tenantId },
+    });
     return result.count > 0;
   }
 

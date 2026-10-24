@@ -14,13 +14,31 @@ design tokens (Clean Light UI), React islands, and strict TypeScript.
 ## Requirements
 
 - Node.js ≥ 20 (tested with v24)
-- npm
+- pnpm 10 via Corepack
 
 ## Setup
 
 ```bash
-npm install
+corepack enable
+pnpm install
 ```
+
+## Monorepo workspaces
+
+The repository is a pnpm workspace with Turborepo. Additional applications:
+
+| Workspace           | Path                | Description                    |
+| ------------------- | ------------------- | ------------------------------ |
+| `@foundly/landing`  | `apps/landing`      | Astro landing (root scripts)   |
+| `@foundly/book`     | `apps/book`         | Next.js tenant admin           |
+| `@foundly/store`    | `apps/store`        | Next.js commerce               |
+| `@foundly/api`      | `apps/api`          | NestJS GraphQL API             |
+| `@foundly/mobile`   | `apps/mobile`       | Expo / React Native tenant app |
+| `@foundly/database` | `packages/database` | Prisma schema and client       |
+| `@foundly/ui`       | `packages/ui`       | Clean Light UI web components  |
+
+Mobile-specific setup, environment variables and development-build instructions live in
+[`apps/mobile/README.md`](apps/mobile/README.md).
 
 ## Scripts
 
@@ -98,25 +116,25 @@ The repo is a **npm workspaces monorepo** (`apps/*`, `packages/*`):
 
 ### Atajos por proyecto (desde la raíz)
 
-| Comando            | Projecto      | Delega en                                         |
-| ------------------ | ------------- | ------------------------------------------------- |
-| `dev:landing`      | landing       | `npm run dev -w @foundly/landing` (puerto 4321)   |
-| `build:landing`    | landing       | `npm run build -w @foundly/landing`               |
-| `preview:landing`  | landing       | `npm run preview -w @foundly/landing`             |
-| `check:landing`    | landing       | `npm run check -w @foundly/landing`               |
-| `dev:book`         | book          | `npm run dev -w @foundly/book` (puerto 3001)      |
-| `build:book`       | book          | `npm run build -w @foundly/book`                  |
-| `start:book`       | book          | `npm run start -w @foundly/book`                  |
-| `typecheck:book`   | book          | `npm run typecheck -w @foundly/book`              |
-| `test:book`        | book          | `npm run test -w @foundly/book`                   |
-| `lint:book`        | book          | `npm run lint -w @foundly/book`                   |
-| `codegen:book`     | book          | `npm run codegen -w @foundly/book`                |
-| `dev:api`          | api           | `npm run dev -w @foundly/api` (puerto 3002)       |
-| `build:api`        | api           | `npm run build -w @foundly/api`                   |
-| `start:api`        | api           | `npm run start -w @foundly/api`                   |
-| `typecheck:api`    | api           | `npm run typecheck -w @foundly/api`               |
-| `test:api`         | api           | `npm run test -w @foundly/api`                    |
-| `lint:api`         | api           | `npm run lint -w @foundly/api`                    |
+| Comando           | Projecto | Delega en                                       |
+| ----------------- | -------- | ----------------------------------------------- |
+| `dev:landing`     | landing  | `npm run dev -w @foundly/landing` (puerto 4321) |
+| `build:landing`   | landing  | `npm run build -w @foundly/landing`             |
+| `preview:landing` | landing  | `npm run preview -w @foundly/landing`           |
+| `check:landing`   | landing  | `npm run check -w @foundly/landing`             |
+| `dev:book`        | book     | `npm run dev -w @foundly/book` (puerto 3001)    |
+| `build:book`      | book     | `npm run build -w @foundly/book`                |
+| `start:book`      | book     | `npm run start -w @foundly/book`                |
+| `typecheck:book`  | book     | `npm run typecheck -w @foundly/book`            |
+| `test:book`       | book     | `npm run test -w @foundly/book`                 |
+| `lint:book`       | book     | `npm run lint -w @foundly/book`                 |
+| `codegen:book`    | book     | `npm run codegen -w @foundly/book`              |
+| `dev:api`         | api      | `npm run dev -w @foundly/api` (puerto 3002)     |
+| `build:api`       | api      | `npm run build -w @foundly/api`                 |
+| `start:api`       | api      | `npm run start -w @foundly/api`                 |
+| `typecheck:api`   | api      | `npm run typecheck -w @foundly/api`             |
+| `test:api`        | api      | `npm run test -w @foundly/api`                  |
+| `lint:api`        | api      | `npm run lint -w @foundly/api`                  |
 
 > Los alias cortos de la raíz (`dev`, `build`, `start`, `preview`, `check`, `astro`) siguen apuntando a la
 > landing (compatibilidad con la tabla Scripts de arriba). Database ya se expone vía `db:*`.
@@ -135,12 +153,12 @@ npm run generate -w @foundly/database  # prisma generate (cliente DB-First)
 The database layer (`@foundly/database`) is Prisma + PostgreSQL (Supabase). From the repo root,
 use the delegated workspaces scripts — no need to `cd` into the package or pass `--schema`:
 
-| Command              | Description                                          |
-| -------------------- | ---------------------------------------------------- |
-| `npm run db:generate` | Regenerate the Prisma Client from the schema         |
-| `npm run db:migrate`  | Create and apply a migration (dev)                   |
-| `npm run db:push`     | Push the schema to the DB (no migration history)     |
-| `npm run db:studio`   | Open Prisma Studio to browse/explore the DB          |
+| Command               | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `npm run db:generate` | Regenerate the Prisma Client from the schema     |
+| `npm run db:migrate`  | Create and apply a migration (dev)               |
+| `npm run db:push`     | Push the schema to the DB (no migration history) |
+| `npm run db:studio`   | Open Prisma Studio to browse/explore the DB      |
 
 ### Examples
 

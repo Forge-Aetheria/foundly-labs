@@ -1,0 +1,17 @@
+query Notifications($limit: Int, $offset: Int, $read: Boolean) {
+  notifications(limit: $limit, offset: $offset, read: $read) {
+    id
+    type
+    title
+    message
+    read
+    createdAt
+  }
+}
+
+mutation MarkNotificationRead($id: ID!) {
+  markNotificationRead(id: $id) {
+    id
+    read
+  }
+}

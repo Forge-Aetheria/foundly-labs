@@ -132,6 +132,19 @@ export class TenantsService {
     return businessProfile ? this.toTenantObject(businessProfile.tenant) : null;
   }
 
+  /** The authenticated owner's business, scoped by the verified JWT tenant claim. */
+  async findForOwner(user: Pick<AuthUser, 'tenantId'> | undefined): Promise<TenantObject> {
+    const tenantId = this.requireTenant(user);
+    const row = await this.prismaService.client.tenant.findUnique({
+      where: { id: tenantId },
+      include: TENANT_INCLUDE,
+    });
+    if (!row) {
+      throw notFoundError('Business not found');
+    }
+    return this.toTenantObject(row);
+  }
+
   /**
    * Public discovery directory (018): active businesses with a public profile and at least one
    * active service, optionally filtered by name/category/address (case-insensitive), ordered by
@@ -307,7 +320,11 @@ export class TenantsService {
           const slug = typeof profileData.slug === 'string' ? profileData.slug : '';
           if (!slug) throw validationError('slug is required to create the profile');
           await this.prismaService.client.businessProfile.create({
-            data: { ...profileData, tenantId, slug } as unknown as Prisma.BusinessProfileCreateInput,
+            data: {
+              ...profileData,
+              tenantId,
+              slug,
+            } as unknown as Prisma.BusinessProfileCreateInput,
           });
         }
       }
@@ -328,7 +345,9 @@ export class TenantsService {
     return this.toTenantObject(updated);
   }
 
-  private validatePolicies(policies: { title: string; body: string }[]): { title: string; body: string }[] {
+  private validatePolicies(
+    policies: { title: string; body: string }[],
+  ): { title: string; body: string }[] {
     return policies.map((policy) => {
       const title = policy.title?.trim() ?? '';
       const body = policy.body?.trim() ?? '';

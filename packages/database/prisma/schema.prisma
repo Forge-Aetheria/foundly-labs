@@ -37,6 +37,7 @@ model Tenant {
   paymentMethods PaymentMethod[]
   notifications  AppointmentNotification[]
   inbox          Notification[]
+  pushTokens     PushDeviceToken[]
 }
 
 model BusinessProfile {
@@ -285,4 +286,26 @@ model Notification {
 
   @@index([tenantId, createdAt])
   @@index([tenantId, read])
+}
+
+
+enum PushPlatform {
+  IOS
+  ANDROID
+}
+
+model PushDeviceToken {
+  id         String       @id @default(cuid())
+  tenantId   String
+  userId     String
+  token      String       @unique
+  platform   PushPlatform
+  deviceId   String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  lastSeenAt DateTime     @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }

@@ -4,6 +4,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AppModule } from '../../app.module';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { TenantsService } from './tenants.service';
 
 interface FakeProfile {
   id: string;
@@ -82,6 +83,9 @@ const seededTenant: FakeTenant = {
 const fakeClient = {
   tenant: {
     findMany: vi.fn(async (): Promise<FakeTenant[]> => [seededTenant]),
+    findUnique: vi.fn(async (args: { where: { id: string } }): Promise<FakeTenant | null> =>
+      args.where.id === seededTenant.id ? seededTenant : null,
+    ),
     create: vi.fn(
       async (args: {
         data: {
@@ -214,5 +218,17 @@ describe('TenantsResolver (GraphQL e2e, 003-db-first-graphql-core)', () => {
 
     expect(response.body.errors).toBeDefined();
     expect(response.body.errors?.[0]?.extensions?.code).toBe('CONFLICT');
+  });
+
+  it('resolves the authenticated owner business and rejects missing tenant scope', async () => {
+    const service = new TenantsService({ client: fakeClient } as unknown as PrismaService);
+
+    const business = await service.findForOwner({ tenantId: 't1' });
+    expect(business.id).toBe('t1');
+    expect(business.profile?.slug).toBe('estudio-ana');
+
+    await expect(service.findForOwner({})).rejects.toMatchObject({
+      extensions: { code: 'UNAUTHENTICATED' },
+    });
   });
 });

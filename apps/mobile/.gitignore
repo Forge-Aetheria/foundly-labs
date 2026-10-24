@@ -1,0 +1,7 @@
+.expo/
+dist/
+node_modules/
+expo-env.d.ts
+*.tsbuildinfo
+src/shared/api/generated.ts
+.turbo/

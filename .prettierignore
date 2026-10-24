@@ -6,8 +6,13 @@ build/
 out/
 coverage/
 package-lock.json
+pnpm-lock.yaml
 *.min.js
 *.min.css
+
+# Expo
+.expo/
+apps/mobile/src/shared/api/generated.ts
 
 # Spec Kit-managed files
 .specify/

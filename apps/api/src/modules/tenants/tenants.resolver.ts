@@ -23,6 +23,13 @@ export class TenantsResolver {
     return this.tenantsService.findBySlug(slug);
   }
 
+  /** Authenticated: the caller owner's full business profile and publication state. */
+  @Query(() => TenantObject)
+  @RequireAuth()
+  myBusiness(@AuthUserDecorator() user: AuthUser): Promise<TenantObject> {
+    return this.tenantsService.findForOwner(user);
+  }
+
   /** Public discovery directory: active, eligible businesses with an optional text search (018). */
   @Query(() => [BusinessSummaryObject])
   searchBusinesses(

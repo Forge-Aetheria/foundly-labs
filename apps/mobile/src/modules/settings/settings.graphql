@@ -1,0 +1,41 @@
+query MyBusiness {
+  myBusiness {
+    id
+    name
+    category
+    status
+    timezone
+    currency
+    isPublic
+    profile {
+      id
+      slug
+      bio
+      address
+      phone
+      instagram
+      whatsapp
+      logo
+      cover
+    }
+    services {
+      id
+      name
+      active
+    }
+  }
+}
+
+mutation UpdateMyBusinessProfile($input: UpdateBusinessProfileInput!) {
+  updateMyBusinessProfile(input: $input) {
+    id
+    isPublic
+    name
+    category
+    profile {
+      slug
+      phone
+      address
+    }
+  }
+}
