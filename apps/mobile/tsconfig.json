@@ -9,10 +9,21 @@
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@foundly/database": ["../../packages/database/src/index.ts"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@foundly/database": [
+        "../../packages/database/src/index.ts"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
-  "exclude": ["node_modules", "dist", ".expo"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".expo"
+  ]
 }

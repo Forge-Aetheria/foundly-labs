@@ -23,6 +23,13 @@ const config: ExpoConfig = {
     'expo-router',
     'expo-secure-store',
     [
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Foundly necesita acceso a tus fotos para actualizar el logo de tu negocio.',
+      },
+    ],
+    [
       'expo-splash-screen',
       {
         image: './assets/splash-icon.png',

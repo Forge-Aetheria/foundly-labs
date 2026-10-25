@@ -5,6 +5,12 @@ import {
   type Variables,
 } from 'graphql-request';
 import { env } from '../config/env';
+import {
+  logApiConfigOnce,
+  logApiFailure,
+  logApiRequest,
+  logApiSuccess,
+} from './api-logger';
 import { errorMessage } from './error-surface';
 import { emitUnauthenticated } from './notify-unauthenticated';
 import { ok, type ActionResult, type ErrorCode } from './result';
@@ -70,17 +76,23 @@ export async function apiRequest<TResult, TVariables extends Variables = Variabl
   if (options.token) {
     headers.Authorization = `Bearer ${options.token}`;
   }
+  const url = `${env.apiUrl}/graphql`;
+  const startedAt = Date.now();
+  logApiConfigOnce(env.apiUrl);
+  logApiRequest(url, Boolean(options.token), variables);
   try {
     const options = {
-      url: `${env.apiUrl}/graphql`,
+      url,
       document,
       variables,
       requestHeaders: headers,
       signal: timeoutSignal(REQUEST_TIMEOUT_MS),
     } as unknown as RequestExtendedOptions<TVariables, TResult>;
     const data = await request<TResult, TVariables>(options);
+    logApiSuccess(url, Date.now() - startedAt);
     return ok(data);
   } catch (error) {
+    logApiFailure(url, Date.now() - startedAt, error);
     return mapActionError(error);
   }
 }

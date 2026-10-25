@@ -3,6 +3,7 @@ query MyBusiness {
     id
     name
     category
+    tags
     status
     timezone
     currency
@@ -32,8 +33,10 @@ mutation UpdateMyBusinessProfile($input: UpdateBusinessProfileInput!) {
     isPublic
     name
     category
+    tags
     profile {
       slug
+      logo
       phone
       address
     }

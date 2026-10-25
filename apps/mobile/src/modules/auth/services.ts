@@ -22,3 +22,47 @@ export async function signOut(): Promise<ActionResult<true>> {
   }
   return ok(true);
 }
+
+
+export interface ChangePasswordValues {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export async function changePassword(
+  values: ChangePasswordValues,
+): Promise<ActionResult<true>> {
+  if (values.newPassword.length < 8) {
+    return fail('VALIDATION_ERROR', 'La nueva contraseña debe tener al menos 8 caracteres.');
+  }
+  if (!/[a-zA-Z]/.test(values.newPassword) || !/[0-9]/.test(values.newPassword)) {
+    return fail('VALIDATION_ERROR', 'La nueva contraseña debe incluir letras y números.');
+  }
+  if (values.newPassword !== values.confirmPassword) {
+    return fail('VALIDATION_ERROR', 'Las contraseñas nuevas no coinciden.');
+  }
+
+  const { data: userData } = await supabase.auth.getUser();
+  const email = userData.user?.email;
+  if (!email) {
+    return fail('UNAUTHENTICATED', 'Tu sesión ha expirado. Inicia sesión de nuevo.');
+  }
+
+  const { error: reauthError } = await supabase.auth.signInWithPassword({
+    email,
+    password: values.currentPassword,
+  });
+  if (reauthError) {
+    return fail('UNAUTHENTICATED', 'La contraseña actual no es correcta.');
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: values.newPassword,
+  });
+  if (updateError) {
+    return fail('STATE_ERROR', 'No se pudo actualizar la contraseña. Inténtalo de nuevo.');
+  }
+
+  return ok(true);
+}

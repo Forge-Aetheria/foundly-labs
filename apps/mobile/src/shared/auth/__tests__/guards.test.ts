@@ -1,20 +1,20 @@
 import {
   resolveEntryRedirect,
   shouldRedirectAwayFromLogin,
-  shouldShowTabs,
+  shouldShowDrawer,
+  DRAWER_HOME_ROUTE,
   LOGIN_ROUTE,
-  TABS_ROUTE,
 } from '../guards';
 
 describe('auth guards', () => {
   it('sends anonymous sessions to login', () => {
     expect(resolveEntryRedirect('anonymous')).toBe(LOGIN_ROUTE);
-    expect(shouldShowTabs('anonymous')).toBe(false);
+    expect(shouldShowDrawer('anonymous')).toBe(false);
   });
 
-  it('sends tenant-bound sessions to tabs', () => {
-    expect(resolveEntryRedirect('authenticated')).toBe(TABS_ROUTE);
-    expect(shouldShowTabs('authenticated')).toBe(true);
+  it('sends tenant-bound sessions to the drawer home', () => {
+    expect(resolveEntryRedirect('authenticated')).toBe(DRAWER_HOME_ROUTE);
+    expect(shouldShowDrawer('authenticated')).toBe(true);
   });
 
   it('sends sessions without tenant to login', () => {

@@ -13,5 +13,9 @@ export const supabase = createClient(env.supabaseUrl, env.supabaseAnonKey, {
 
 export async function getAccessToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
+  const token = data.session?.access_token ?? null;
+  if (!token) {
+    console.warn('[foundly-api] Sin access token: la petición a la API no se enviará.');
+  }
+  return token;
 }

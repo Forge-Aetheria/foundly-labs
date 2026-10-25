@@ -16,4 +16,5 @@ export const env = {
   supabaseUrl: required('EXPO_PUBLIC_SUPABASE_URL'),
   supabaseAnonKey: required('EXPO_PUBLIC_SUPABASE_ANON_KEY'),
   easProjectId: optional('EXPO_PUBLIC_EAS_PROJECT_ID'),
+  bookUrl: optional('EXPO_PUBLIC_BOOK_URL')?.replace(/\/+$/, ''),
 } as const;

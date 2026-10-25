@@ -3,6 +3,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createQueryClient } from '@/shared/api/query-client';
 import { SessionProvider, useSession } from '@/shared/auth/session-context';
@@ -32,7 +34,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(drawer)" />
     </Stack>
   );
 }
@@ -41,14 +43,20 @@ export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
 
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <SessionProvider>
-          <StatusBar style="dark" />
-          <PushBridge />
-          <RootNavigator />
-        </SessionProvider>
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <SessionProvider>
+            <StatusBar style="dark" />
+            <PushBridge />
+            <RootNavigator />
+          </SessionProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});

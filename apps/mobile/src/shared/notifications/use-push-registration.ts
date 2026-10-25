@@ -86,7 +86,7 @@ export function usePushRegistration(): void {
     let cleanup = () => undefined as void;
 
     void subscribeNotificationResponses(() => {
-      router.push('/(tabs)/notificaciones');
+      router.push('/notificaciones');
     }).then((unsubscribe) => {
       if (active) cleanup = unsubscribe;
       else unsubscribe();
