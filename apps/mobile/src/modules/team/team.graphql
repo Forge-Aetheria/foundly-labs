@@ -1,0 +1,53 @@
+query TeamSpecialists($tenantId: String) {
+  specialists(tenantId: $tenantId) {
+    id
+    tenantId
+    name
+    role
+    avatar
+    bio
+    active
+    services {
+      id
+      name
+    }
+  }
+}
+
+mutation CreateMySpecialist($input: CreateMySpecialistInput!) {
+  createMySpecialist(input: $input) {
+    id
+    name
+    role
+    bio
+    avatar
+    active
+  }
+}
+
+mutation UpdateMySpecialist($id: ID!, $input: UpdateMySpecialistInput!) {
+  updateMySpecialist(id: $id, input: $input) {
+    id
+    name
+    role
+    bio
+    avatar
+    active
+  }
+}
+
+mutation DeleteMySpecialist($id: ID!) {
+  deleteMySpecialist(id: $id)
+}
+
+mutation AssignServiceToSpecialist($specialistId: String!, $serviceId: String!) {
+  assignServiceToSpecialist(specialistId: $specialistId, serviceId: $serviceId) {
+    id
+  }
+}
+
+mutation UnassignServiceFromSpecialist($specialistId: String!, $serviceId: String!) {
+  unassignServiceFromSpecialist(specialistId: $specialistId, serviceId: $serviceId) {
+    id
+  }
+}

@@ -30,11 +30,7 @@ import {
   type PaymentDetailKey,
   type PaymentMethodDetails,
 } from '../payments';
-import {
-  useDeletePaymentMethod,
-  usePaymentMethods,
-  useUpsertPaymentMethod,
-} from '../hooks';
+import { useDeletePaymentMethod, usePaymentMethods, useUpsertPaymentMethod } from '../hooks';
 import type { PaymentMethod } from '../services';
 
 interface Draft {
@@ -86,12 +82,7 @@ export function PaymentsSettingsTab() {
 
   if (methods.isLoading) return <LoadingState label="Cargando métodos de pago…" />;
   if (methods.isError) {
-    return (
-      <ErrorState
-        message={methods.error.message}
-        onRetry={() => void methods.refetch()}
-      />
-    );
+    return <ErrorState message={methods.error.message} onRetry={() => void methods.refetch()} />;
   }
 
   const items = methods.data ?? [];
@@ -99,6 +90,7 @@ export function PaymentsSettingsTab() {
   const availableTypes = PAYMENT_METHOD_ORDER.filter(
     (type) => !configured.has(type) || editing?.type === type,
   );
+  const busy = upsert.isPending || remove.isPending;
 
   function openCreate() {
     const type = availableTypes[0] ?? PaymentMethodType.PagoMovil;
@@ -118,9 +110,7 @@ export function PaymentsSettingsTab() {
   }
 
   function patchDetail(key: PaymentDetailKey, value: string) {
-    setDraft((prev) =>
-      prev ? { ...prev, details: { ...prev.details, [key]: value } } : prev,
-    );
+    setDraft((prev) => (prev ? { ...prev, details: { ...prev.details, [key]: value } } : prev));
   }
 
   async function save() {
@@ -189,10 +179,13 @@ export function PaymentsSettingsTab() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Nuevo método de pago"
-            accessibilityState={{ disabled: availableTypes.length === 0 }}
-            disabled={availableTypes.length === 0}
+            accessibilityState={{ disabled: availableTypes.length === 0 || busy }}
+            disabled={availableTypes.length === 0 || busy}
             onPress={openCreate}
-            style={[styles.addButton, availableTypes.length === 0 && styles.addButtonDisabled]}
+            style={[
+              styles.addButton,
+              (availableTypes.length === 0 || busy) && styles.addButtonDisabled,
+            ]}
           >
             <Ionicons name="add" size={20} color={colors.surface} />
           </Pressable>
@@ -238,15 +231,24 @@ export function PaymentsSettingsTab() {
                   {summary || 'Sin datos configurados.'}
                 </AppText>
                 <View style={styles.actions}>
-                  <Button label="Editar" variant="secondary" onPress={() => openEdit(method)} />
+                  <Button
+                    label="Editar"
+                    variant="secondary"
+                    disabled={busy}
+                    onPress={() => openEdit(method)}
+                  />
                   <Button
                     label={method.active ? 'Desactivar' : 'Activar'}
                     variant="ghost"
+                    loading={upsert.isPending && upsert.variables?.type === method.type}
+                    disabled={busy}
                     onPress={() => void toggleActive(method)}
                   />
                   <Button
                     label="Eliminar"
                     variant="ghost"
+                    loading={remove.isPending && remove.variables === method.id}
+                    disabled={busy}
                     onPress={() => confirmDelete(method)}
                   />
                 </View>
@@ -255,6 +257,9 @@ export function PaymentsSettingsTab() {
           })
         )}
       </ScrollView>
+      {methods.isFetching ? (
+        <LoadingState variant="overlay" label="Actualizando métodos de pago…" />
+      ) : null}
 
       <Modal
         visible={draft !== null}

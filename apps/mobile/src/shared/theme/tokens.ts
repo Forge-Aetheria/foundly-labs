@@ -2,6 +2,7 @@ export const colors = {
   background: '#FAF8FF',
   surface: '#FFFFFF',
   surfaceMuted: '#F1F5F9',
+  overlay: 'rgba(250, 248, 255, 0.88)',
   border: '#E2E8F0',
   borderStrong: '#CBD5E1',
   primary: '#6C5CE7',

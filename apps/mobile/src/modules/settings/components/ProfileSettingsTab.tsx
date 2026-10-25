@@ -1,13 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  View,
-} from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useSession } from '@/shared/auth/session-context';
 import { AppText } from '@/shared/ui/AppText';
 import { Button } from '@/shared/ui/Button';
@@ -15,7 +8,7 @@ import { TextField } from '@/shared/ui/TextField';
 import { colors, radii, spacing } from '@/shared/theme/tokens';
 import { TENANT_CATEGORIES, TENANT_CATEGORY_LABELS } from '../categories';
 import { useUpdateBusinessProfile } from '../hooks';
-import { pickAndUploadTenantLogo } from '../logo-upload';
+import { pickAndUploadTenantImage } from '@/shared/media/pick-and-upload-image';
 import type { BusinessProfile } from '../services';
 
 interface Draft {
@@ -67,7 +60,7 @@ export function ProfileSettingsTab({ business }: { business: BusinessProfile }) 
     setErrors({});
     setNotice(null);
     setUploading(true);
-    const result = await pickAndUploadTenantLogo(tenantId);
+    const result = await pickAndUploadTenantImage(tenantId, 'logo');
     setUploading(false);
     if (!result.ok) {
       setNotice(result.message);
@@ -136,10 +129,7 @@ export function ProfileSettingsTab({ business }: { business: BusinessProfile }) 
                   onPress={() => patch({ category })}
                   style={[styles.chip, active && styles.chipActive]}
                 >
-                  <AppText
-                    variant="caption"
-                    color={active ? colors.primary : colors.textSecondary}
-                  >
+                  <AppText variant="caption" color={active ? colors.primary : colors.textSecondary}>
                     {TENANT_CATEGORY_LABELS[category]}
                   </AppText>
                 </Pressable>

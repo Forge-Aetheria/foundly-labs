@@ -5,6 +5,8 @@ import { supabase } from '@/shared/auth/supabase';
 const BUCKET = 'tenant-media';
 const MAX_BYTES = 5 * 1024 * 1024;
 
+export type TenantMediaFolder = 'logo' | 'avatar' | 'gallery';
+
 function extensionFor(mimeType: string | null | undefined, uri: string): string {
   if (mimeType?.includes('png')) return 'png';
   if (mimeType?.includes('webp')) return 'webp';
@@ -12,18 +14,19 @@ function extensionFor(mimeType: string | null | undefined, uri: string): string 
   return match?.[1]?.toLowerCase() ?? 'jpg';
 }
 
-export async function pickAndUploadTenantLogo(
+export async function pickAndUploadTenantImage(
   tenantId: string,
+  folder: TenantMediaFolder,
 ): Promise<ActionResult<{ url: string }>> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted) {
-    return fail('VALIDATION_ERROR', 'Necesitamos acceso a tus fotos para cambiar el logo.');
+    return fail('VALIDATION_ERROR', 'Necesitamos acceso a tus fotos para subir la imagen.');
   }
 
   const picked = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     allowsEditing: true,
-    aspect: [1, 1],
+    aspect: folder === 'avatar' || folder === 'logo' ? [1, 1] : undefined,
     quality: 0.85,
   });
   if (picked.canceled || !picked.assets[0]) {
@@ -42,7 +45,7 @@ export async function pickAndUploadTenantLogo(
   }
 
   const extension = extensionFor(asset.mimeType, asset.uri);
-  const path = `${tenantId}/logo/${Date.now()}.${extension}`;
+  const path = `${tenantId}/${folder}/${Date.now()}.${extension}`;
   const contentType = asset.mimeType ?? `image/${extension === 'jpg' ? 'jpeg' : extension}`;
 
   const { error } = await supabase.storage.from(BUCKET).upload(path, body, {

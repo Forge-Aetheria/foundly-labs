@@ -1,0 +1,48 @@
+query MyServices($active: Boolean) {
+  myServices(active: $active) {
+    id
+    name
+    description
+    priceCents
+    durationMinutes
+    category
+    active
+    requiresAdvance
+    advanceKind
+    advanceValue
+  }
+}
+
+mutation CreateMyService($input: CreateMyServiceInput!) {
+  createMyService(input: $input) {
+    id
+    name
+    description
+    priceCents
+    durationMinutes
+    category
+    active
+    requiresAdvance
+    advanceKind
+    advanceValue
+  }
+}
+
+mutation UpdateMyService($id: ID!, $input: UpdateMyServiceInput!) {
+  updateMyService(id: $id, input: $input) {
+    id
+    name
+    description
+    priceCents
+    durationMinutes
+    category
+    active
+    requiresAdvance
+    advanceKind
+    advanceValue
+  }
+}
+
+mutation DeleteMyService($id: ID!) {
+  deleteMyService(id: $id)
+}

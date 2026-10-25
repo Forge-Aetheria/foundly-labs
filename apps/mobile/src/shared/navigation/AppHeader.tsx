@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   row: {
-    height: 68,
+    height: 88,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
@@ -81,12 +81,12 @@ const styles = StyleSheet.create({
     borderRadius: 22,
   },
   brandButton: {
-    minWidth: 168,
-    minHeight: 48,
+    minWidth: 120,
+    minHeight: 64,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brand: { width: 168, height: 56 },
+  brand: { width: 120, height: 72 },
   action: {
     width: 44,
     height: 44,

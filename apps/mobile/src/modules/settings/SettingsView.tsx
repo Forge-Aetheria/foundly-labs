@@ -49,6 +49,9 @@ export function SettingsView() {
           {tab === 'pagos' ? <PaymentsSettingsTab /> : null}
           {tab === 'seguridad' ? <SecuritySettingsTab /> : null}
         </View>
+        {business.isFetching ? (
+          <LoadingState variant="overlay" label="Actualizando configuración…" />
+        ) : null}
       </View>
     </Screen>
   );
