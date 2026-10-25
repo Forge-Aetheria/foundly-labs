@@ -1,12 +1,6 @@
-'use client';
+import { AboutView } from '../../../modules/about/AboutView';
 
-import { PlaceholderPanel } from '../../../shared/components/PlaceholderPanel';
-
+/** About Foundly route (authenticated `/admin/acerca`). */
 export default function AcercaPage() {
-  return (
-    <PlaceholderPanel
-      title="Acerca de Foundly"
-      description="Información de la aplicación, versión del ecosistema y licenciamiento de Foundly Pass."
-    />
-  );
+  return <AboutView />;
 }

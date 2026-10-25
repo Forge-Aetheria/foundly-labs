@@ -1,3 +1,5 @@
+jest.mock('expo-router', () => ({ useFocusEffect: jest.fn() }));
+
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { NotificationsView } from '../NotificationsView';
 import { useMarkNotificationRead, useNotifications } from '../hooks';

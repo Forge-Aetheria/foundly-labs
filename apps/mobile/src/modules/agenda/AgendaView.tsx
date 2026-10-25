@@ -3,10 +3,10 @@ import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { LoadingState } from '@/shared/ui/LoadingState';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { Screen } from '@/shared/ui/Screen';
 import { colors, spacing } from '@/shared/theme/tokens';
 import { AppointmentCard } from './components/AppointmentCard';
-import { AgendaSkeleton } from './components/AgendaSkeleton';
 import { EmptyAgenda } from './components/EmptyAgenda';
 import { formatAppointmentDate, getAgendaRange } from './date-range';
 import { useAgenda } from './hooks';
@@ -18,14 +18,12 @@ export function AgendaView() {
   );
   const { data, error, isLoading, isFetching, refetch, isRefetching, isError } = useAgenda(range);
   const today = formatAppointmentDate(new Date().toISOString());
+  useRefetchOnFocus(refetch);
 
   if (isLoading) {
     return (
       <Screen>
-        <View style={styles.content}>
-          <AppText variant="title">Agenda</AppText>
-          <AgendaSkeleton />
-        </View>
+        <LoadingState label="Cargando agenda…" />
       </Screen>
     );
   }
@@ -75,7 +73,6 @@ export function AgendaView() {
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, gap: spacing.lg },
   listContainer: { flex: 1 },
   list: { gap: spacing.md, paddingVertical: spacing.lg },
   header: { gap: spacing.xs, paddingBottom: spacing.sm },

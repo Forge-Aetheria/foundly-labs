@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
 import { Button } from '@/shared/ui/Button';
@@ -7,6 +7,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { LoadingState } from '@/shared/ui/LoadingState';
 import { Screen } from '@/shared/ui/Screen';
 import { colors, radii, spacing } from '@/shared/theme/tokens';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { defaultDays, daysFromRules, validateDays, type DayDraft } from './availability-utils';
 import { useAvailability, useRemoveTimeBlock, useSaveAvailability, useTimeBlocks } from './hooks';
 import { TimeBlockCard } from './components/TimeBlockCard';
@@ -23,6 +24,11 @@ export function AvailabilityView() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [blockFormOpen, setBlockFormOpen] = useState(false);
+  const refetchAll = useCallback(() => {
+    void availability.refetch();
+    void blocks.refetch();
+  }, [availability.refetch, blocks.refetch]);
+  useRefetchOnFocus(refetchAll);
 
   useEffect(() => {
     if (availability.data && !dirty) {

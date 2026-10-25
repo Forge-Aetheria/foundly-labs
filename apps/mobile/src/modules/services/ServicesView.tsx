@@ -9,6 +9,7 @@ import { LoadingState } from '@/shared/ui/LoadingState';
 import { Screen } from '@/shared/ui/Screen';
 import { TextField } from '@/shared/ui/TextField';
 import { colors, radii, spacing } from '@/shared/theme/tokens';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { useDeleteService, useServices } from './hooks';
 import { advanceLabel, formatPrice } from './service-form';
 import type { Service } from './services';
@@ -20,6 +21,7 @@ export function ServicesView() {
   const [query, setQuery] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
+  useRefetchOnFocus(services.refetch);
 
   const visible = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('es');

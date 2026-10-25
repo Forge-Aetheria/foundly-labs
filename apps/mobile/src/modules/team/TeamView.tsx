@@ -20,6 +20,7 @@ import { SessionAvatar } from '@/shared/ui/SessionAvatar';
 import { TextField } from '@/shared/ui/TextField';
 import { colors, radii, spacing } from '@/shared/theme/tokens';
 import { initialsFrom } from '@/shared/navigation/session-identity';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { useDeleteTeamMember, useTeam, useUpdateTeamMember } from './hooks';
 import type { TeamMember } from './services';
 import { TeamMemberFormModal } from './components/TeamMemberFormModal';
@@ -32,6 +33,7 @@ export function TeamView() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<TeamMember | null>(null);
   const actionError = remove.error?.message ?? update.error?.message ?? null;
+  useRefetchOnFocus(team.refetch);
 
   const visible = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase('es');

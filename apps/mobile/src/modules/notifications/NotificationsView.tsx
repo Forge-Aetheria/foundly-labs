@@ -2,6 +2,7 @@ import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { AppText } from '@/shared/ui/AppText';
 import { ErrorState } from '@/shared/ui/ErrorState';
 import { LoadingState } from '@/shared/ui/LoadingState';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { Screen } from '@/shared/ui/Screen';
 import { colors, spacing } from '@/shared/theme/tokens';
 import { NotificationRow } from './components/NotificationRow';
@@ -11,6 +12,7 @@ import { useMarkNotificationRead, useNotifications } from './hooks';
 export function NotificationsView() {
   const { data, error, isLoading, isFetching, isError, refetch, isRefetching } = useNotifications();
   const markRead = useMarkNotificationRead();
+  useRefetchOnFocus(refetch);
 
   if (isLoading) {
     return (

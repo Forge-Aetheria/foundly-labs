@@ -7,6 +7,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { LoadingState } from '@/shared/ui/LoadingState';
 import { Screen } from '@/shared/ui/Screen';
 import { colors, radii, spacing } from '@/shared/theme/tokens';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { ReviewCard } from './components/ReviewCard';
 import { useDeleteReview, useReviews, useSetReviewState } from './hooks';
 import { REVIEW_FILTERS, filterReviews, type Review, type ReviewFilter } from './review-utils';
@@ -16,6 +17,7 @@ export function ReviewsView() {
   const setState = useSetReviewState();
   const remove = useDeleteReview();
   const [filter, setFilter] = useState<ReviewFilter>('all');
+  useRefetchOnFocus(reviews.refetch);
 
   const visible = useMemo(() => filterReviews(reviews.data ?? [], filter), [filter, reviews.data]);
 

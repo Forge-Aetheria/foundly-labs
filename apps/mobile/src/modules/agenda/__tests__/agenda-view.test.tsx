@@ -1,3 +1,5 @@
+jest.mock('expo-router', () => ({ useFocusEffect: jest.fn() }));
+
 import { render, screen } from '@testing-library/react-native';
 import { AgendaView } from '../AgendaView';
 import { useAgenda } from '../hooks';

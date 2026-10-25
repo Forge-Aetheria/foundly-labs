@@ -7,6 +7,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { LoadingState } from '@/shared/ui/LoadingState';
 import { Screen } from '@/shared/ui/Screen';
 import { colors, spacing } from '@/shared/theme/tokens';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { useGallery, useRemoveGalleryItem } from './hooks';
 import type { GalleryPhoto } from './services';
 import { GalleryPhotoCard } from './components/GalleryPhotoCard';
@@ -16,6 +17,7 @@ export function GalleryView() {
   const gallery = useGallery();
   const remove = useRemoveGalleryItem();
   const [formOpen, setFormOpen] = useState(false);
+  useRefetchOnFocus(gallery.refetch);
 
   if (gallery.isLoading) {
     return (

@@ -5,6 +5,7 @@ import { ErrorState } from '@/shared/ui/ErrorState';
 import { LoadingState } from '@/shared/ui/LoadingState';
 import { Screen } from '@/shared/ui/Screen';
 import { colors, spacing } from '@/shared/theme/tokens';
+import { useRefetchOnFocus } from '@/shared/hooks/use-refetch-on-focus';
 import { ConfigurationTabs, type ConfigurationTab } from './components/ConfigurationTabs';
 import { PaymentsSettingsTab } from './components/PaymentsSettingsTab';
 import { ProfileSettingsTab } from './components/ProfileSettingsTab';
@@ -14,6 +15,7 @@ import { useMyBusiness } from './hooks';
 export function SettingsView() {
   const business = useMyBusiness();
   const [tab, setTab] = useState<ConfigurationTab>('perfil');
+  useRefetchOnFocus(business.refetch);
 
   if (business.isLoading) {
     return (

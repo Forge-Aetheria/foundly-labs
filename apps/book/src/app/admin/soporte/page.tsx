@@ -1,12 +1,6 @@
-'use client';
+import { SupportView } from '../../../modules/support/SupportView';
 
-import { PlaceholderPanel } from '../../../shared/components/PlaceholderPanel';
-
+/** Help & support route (authenticated `/admin/soporte`). */
 export default function SoportePage() {
-  return (
-    <PlaceholderPanel
-      title="Ayuda y soporte"
-      description="Guías, preguntas frecuentes y contacto con el equipo de Foundly."
-    />
-  );
+  return <SupportView />;
 }
