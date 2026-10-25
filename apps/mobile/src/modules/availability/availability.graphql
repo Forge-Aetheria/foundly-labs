@@ -1,0 +1,74 @@
+query Availability($tenantId: String, $tenantSlug: String, $specialistId: String) {
+  availability(tenantId: $tenantId, tenantSlug: $tenantSlug, specialistId: $specialistId) {
+    id
+    tenantId
+    specialistId
+    weekday
+    startTime
+    endTime
+    slotGranularityMinutes
+    minLeadTimeMinutes
+    bookingHorizonDays
+    breaks
+  }
+}
+
+mutation CreateAvailability($input: CreateAvailabilityInput!) {
+  createAvailability(input: $input) {
+    id
+    tenantId
+    specialistId
+    weekday
+    startTime
+    endTime
+    slotGranularityMinutes
+    minLeadTimeMinutes
+    bookingHorizonDays
+    breaks
+  }
+}
+
+mutation UpdateAvailability($id: String!, $input: UpdateAvailabilityInput!) {
+  updateAvailability(id: $id, input: $input) {
+    id
+    tenantId
+    specialistId
+    weekday
+    startTime
+    endTime
+    slotGranularityMinutes
+    minLeadTimeMinutes
+    bookingHorizonDays
+    breaks
+  }
+}
+
+mutation RemoveAvailability($id: String!) {
+  removeAvailability(id: $id)
+}
+
+query TimeBlocks($tenantId: ID, $tenantSlug: String, $specialistId: ID) {
+  timeBlocks(tenantId: $tenantId, tenantSlug: $tenantSlug, specialistId: $specialistId) {
+    id
+    tenantId
+    specialistId
+    startAt
+    endAt
+    reason
+  }
+}
+
+mutation AddTimeBlock($input: AddTimeBlockInput!) {
+  addTimeBlock(input: $input) {
+    id
+    tenantId
+    specialistId
+    startAt
+    endAt
+    reason
+  }
+}
+
+mutation RemoveTimeBlock($id: ID!) {
+  removeTimeBlock(id: $id)
+}
