@@ -1,10 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Container, Stack, Typography } from '@foundly/ui';
+import Box from '@mui/material/Box';
+import { Container, Stack } from '@foundly/ui';
 import { BusinessCardGrid } from './components/BusinessCardGrid';
 import { DirectoryError, DirectorySkeleton } from './components/DirectoryStates';
 import { ALL_CATEGORIES, DirectoryFilters } from './components/DirectoryFilters';
+import { DirectoryHero } from './components/DirectoryHero';
 import { TENANT_CATEGORIES, TENANT_CATEGORY_LABELS } from '@foundly/database/categories';
 import type { DirectoryBusiness } from './utils/types';
 
@@ -59,42 +61,44 @@ export function DirectoryView({ query, businesses, error, loading = false }: Dir
   const hasFilters = normalizedTerm.length > 0 || category !== ALL_CATEGORIES;
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-      <Stack spacing={3.5}>
-        <Stack spacing={1} sx={{ maxWidth: 680 }}>
-          <Typography variant="h3" component="h1">
-            Negocios
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Descubre negocios, compara servicios y reserva tu cita en segundos.
-          </Typography>
-        </Stack>
-
-        <DirectoryFilters
-          term={term}
-          onTermChange={setTerm}
-          categories={categories}
-          selectedCategory={category}
-          onSelectCategory={setCategory}
-          resultCount={filtered.length}
-        />
-
-        {error ? (
-          <DirectoryError />
-        ) : loading ? (
-          <DirectorySkeleton />
-        ) : (
-          <BusinessCardGrid
-            businesses={filtered}
-            query={term}
-            hasFilters={hasFilters}
-            onClearFilters={() => {
-              setTerm('');
-              setCategory(ALL_CATEGORIES);
-            }}
+    <Box sx={{ position: 'relative', isolation: 'isolate' }}>
+      <DirectoryHero />
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: 'relative',
+          zIndex: 10,
+          mt: { xs: -5, md: -7 },
+          pb: { xs: 4, md: 6 },
+        }}
+      >
+        <Stack spacing={3.5}>
+          <DirectoryFilters
+            term={term}
+            onTermChange={setTerm}
+            categories={categories}
+            selectedCategory={category}
+            onSelectCategory={setCategory}
+            resultCount={filtered.length}
           />
-        )}
-      </Stack>
-    </Container>
+
+          {error ? (
+            <DirectoryError />
+          ) : loading ? (
+            <DirectorySkeleton />
+          ) : (
+            <BusinessCardGrid
+              businesses={filtered}
+              query={term}
+              hasFilters={hasFilters}
+              onClearFilters={() => {
+                setTerm('');
+                setCategory(ALL_CATEGORIES);
+              }}
+            />
+          )}
+        </Stack>
+      </Container>
+    </Box>
   );
 }

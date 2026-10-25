@@ -4,7 +4,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import InputAdornment from '@mui/material/InputAdornment';
 import MuiTextField from '@mui/material/TextField';
 import { Card, Chip, Stack, Typography } from '@foundly/ui';
-import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
 
 export const ALL_CATEGORIES = 'Todos';
 
@@ -31,7 +30,7 @@ export function DirectoryFilters({
   resultCount,
 }: DirectoryFiltersProps) {
   return (
-    <Card sx={GLASS_CARD_SX}>
+    <Card elevated sx={{ bgcolor: '#ffffff' }}>
       <Stack spacing={2.5}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
