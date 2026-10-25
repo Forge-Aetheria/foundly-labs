@@ -1,18 +1,16 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 5.1.0 -> 5.2.0
-Bump rationale: Enmienda 5.2.0 (MINOR): adición material de un principio no negociable. Se
-  incorpora el Principio 5.VI "Capa de Datos por Módulo y Hooks de Cliente" (`apps/book`/`apps/store`):
-  estructura canónica por módulo (`actions.ts`/`hooks.ts`/`components/`), nomenclatura
-  `use<Acción><Entidad|Módulo>`, tipado exclusivo vía `graphql-codegen` (`generated.ts`) y prohibición
-  de llamadas a datos (`useQuery`/`useMutation`/`apiRequest`/Server Actions) en la UI. Declara
-  `shared/infra` deprecada y en disolución. Este documento es un ESPEJO de la constitución canónica de
-  la raíz (`constitution.md` v5.2.0) y debe mantenerse sincronizado con ella.
+Version change: 5.2.0 -> 5.3.0
+Bump rationale: Enmienda 5.3.0 (MINOR): adición material de un principio no negociable. Se
+  incorpora el Principio 5.VII "Reutilización Obligatoria de Componentes y Lógica", que exige buscar y
+  reutilizar o extender artefactos existentes antes de crear componentes, hooks, funciones, tipos,
+  constantes o archivos nuevos, y prohíbe la duplicación entre apps. Este documento es un ESPEJO de la
+  constitución canónica de la raíz (`constitution.md` v5.3.0) y debe mantenerse sincronizado con ella.
 
 Modified principles: N/A
 Renamed principles: N/A
-Added sections: 5.VI Capa de Datos por Módulo y Hooks de Cliente
+Added sections: 5.VII Reutilización Obligatoria de Componentes y Lógica
 Removed sections: N/A
 
 Deferred TODOs:
@@ -22,7 +20,7 @@ Deferred TODOs:
 
 # Foundly Labs — Constitución de Desarrollo
 
-**Versión:** 5.2.0
+**Versión:** 5.3.0
 **Estado:** Binding
 **Ámbito:** Monorepo del ecosistema Foundly Labs (landing, book, store)
 **Stack Base:** Astro 5 (SSG, Server-First Islands) · Next.js / React 19 (SaaS) · Tailwind CSS v4 · TypeScript estricto
@@ -250,6 +248,16 @@ src/modules/<modulo>/
 - **Coherencia con Server-First (§5.II)**: las lecturas de render se resuelven en Server Components a través de `actions.ts`; `hooks.ts` existe para la interacción real de cliente (formularios, tablas, modales), nunca para reemplazar el render en servidor.
 - **`shared/infra` deprecada y en disolución**: no puede alojar lógica de dominio ni acciones de servidor. Todo archivo de acciones/fetch de un dominio DEBE residir en el `actions.ts` de su módulo. Su contenido transversal se reubica en carpetas de propósito claro (`shared/api/`, `shared/types/`, `shared/auth/`) y `shared/infra/` DEBE eliminarse. Plan de migración: `specs/book/011-module-data-layer/`.
 
+### VII. Reutilización Obligatoria de Componentes y Lógica
+
+Antes de crear cualquier componente, hook, función, tipo, constante o archivo, se DEBE buscar una implementación existente en `packages/ui`, en `src/shared/` y en el módulo de dominio correspondiente.
+
+- **Reutilizar primero**: si existe un artefacto que cubre el caso, DEBE reutilizarse o extenderse mediante props/variantes. Crear un duplicado está prohibido.
+- **Creación justificada**: solo se permite un artefacto nuevo cuando no exista uno reutilizable; la justificación DEBE quedar en el PR o commit.
+- **Componentes canónicos**: los elementos visuales compartidos (avatares, badges, botones, cards, iconos, inputs) viven en un único componente canónico y se adaptan por variantes, no por copias.
+- **Promoción, no duplicación**: la lógica o UI repetida entre apps se promueve a `packages/ui` o `src/shared/`; nunca se copia de una app a otra.
+- **Alcance**: aplica a todo el monorepo y a cualquier iteración de implementación.
+
 ## 6. Guía de Diseño, Estética & Sistema de Tokens (Clean Light UI)
 
 La interfaz hereda la línea de diseño limpia, clara y de alto contraste de Foundly POS, proyectando una marca unificada (Lavender-to-White Body) en todas las apps.
@@ -371,7 +379,7 @@ Estas rutas son las canónicas; cualquier documento que use otras rutas debe cor
 
 Foundly Labs Constitution — "Local-First, Agile Commerce, Zero Compromise."
 
-**Version**: 5.2.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-12
+**Version**: 5.3.0 | **Ratified**: 2026-10-05 | **Last Amended**: 2026-10-24
 
-*Enmienda 2026-10-12 (MINOR 5.1.0 → 5.2.0): Principio 5.VI "Capa de Datos por Módulo y Hooks de
-Cliente" y disolución de `shared/infra`. Plan de migración en `specs/book/011-module-data-layer/`.*
+*Enmienda 2026-10-24 (MINOR 5.2.0 → 5.3.0): Principio 5.VII "Reutilización Obligatoria de Componentes
+y Lógica".*
