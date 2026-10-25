@@ -11,6 +11,7 @@ export default defineConfig({
   site: 'https://foundlylabs.com',
   integrations: [react(), sitemap()],
   vite: {
+    // @ts-expect-error -- @tailwindcss/vite resolves a different Vite build than Astro in this monorepo.
     plugins: [tailwindcss()],
     resolve: {
       alias: {

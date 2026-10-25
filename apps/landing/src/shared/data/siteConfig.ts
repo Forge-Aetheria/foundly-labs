@@ -3,9 +3,9 @@ import type { SiteConfig } from '@/shared/types';
 
 export const siteConfig: SiteConfig = {
   name: 'Foundly Labs',
-  defaultTitle: 'Foundly Labs | Ecosistema Software Local-First & Comercio Ágil',
+  defaultTitle: 'Foundly Labs | Comercio Ágil, Gestión Total, Cero Fricción',
   description:
-    'Ecosistema de aplicaciones local-first para finanzas personales, comercio POS, sincronización karaoke y trading engine. Desarrollado por FORGE Labs.',
+    'El ecosistema Foundly Labs: herramientas rápidas, robustas y diseñadas bajo tu control para potenciar tus finanzas, comercio, reservas y estilo de vida.',
   url: 'https://foundlylabs.com',
   defaultImage: logo.src,
   parentOrganization: {

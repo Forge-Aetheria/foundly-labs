@@ -17,18 +17,6 @@ import { siteConfig } from '@/shared/data/siteConfig';
         <Image src={logo} alt="Foundly Labs" class="h-8 w-auto" />
       </a>
       <p class="text-secondary mt-4 max-w-xs text-sm">{footerBrand.copy}</p>
-      <p class="text-muted mt-4 text-sm">
-        {footerBrand.attributionPrefix}{' '}
-        <a
-          href={siteConfig.parentOrganization.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-accent-primary hover:text-accent-primary/80 underline-offset-2 hover:underline"
-        >
-          {footerBrand.attributionLinkLabel}
-        </a>
-        .
-      </p>
     </div>
 
     {footerColumns.map((column) => (

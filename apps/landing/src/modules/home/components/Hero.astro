@@ -1,16 +1,14 @@
 ---
 import { Image } from 'astro:assets';
 import iconFl from '@/assets/icon-fl.png';
-import Badge from '@/shared/components/ui/Badge.astro';
 import Button from '@/shared/components/ui/Button.astro';
 
 interface Props {
   title: string;
   description: string;
-  badge?: string;
 }
 
-const { title, description, badge = 'Local-First' } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <section class="relative mx-auto max-w-4xl overflow-hidden px-6 py-24 text-center">
@@ -24,15 +22,14 @@ const { title, description, badge = 'Local-First' } = Astro.props;
   </div>
 
   <div class="relative z-10">
-    <Badge label={badge} />
-    <h1 class="text-primary mt-6 text-4xl font-bold tracking-tight sm:text-6xl">{title}</h1>
+    <h1 class="text-primary text-4xl font-bold tracking-tight sm:text-6xl">{title}</h1>
     <p class="text-secondary mx-auto mt-6 max-w-2xl text-lg">{description}</p>
     <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
       <Button href="#apps" variant="primary">
         Explorar Ecosistema
       </Button>
       <Button href="#manifesto" variant="secondary">
-        ¿Por qué Local-First?
+        ¿Por qué Foundly?
       </Button>
     </div>
   </div>

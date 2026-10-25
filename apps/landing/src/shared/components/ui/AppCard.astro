@@ -11,7 +11,6 @@ type StatusTone = 'positive' | 'warning' | 'active';
 const { app } = Astro.props;
 
 const imageSrc = app.icon || app.logo;
-const toggleId = `expand-${app.id}`;
 
 const resolveStatusTone = (status: string): StatusTone => {
   const value = status.toLowerCase();
@@ -27,27 +26,11 @@ const statusToneClass: Record<StatusTone, string> = {
   warning: 'bg-status-warning-bg text-status-warning-text',
   active: 'bg-status-active-bg text-status-active-text',
 };
-
-const floatingClasses = [
-  'group-hover:absolute group-hover:inset-x-0 group-hover:top-0 group-hover:z-30 group-hover:-translate-y-1',
-  'group-hover:border-border-lavender group-hover:shadow-2xl group-hover:shadow-accent-primary/20',
-  'group-has-[:checked]:absolute group-has-[:checked]:inset-x-0 group-has-[:checked]:top-0 group-has-[:checked]:z-30 group-has-[:checked]:-translate-y-1',
-  'group-has-[:checked]:border-border-lavender group-has-[:checked]:shadow-2xl group-has-[:checked]:shadow-accent-primary/20',
-].join(' ');
 ---
 
-<div class="group relative min-h-[380px] hover:z-30 has-[:checked]:z-30">
-  <article
-    class={`bg-card-light/60 border-border-subtle shadow-card has-[:focus-visible]:ring-accent-primary relative w-full min-h-[380px] rounded-2xl border p-6 backdrop-blur-md transition-all duration-300 ease-in-out has-[:focus-visible]:ring-2 ${floatingClasses}`}
-  >
-    <input
-      id={toggleId}
-      type="checkbox"
-      class="peer sr-only"
-      aria-label={`Mostrar más sobre ${app.name}`}
-    />
-
-    <header class="relative z-10 flex items-start gap-3">
+<div class="h-full min-h-[400px]">
+  <article class="bg-card-light/60 border-border-subtle shadow-card flex h-full min-h-[400px] flex-col rounded-2xl border p-6 backdrop-blur-md">
+    <header class="flex items-start gap-3">
       <span class="bg-surface-elevated border-border-subtle shadow-sm flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border">
         <img
           src={imageSrc}
@@ -61,25 +44,13 @@ const floatingClasses = [
       </span>
       <div class="min-w-0 flex-1">
         <h3 class="text-primary truncate text-xl font-bold">{app.name}</h3>
-        <div class="mt-1.5 flex items-center justify-between gap-2">
+        <div class="mt-1.5">
           <Badge label={app.category} />
-          <svg
-            class="text-muted h-4 w-4 shrink-0 transition-transform duration-300 group-hover:rotate-180 group-has-[:checked]:rotate-180"
-            viewBox="0 0 20 20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M5 8l5 5 5-5"></path>
-          </svg>
         </div>
       </div>
     </header>
 
-    <div class="relative mt-4 max-h-32 overflow-hidden transition-all duration-500 ease-in-out group-hover:max-h-96 peer-checked:max-h-96">
+    <div class="mt-4 flex-1">
       <p class="text-primary text-base font-semibold leading-snug">{app.headline}</p>
 
       <p class="text-secondary mt-2 text-sm leading-relaxed">{app.description}</p>
@@ -88,14 +59,9 @@ const floatingClasses = [
         <span aria-hidden="true">▸</span>
         <p class="min-w-0">{app.keyFeature}</p>
       </div>
-
-      <span
-        class="from-card-light pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t to-transparent opacity-100 transition-opacity duration-300 group-hover:opacity-0 peer-checked:opacity-0"
-        aria-hidden="true"
-      ></span>
     </div>
 
-    <dl class="text-secondary border-border-subtle relative z-10 mt-auto space-y-2 border-t pt-4 text-sm">
+    <dl class="text-secondary border-border-subtle mt-4 space-y-2 border-t pt-4 text-sm">
       <div class="flex items-center justify-between gap-2">
         <dt class="font-semibold">Estado</dt>
         <dd>
@@ -111,7 +77,5 @@ const floatingClasses = [
         <dd class="text-right break-words">{app.target}</dd>
       </div>
     </dl>
-
-    <label for={toggleId} class="absolute inset-0 z-20 cursor-pointer" aria-hidden="true"></label>
   </article>
 </div>

@@ -11,12 +11,12 @@ const socialAria: Record<string, string> = {
 };
 
 const ecosystemLinks: FooterLink[] = apps.map((app) => ({
-  label: app.name === 'Foundly' ? 'Foundly Mobile' : app.name,
+  label: app.name,
   href: '/#apps',
 }));
 
 const resourceLinks: FooterLink[] = [
-  { label: 'Local-First Manifesto', href: '/#manifesto' },
+  { label: '¿Por qué Foundly?', href: '/#manifesto' },
   {
     label: 'Documentación',
     href: 'https://github.com/Ragomez33/foundly-labs',
@@ -40,9 +40,7 @@ export const footerColumns: FooterColumn[] = [
 ];
 
 export const footerBrand = {
-  copy: 'Ecosistema de aplicaciones local-first diseñadas para finanzas, comercio y creación sin dependencia de la nube.',
-  attributionPrefix: 'Un producto desarrollado e impulsado por',
-  attributionLinkLabel: 'FORGE Labs',
+  copy: 'Ecosistema de aplicaciones rápidas y robustas para potenciar tus finanzas, comercio, reservas y estilo de vida.',
 };
 
 export const footerCopyright = '© 2026 Foundly Labs. Todos los derechos reservados.';

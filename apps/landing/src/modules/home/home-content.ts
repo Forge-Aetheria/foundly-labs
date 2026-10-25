@@ -1,12 +1,10 @@
 export interface HomeHeroContent {
   title: string;
   description: string;
-  badge: string;
 }
 
 export const homeHero: HomeHeroContent = {
-  title: 'Local-First, Agile Commerce, Zero Compromise.',
+  title: 'Comercio Ágil, Gestión Total, Cero Fricción.',
   description:
-    'El ecosistema Foundly Labs: productos ágiles y local-first para comercio, finanzas y creación.',
-  badge: 'Local-First',
+    'El ecosistema Foundly Labs: herramientas rápidas, robustas y diseñadas bajo tu control para potenciar tus finanzas, comercio, reservas y estilo de vida.',
 };
