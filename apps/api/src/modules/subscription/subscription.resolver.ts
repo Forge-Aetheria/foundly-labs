@@ -1,5 +1,6 @@
 import { Query, Resolver } from '@nestjs/graphql';
 import { AuthUser as AuthUserDecorator, RequireAuth } from '../auth/jwt.decorators';
+import { AllowInactiveTenant } from '../auth/tenant-status.decorators';
 import type { AuthUser } from '../auth/jwt.types';
 import { SubscriptionService } from './subscription.service';
 import { SubscriptionSummaryObject } from './subscription.types';
@@ -11,6 +12,7 @@ export class SubscriptionResolver {
   /** Authenticated: the caller business's effective plan, status, expiry and usage. */
   @Query(() => SubscriptionSummaryObject)
   @RequireAuth()
+  @AllowInactiveTenant()
   mySubscription(@AuthUserDecorator() user: AuthUser): Promise<SubscriptionSummaryObject> {
     return this.service.getSummary(user);
   }

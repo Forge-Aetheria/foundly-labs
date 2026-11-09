@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { GraphQLContext } from '../../graphql/context';
-import { unauthError } from './auth.guards';
+import { unauthError } from './auth.errors';
 import { SupabaseJwtService } from './jwt.service';
 
 interface RequestLike {

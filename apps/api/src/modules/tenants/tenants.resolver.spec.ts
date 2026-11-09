@@ -231,4 +231,13 @@ describe('TenantsResolver (GraphQL e2e, 003-db-first-graphql-core)', () => {
       extensions: { code: 'UNAUTHENTICATED' },
     });
   });
+
+  it('denies the workspace for a non-active business', async () => {
+    const service = new TenantsService({ client: fakeClient } as unknown as PrismaService);
+    seededTenant.status = 'suspended';
+
+    await expect(service.findForOwner({ tenantId: 't1' })).rejects.toMatchObject({
+      extensions: { code: 'FORBIDDEN' },
+    });
+  });
 });

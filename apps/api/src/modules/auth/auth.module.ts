@@ -1,28 +1,24 @@
 import { Global, Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { GqlAuthGuard, PlanGuard } from './auth.guards';
-import { AuthResolver } from './auth.resolver';
 import { JwtResolver } from './jwt.resolver';
 import { SupabaseJwtGuard } from './jwt.guard';
 import { createProductionJwks, JWT_JWKS, SupabaseJwtService } from './jwt.service';
+import { TenantStatusCache } from './tenant-status.cache';
+import { TenantStatusGuard } from './tenant-status.guard';
 
 @Global()
 @Module({
   providers: [
-    AuthService,
-    GqlAuthGuard,
-    PlanGuard,
-    AuthResolver,
     SupabaseJwtGuard,
+    TenantStatusGuard,
+    TenantStatusCache,
     JwtResolver,
     { provide: JWT_JWKS, useFactory: createProductionJwks },
     SupabaseJwtService,
   ],
   exports: [
-    AuthService,
-    GqlAuthGuard,
-    PlanGuard,
     SupabaseJwtGuard,
+    TenantStatusGuard,
+    TenantStatusCache,
     JWT_JWKS,
     SupabaseJwtService,
   ],

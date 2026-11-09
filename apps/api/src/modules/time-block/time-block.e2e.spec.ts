@@ -44,7 +44,10 @@ describe('TimeBlock e2e (014-availability-time-blocks)', () => {
       .useValue(makeLocalJwks(publicJwk))
       .overrideProvider(PrismaService)
       .useValue({
-        client: { $queryRaw: () => Promise.resolve([{ '?column?': 1 }]) },
+        client: {
+          $queryRaw: () => Promise.resolve([{ '?column?': 1 }]),
+          tenant: { findUnique: async () => ({ status: 'active' }) },
+        },
       } as unknown as PrismaService)
       .compile();
     app = moduleRef.createNestApplication();

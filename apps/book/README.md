@@ -1,10 +1,10 @@
 # apps/book — Foundly Book
 
-Aplicación SaaS de **gestión de agendas, servicios, profesionales y citas** (Next.js / React 19).
+Aplicación SaaS de **gestión de agendas, servicios, profesionales y citas** (React 19 + Vite, SPA cliente puro).
 
 ## Rutas
 
-La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`); en local las rutas son las internas:
+La app es una SPA con fallback de rutas y se expone bajo el prefijo público `/book` (rewrite de `vercel.json`); en local las rutas son las internas:
 
 | Público            | Interna         | Superficie                                                        |
 | ------------------ | --------------- | ----------------------------------------------------------------- |
@@ -46,28 +46,28 @@ La app se expone bajo el prefijo público `/book` (multi-zone de `vercel.json`);
 
 ## Comandos
 
-| Comando                            | Descripción                    |
-| ---------------------------------- | ------------------------------ |
-| `npm run dev -w @foundly/book`     | Dev server (puerto 3001)       |
-| `npm run build -w @foundly/book`   | Build de producción            |
-| `npm run typecheck -w @foundly/book` | `tsc --noEmit`               |
-| `npm run test -w @foundly/book`    | Vitest + RTL + vitest-axe      |
-| `npm run codegen -w @foundly/book` | Regenerar el cliente GraphQL   |
-| `npm run lint`                     | ESLint (raíz)                  |
+| Comando                                | Descripción                    |
+| -------------------------------------- | ------------------------------ |
+| `pnpm --filter @foundly/book dev`      | Dev server Vite (puerto 3001)  |
+| `pnpm --filter @foundly/book build`    | Build de producción            |
+| `pnpm --filter @foundly/book typecheck`| `tsc --noEmit`                 |
+| `pnpm --filter @foundly/book test`     | Vitest + RTL + vitest-axe      |
+| `pnpm --filter @foundly/book codegen`  | Regenerar el cliente GraphQL   |
+| `pnpm lint`                            | ESLint (raíz)                  |
 
-## Conexión con la API (feature `008-api-integration-catalog-sync`)
+## Conexión con la API (feature `024-react-spa-migration`)
 
-La app consume `apps/api` (GraphQL en `POST {API_URL}/graphql`) para el **Admin Catalog** (servicios y
-equipo) y la **tenancy** (onboarding → creación de negocio + vinculación `tenant_id`). Configuración:
+La SPA consume `apps/api` (GraphQL en `POST {VITE_API_URL}/graphql`) para el **Admin Catalog** (servicios y
+equipo), la **tenancy** y la sesión. Configuración:
 
-1. Copia `.env.example` → `.env` en `apps/api`, `packages/database` y `apps/book` (valores por entorno,
-   nunca versionados; ver `specs/architecture.md` §3.1).
-2. API: levanta Postgres/Supabase (`DATABASE_URL`), migra (`npm run db:migrate`), y arranca con
-   `npm run dev -w @foundly/api` (puerto 3002). `CORS_ORIGINS` incluye `http://localhost:3001`.
-3. Book: `API_URL` apunta a la API y las variables `NEXT_PUBLIC_SUPABASE_*` + `SUPABASE_SERVICE_ROLE_KEY`
-   habilitan la sesión Supabase y el binding de negocio.
-4. Sesión: `src/middleware.ts` refresca las cookies de Supabase; `getEffectiveSession()` (server-only)
-   resuelve la identidad (claims `sub` + `app_metadata.tenant_id`).
+1. Copia `apps/book/.env.example` → `apps/book/.env` y `apps/api/.env.example` → `apps/api/.env`
+   (valores por entorno, nunca versionados; ver `specs/architecture.md` §3.1).
+2. API: levanta Postgres/Supabase (`DATABASE_URL`), migra (`pnpm db:migrate`) y arranca con
+   `pnpm --filter @foundly/api dev` (puerto 3002). `CORS_ORIGINS` incluye `http://localhost:3001`.
+3. Book: `VITE_API_URL`, `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` son las únicas variables del
+   cliente. No hay `SUPABASE_SERVICE_ROLE_KEY` en el bundle: el alta de negocio se ejecuta en la API.
+4. Sesión: `@supabase/supabase-js` persiste la sesión en `localStorage`; `SessionProvider`
+   (`shared/auth/session-context.tsx`) restaura la sesión y deriva `tenant_id` de `app_metadata`.
 
 Sin entorno remoto configurado, `signIn`/`signOut` fallan **visiblemente** (la autenticación es solo del
 proveedor; no hay seam local). Todas las secciones del panel (servicios, equipo, disponibilidad, bloqueos,
@@ -75,38 +75,35 @@ agenda, galería, perfil, políticas y reseñas) se sirven desde la API. La disp
 se aplican también al cálculo de franjas del booking público. Escenarios de validación en el `quickstart.md`
 de cada spec.
 
-## Autenticación (feature `009-admin-auth`)
+## Autenticación (features `009-admin-auth` y `024-react-spa-migration`)
 
 Ciclo de acceso completo del propietario:
 
 - **Login**: `/login` autentica con email + contraseña (`signIn`) vía **Supabase Auth** únicamente
-  (`signInWithPassword`); sin `NEXT_PUBLIC_SUPABASE_*` no hay sesión posible (feature `010` eliminó el
-  modo local/cookie).
-- **Logout**: la acción `signOut` (botón en el footer del panel) cierra la sesión y redirige a `/login`.
-- **Protección de rutas**: `src/middleware.ts` redirige `/admin/*` sin sesión a `/login` y `/login` con
-  sesión a `/admin/agenda`; las guardas de servidor (layout admin, `getAdminTenantId`) re-verifican.
+  (`signInWithPassword`); sin `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` no hay sesión posible.
+- **Logout**: `signOut` cierra la sesión de Supabase, limpia la caché de TanStack Query y redirige a `/login`.
+- **Protección de rutas**: guards de React Router (`RequireAuth`, `RequireTenant`, `RequireAnonymous`) y
+  `SessionProvider`; no hay middleware ni cookies de servidor. El panel resuelve el workspace con
+  `myBusiness` y el `tenantId` de la sesión es solo una comprobación de UX.
 - **Enlace público**: el panel muestra un botón "Ver página pública" con la URL del `slug` del negocio.
-- **Cambio de contraseña**: `/admin/seguridad` actualiza la contraseña exigiendo la actual (re-auth en live).
+- **Cambio de contraseña**: `/admin/seguridad` actualiza la contraseña exigiendo la actual (re-auth).
 
-`getEffectiveSession()` (server-only) resuelve la sesión **solo** desde los claims live de Supabase
-(`sub` + `app_metadata.tenant_id`); el store en memoria **no** autentica por sí solo y la cookie local
-fue eliminada. Detalles: `specs/book/009-admin-auth/` y `specs/book/010-remove-local-store/`.
+La sesión vive en `localStorage` y se restaura con `getSession`/`onAuthStateChange`; un `UNAUTHENTICATED`
+de la API dispara limpieza de sesión y redirección global. Detalles: `specs/book/009-admin-auth/`,
+`specs/book/024-react-spa-migration/` y `specs/api/021-supabase-auth-tenant-hardening/`.
 
 ## Errores y sesión (feature `012-centralized-api-errors`)
 
 Los errores de la API ya no se pintan crudos en las vistas. Un clasificador central
 (`shared/api/error-surface.ts`) decide el tratamiento por código: **sesión** (`UNAUTHENTICATED`) → limpieza
-de sesión y redirección global a `/login?reason=session-expired` (ruta `app/auth/session-expired`); **transitorio**
-(conexión/recurso ausente) → modal limpio (`ApiErrorDialog`); **inline** (validación/conflicto) → feedback en el
-formulario. Los mensajes se localizan en español; nunca se muestra el texto del proveedor. El transporte
-autenticado (`shared/api/admin-request.ts`, `apiRequestAdmin`) inyecta el bearer y trata un token ausente o
-rechazado como problema de sesión. Al iniciar sesión se valida además que la API acepta el token (query
-`Viewer`), por lo que un desajuste de autenticación se ve en `/login`, no repartido por el panel. Todas las
-llamadas salientes aplican un **timeout acotado** para que un API o proveedor de identidad que no responde no
-cuelgue un render/Server Action/middleware hasta el límite de la plataforma (Vercel: 300 s): el transporte
-GraphQL usa `API_REQUEST_TIMEOUT_MS` (`shared/api/client.ts`) y las lecturas de sesión usan `withTimeout` +
-`AUTH_CALL_TIMEOUT_MS` (`shared/auth/withTimeout.ts`). Detalle:
-`specs/book/012-centralized-api-errors/` y `specs/api/011-jwt-algorithm-support/`.
+de sesión y redirección global a `/login` con motivo de expiración; **transitorio** (conexión/recurso ausente)
+→ modal limpio (`ApiErrorDialog`); **inline** (validación/conflicto) → feedback en el formulario. Los mensajes
+se localizan en español; nunca se muestra el texto del proveedor. El transporte autenticado
+(`shared/api/authed-request.ts`, `apiRequestAuthed`) obtiene el token vigente de Supabase y lo inyecta por
+petición. Al iniciar sesión se valida además que la API acepta el token (query `Viewer`), por lo que un
+desajuste de autenticación se ve en `/login`, no repartido por el panel. Todas las llamadas salientes aplican
+un **timeout acotado** (`VITE_API_REQUEST_TIMEOUT_MS`, por defecto 10 s) para que un API o proveedor lento no
+cuelgue la UI. Detalle: `specs/book/012-centralized-api-errors/` y `specs/api/011-jwt-algorithm-support/`.
 
 ## Notificaciones, moderación y UX del panel (feature `016-admin-ux-hardening`)
 
@@ -125,8 +122,8 @@ GraphQL usa `API_REQUEST_TIMEOUT_MS` (`shared/api/client.ts`) y las lecturas de 
   debajo) con **subida directa de archivo** (`shared/components/ImageUploadField`, features `021`/`022`); el resumen
   de "Horario de atención" se retiró de este formulario (se gestiona en `/admin/availability`).
 - **Favicons y manifest**: `apps/book/public/` incluye `favicon.ico` (16/32/48), `favicon-16x16.png`,
-  `favicon-32x32.png`, `apple-touch-icon.png` (180) e `icon-192/512.png`; `app/manifest.ts` publica el Web App
-  Manifest (`theme_color #6c5ce7`, `background_color #faf8ff`) y `layout.tsx` los enlaza vía `metadata.icons`.
+  `favicon-32x32.png`, `apple-touch-icon.png` (180) e `icon-192/512.png`; `public/manifest.webmanifest` publica
+  el Web App Manifest (`theme_color #6c5ce7`, `background_color #faf8ff`) y `index.html` lo enlaza.
   La landing (`apps/landing`) añade `favicon.ico` + `apple-touch-icon.png` junto a su `favicon.svg`.
 - **Acciones antes huérfanas**: `/admin/services` crea/edita/elimina servicios de verdad (antes era un placeholder)
   y `/admin/agenda` "Nueva cita" compone un instante ISO con offset (antes fallaba la validación y no persistía).
@@ -162,10 +159,9 @@ GraphQL usa `API_REQUEST_TIMEOUT_MS` (`shared/api/client.ts`) y las lecturas de 
 
 ## Dominio y datos
 
-- **Estructura modular**: `src/app/` es la capa delgada de rutas App Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `dialogs/`, `hooks/`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (types, utils, componentes, `infra/` con el seam de sesión/results, `tenancy/`).
+- **Estructura modular**: `src/router.tsx` es la capa delgada de rutas React Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `components/dialogs/`, `hooks.ts`, `services.ts`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (`api/`, `auth/`, `tenancy/`, types, utils, componentes).
 - **Tenancy y agendas**: los tipos y reglas puras son `shared/types/` (tenancy, appointments, availability) y `shared/utils/` (slug, provisioning, motor de disponibilidad). Lógica pura, sin framework.
-- **Persistencia NO definida**: todo vive en el store en memoria (`src/shared/infra/store.ts`), el único
-  seam que debe reemplazarse cuando `specs/architecture.md` ratifique almacenamiento.
+- **Persistencia**: PostgreSQL vía `apps/api` + Prisma (`packages/database`); la SPA no tiene store en memoria. Las lecturas/escrituras pasan por `services.ts` + `hooks.ts` y TanStack Query.
 
 ## Specs
 

@@ -1,8 +1,11 @@
 import { apiRequest } from '../api/client';
 import { apiRequestAuthed } from '../api/authed-request';
-import { TenantBySlugDocument, TenantsDocument, type TenantsQuery } from '../api/generated';
-import type { Session } from '../auth/auth';
-import { fail, ok, type ActionResult } from '../types/result';
+import {
+  MyBusinessDocument,
+  TenantBySlugDocument,
+  type MyBusinessQuery,
+} from '../api/generated';
+import { ok, type ActionResult } from '../types/result';
 import type { PortalPolicy, Tenant, TenantStatus } from '../types/tenancy';
 
 /**
@@ -10,7 +13,7 @@ import type { PortalPolicy, Tenant, TenantStatus } from '../types/tenancy';
  * `shared/tenancy` is the cross-cutting owner of tenant resolution.
  */
 
-type ApiTenant = TenantsQuery['tenants'][number];
+type ApiTenant = MyBusinessQuery['myBusiness'];
 
 function mapTenantStatus(status: string): TenantStatus {
   return status === 'active' || status === 'suspended' || status === 'draft' ? status : 'draft';
@@ -65,14 +68,12 @@ export async function getTenantBySlug(slug: string): Promise<ActionResult<Tenant
   return ok(result.data.tenant ? mapTenant(result.data.tenant) : null);
 }
 
-/** Resolve the tenant bound to the session (session is the only scope). */
-export async function getCurrentTenant(session: Session | null): Promise<ActionResult<Tenant>> {
-  if (!session?.tenantId) {
-    return fail('UNAUTHENTICATED', 'Se requiere una sesión de negocio.');
-  }
-  const result = await apiRequestAuthed(TenantsDocument, {});
+/**
+ * Resolve the business bound to the verified session. The API derives the
+ * tenant exclusively from the JWT; the client never sends or filters by id.
+ */
+export async function getCurrentTenant(): Promise<ActionResult<Tenant>> {
+  const result = await apiRequestAuthed(MyBusinessDocument, {});
   if (!result.ok) return result;
-  const tenant = result.data.tenants.find((item) => item.id === session.tenantId);
-  if (!tenant) return fail('NOT_FOUND', 'Negocio no encontrado.');
-  return ok(mapTenant(tenant));
+  return ok(mapTenant(result.data.myBusiness));
 }

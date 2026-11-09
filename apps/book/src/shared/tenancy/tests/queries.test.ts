@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Session } from '../../auth/auth';
+import { MyBusinessDocument } from '../../api/generated';
 import { getCurrentTenant } from '../queries';
 
 const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));
@@ -12,10 +12,12 @@ function makeTenant(id: string, slug: string) {
   return {
     id,
     name: `Negocio ${slug}`,
-    category: 'Salón',
+    category: 'Salon',
+    tags: [],
     status: 'active',
     timezone: 'Europe/Madrid',
     currency: 'EUR',
+    isPublic: true,
     profile: {
       slug,
       bio: null,
@@ -25,20 +27,21 @@ function makeTenant(id: string, slug: string) {
       whatsapp: null,
       logo: null,
       cover: null,
+      policies: [],
     },
     services: [],
   };
 }
 
-describe('tenancy queries (feature 011 — server-only)', () => {
+describe('tenancy queries (feature 011 — authenticated workspace)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('returns the session tenant from the API', async () => {
-    apiMock.mockResolvedValue({ ok: true, data: { tenants: [makeTenant('ten-ana', 'estudio-ana')] } });
-    const session: Session = { userId: 'u', role: 'admin', tenantId: 'ten-ana' };
-    const result = await getCurrentTenant(session);
+  it('returns the business resolved by the server via myBusiness', async () => {
+    apiMock.mockResolvedValue({ ok: true, data: { myBusiness: makeTenant('ten-ana', 'estudio-ana') } });
+    const result = await getCurrentTenant();
+    expect(apiMock).toHaveBeenCalledWith(MyBusinessDocument, {});
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.id).toBe('ten-ana');
@@ -46,35 +49,30 @@ describe('tenancy queries (feature 011 — server-only)', () => {
     }
   });
 
-  it('scopes resolution to the bound tenant (cross-tenant isolation)', async () => {
-    apiMock.mockResolvedValue({
-      ok: true,
-      data: { tenants: [makeTenant('ten-ana', 'estudio-ana'), makeTenant('ten-b', 'b-shop')] },
-    });
-    const a = await getCurrentTenant({ userId: 'a', role: 'admin', tenantId: 'ten-ana' });
-    const b = await getCurrentTenant({ userId: 'b', role: 'admin', tenantId: 'ten-b' });
-    expect(a.ok && a.data.id).toBe('ten-ana');
-    expect(b.ok && b.data.id).toBe('ten-b');
-    expect(b.ok && b.data.slug).toBe('b-shop');
+  it('never sends a tenantId to resolve the workspace', async () => {
+    apiMock.mockResolvedValue({ ok: true, data: { myBusiness: makeTenant('ten-b', 'b-shop') } });
+    const result = await getCurrentTenant();
+    expect(apiMock).toHaveBeenCalledWith(MyBusinessDocument, {});
+    expect(result.ok && result.data.id).toBe('ten-b');
   });
 
-  it('surfaces NOT_FOUND when the API has no tenant', async () => {
-    apiMock.mockResolvedValue({ ok: true, data: { tenants: [] } });
-    const result = await getCurrentTenant({ userId: 'x', role: 'admin', tenantId: 'ten-missing' });
+  it('surfaces FORBIDDEN without inventing a workspace', async () => {
+    apiMock.mockResolvedValue({
+      ok: false,
+      error: { code: 'FORBIDDEN', message: 'Tenant is not active' },
+    });
+    const result = await getCurrentTenant();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('FORBIDDEN');
+  });
+
+  it('surfaces NOT_FOUND for a missing business', async () => {
+    apiMock.mockResolvedValue({
+      ok: false,
+      error: { code: 'NOT_FOUND', message: 'Business not found' },
+    });
+    const result = await getCurrentTenant();
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.code).toBe('NOT_FOUND');
-  });
-
-  it('rejects sessions without a tenant', async () => {
-    const result = await getCurrentTenant({ userId: 'x', role: 'admin' });
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
-    expect(apiMock).not.toHaveBeenCalled();
-  });
-
-  it('rejects null sessions', async () => {
-    const result = await getCurrentTenant(null);
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe('UNAUTHENTICATED');
   });
 });

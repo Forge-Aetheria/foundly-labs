@@ -43,7 +43,10 @@ describe('Reviews e2e (013 reviews + 015 moderation)', () => {
       .useValue(makeLocalJwks(publicJwk))
       .overrideProvider(PrismaService)
       .useValue({
-        client: { $queryRaw: () => Promise.resolve([{ '?column?': 1 }]) },
+        client: {
+          $queryRaw: () => Promise.resolve([{ '?column?': 1 }]),
+          tenant: { findUnique: async () => ({ status: 'active' }) },
+        },
       } as unknown as PrismaService)
       .compile();
     app = moduleRef.createNestApplication();

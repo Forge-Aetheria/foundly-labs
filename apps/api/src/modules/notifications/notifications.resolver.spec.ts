@@ -41,6 +41,7 @@ function makeFakeClient() {
     },
     tenant: {
       findUnique: vi.fn(async () => ({
+        status: 'active',
         subscriptionPlan: 'FREE',
         subscriptionStatus: 'active',
         subscriptionExpiresAt: null,

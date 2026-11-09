@@ -2,16 +2,15 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import type { GraphQLContext } from '../../graphql/context';
-import { unauthError } from '../auth/auth.guards';
+import { unauthError } from '../auth/auth.errors';
 import { SubscriptionService } from './subscription.service';
 import type { SubscriptionPlan } from './subscription.types';
 
 export const REQUIRED_SUBSCRIPTION_KEY = 'foundly:requiredSubscriptionPlans';
 
 /**
- * Enforces the subscription tier on Pro-gated operations. Distinct from the module-license
- * `PlanGuard`/`@RequirePlan`; this guard reads the required tiers from metadata and delegates the
- * fail-closed effective-plan decision to `SubscriptionService`.
+ * Enforces the subscription tier on Pro-gated operations. This guard reads the required tiers
+ * from metadata and delegates the fail-closed effective-plan decision to `SubscriptionService`.
  */
 @Injectable()
 export class SubscriptionGuard implements CanActivate {

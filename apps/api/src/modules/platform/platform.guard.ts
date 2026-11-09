@@ -8,8 +8,8 @@ export const REQUIRED_SUPER_ADMIN_KEY = 'foundly:requiresSuperAdmin';
 
 /**
  * Enforces the global platform role on platform-only operations (019). Distinct from the
- * module-license `PlanGuard` and the subscription `SubscriptionGuard`: this guard requires a
- * verified identity carrying the platform role (`super_admin`) or an allow-listed email.
+ * subscription `SubscriptionGuard`: this guard requires a verified identity carrying the
+ * platform role (`super_admin`) or an allow-listed email.
  */
 @Injectable()
 export class SuperAdminGuard implements CanActivate {

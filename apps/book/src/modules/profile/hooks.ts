@@ -9,8 +9,8 @@ import { getProfile, updateProfile } from './services';
  * Profile client hooks (feature 014; constitution §5.VI).
  * UI components interact only through these hooks — never with Server Actions.
  */
-export function useFetchProfile(): (tenantId: string) => Promise<ActionResult<Tenant>> {
-  return (tenantId) => getProfile(tenantId);
+export function useFetchProfile(): () => Promise<ActionResult<Tenant>> {
+  return () => getProfile();
 }
 
 export function useUpdateProfile(): (input: unknown) => Promise<ActionResult<Tenant>> {

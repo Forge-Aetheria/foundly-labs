@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { forbiddenError, unauthError } from '../auth/auth.guards';
+import { forbiddenError, unauthError } from '../auth/auth.errors';
 import type { AuthUser } from '../auth/jwt.types';
 import { notFoundError, validationError } from '../../shared/tenant-scope';
 import { SubscriptionPlan, SubscriptionStatus } from '../subscription/subscription.types';

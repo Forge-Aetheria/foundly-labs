@@ -1,81 +1,51 @@
 # Tenancy operations — feature 011 (cross-cutting reads owned by shared/tenancy).
 
-query TenantBySlug($slug: String!) {
-  tenant(slug: $slug) {
+fragment TenantWorkspaceFields on TenantObject {
+  id
+  name
+  category
+  tags
+  status
+  timezone
+  currency
+  isPublic
+  profile {
+    slug
+    bio
+    address
+    phone
+    instagram
+    whatsapp
+    logo
+    cover
+    policies {
+      title
+      body
+    }
+  }
+  services {
     id
     name
-    category
-    tags
-    status
-    timezone
+    description
+    durationMinutes
+    priceCents
     currency
-    isPublic
-    profile {
-      slug
-      bio
-      address
-      phone
-      instagram
-      whatsapp
-      logo
-      cover
-      policies {
-        title
-        body
-      }
-    }
-    services {
-      id
-      name
-      description
-      durationMinutes
-      priceCents
-      currency
-      category
-      active
-      requiresAdvance
-      advanceKind
-      advanceValue
-    }
+    category
+    active
+    requiresAdvance
+    advanceKind
+    advanceValue
   }
 }
 
-query Tenants {
-  tenants {
-    id
-    name
-    category
-    tags
-    status
-    timezone
-    currency
-    isPublic
-    profile {
-      slug
-      bio
-      address
-      phone
-      instagram
-      whatsapp
-      logo
-      cover
-      policies {
-        title
-        body
-      }
-    }
-    services {
-      id
-      name
-      description
-      durationMinutes
-      priceCents
-      currency
-      category
-      active
-      requiresAdvance
-      advanceKind
-      advanceValue
-    }
+query TenantBySlug($slug: String!) {
+  tenant(slug: $slug) {
+    ...TenantWorkspaceFields
+  }
+}
+
+query MyBusiness {
+  myBusiness {
+    ...TenantWorkspaceFields
   }
 }

@@ -1,8 +1,8 @@
 import { apiRequestAuthed } from '../../shared/api/authed-request';
 import {
-  TenantsDocument,
+  MyBusinessDocument,
   UpdateBusinessProfileDocument,
-  type TenantsQuery,
+  type MyBusinessQuery,
 } from '../../shared/api/generated';
 import { mapTenant } from '../../shared/tenancy/queries';
 import { fail, ok, zodFields, type ActionResult } from '../../shared/types/result';
@@ -15,14 +15,13 @@ import { updateProfileSchema } from './utils/schemas';
  * transport (`apiRequestAdmin`) so session expiry is handled globally.
  */
 
-type ApiTenant = TenantsQuery['tenants'][number];
+type ApiTenant = MyBusinessQuery['myBusiness'];
 
 /** The authenticated owner's business profile (identity, contact, policies). */
-export async function getProfile(tenantId: string): Promise<ActionResult<Tenant>> {
-  const result = await apiRequestAuthed(TenantsDocument, {});
+export async function getProfile(): Promise<ActionResult<Tenant>> {
+  const result = await apiRequestAuthed(MyBusinessDocument, {});
   if (!result.ok) return result;
-  const tenant: ApiTenant | undefined = result.data.tenants.find((item) => item.id === tenantId);
-  if (!tenant) return fail('NOT_FOUND', 'Negocio no encontrado.');
+  const tenant: ApiTenant = result.data.myBusiness;
   return ok(mapTenant(tenant));
 }
 

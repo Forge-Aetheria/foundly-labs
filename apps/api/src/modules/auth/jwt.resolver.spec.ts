@@ -28,7 +28,10 @@ describe('JwtResolver (GraphQL e2e, 008-supabase-jwt-auth)', () => {
       .useValue(makeLocalJwks(publicJwk))
       .overrideProvider(PrismaService)
       .useValue({
-        client: { $queryRaw: () => Promise.resolve([{ '?column?': 1 }]) },
+        client: {
+          $queryRaw: () => Promise.resolve([{ '?column?': 1 }]),
+          tenant: { findUnique: async () => ({ status: 'suspended' }) },
+        },
       } as unknown as PrismaService)
       .compile();
     app = moduleRef.createNestApplication();
@@ -67,6 +70,33 @@ describe('JwtResolver (GraphQL e2e, 008-supabase-jwt-auth)', () => {
       role: 'authenticated',
       aud: 'authenticated',
     });
+  });
+
+  it('no longer exposes the legacy identity operations', async () => {
+    const token = await signTestToken(privateJwk, { sub: 'user-9' });
+    for (const query of [
+      'query { me { userId } }',
+      'query { currentTenant { id } }',
+      'query { bookCapability { tenantId enabled } }',
+    ]) {
+      const response = await gql(query, token).expect(400);
+      expect(response.body.data ?? null).toBeNull();
+      expect(response.body.errors?.[0]?.message).toMatch(/Cannot query field/);
+    }
+  });
+
+  it('allows viewer for a suspended tenant but blocks protected workspace operations', async () => {
+    const token = await signTestToken(privateJwk, {
+      sub: 'user-suspended',
+      tenantId: 'tenant-suspended',
+    });
+
+    const viewer = await gql('query { viewer { sub } }', token).expect(200);
+    expect(viewer.body.errors).toBeUndefined();
+    expect(viewer.body.data.viewer.sub).toBe('user-suspended');
+
+    const business = await gql('query { myBusiness { id } }', token).expect(200);
+    expect(business.body.errors?.[0]?.extensions?.code).toBe('FORBIDDEN');
   });
 
   it('rejects an expired token with UNAUTHENTICATED', async () => {

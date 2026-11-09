@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { errorMessage } from '../api/error-surface';
 import { queryKeys } from '../api/query-client';
 import type { Session } from '../auth/auth';
 import { useSession } from '../auth/session-context';
@@ -28,8 +29,12 @@ export async function fetchAdminWorkspace(
   if (!session.tenantId) {
     return fail('FORBIDDEN', 'La sesión no está asociada a un negocio.');
   }
-  const [tenant, identity] = await Promise.all([getCurrentTenant(session), getAuthIdentity()]);
-  if (!tenant.ok) return tenant;
+  const [tenant, identity] = await Promise.all([getCurrentTenant(), getAuthIdentity()]);
+  if (!tenant.ok) {
+    // Session expiry stays on the global handler; workspace errors are localized.
+    if (tenant.error.code === 'UNAUTHENTICATED') return tenant;
+    return fail(tenant.error.code, errorMessage(tenant.error.code, tenant.error.message));
+  }
   return ok({
     tenantId: session.tenantId,
     tenantName: tenant.data.name,

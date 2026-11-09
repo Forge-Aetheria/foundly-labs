@@ -1,5 +1,6 @@
 import { Query, Resolver } from '@nestjs/graphql';
 import { AuthUser as AuthUserParam, RequireAuth } from './jwt.decorators';
+import { AllowInactiveTenant } from './tenant-status.decorators';
 import type { AuthUser } from './jwt.types';
 import { ViewerObject } from './jwt.types';
 
@@ -8,6 +9,7 @@ import { ViewerObject } from './jwt.types';
 export class JwtResolver {
   @Query(() => ViewerObject)
   @RequireAuth()
+  @AllowInactiveTenant()
   viewer(@AuthUserParam() user: AuthUser): ViewerObject {
     return {
       sub: user.sub,

@@ -45,7 +45,10 @@ describe('Catalog e2e (010-domain-mvp-module)', () => {
       .useValue(makeLocalJwks(publicJwk))
       .overrideProvider(PrismaService)
       .useValue({
-        client: { $queryRaw: () => Promise.resolve([{ '?column?': 1 }]) },
+        client: {
+          $queryRaw: () => Promise.resolve([{ '?column?': 1 }]),
+          tenant: { findUnique: async () => ({ status: 'active' }) },
+        },
       } as unknown as PrismaService)
       .compile();
     app = moduleRef.createNestApplication();

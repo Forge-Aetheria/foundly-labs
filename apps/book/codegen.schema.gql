@@ -275,23 +275,6 @@ type Appointment {
   specialist: AppointmentSpecialist!
 }
 
-type CurrentTenant {
-  id: ID!
-  status: String!
-  plan: String
-}
-
-type CurrentUser {
-  userId: ID!
-  role: String!
-  tenant: CurrentTenant!
-}
-
-type BookCapability {
-  tenantId: ID!
-  enabled: Boolean!
-}
-
 type ViewerObject {
   sub: ID!
   email: String
@@ -393,6 +376,10 @@ type ManagedBusiness {
   expiresAt: String
 }
 
+type RegisterBusinessResult {
+  tenantId: ID!
+}
+
 type Query {
   health: HealthPayload!
   tenants: [TenantObject!]!
@@ -412,9 +399,6 @@ type Query {
   myAppointment(id: ID!): Appointment
   notifications(read: Boolean, limit: Int, offset: Int): [NotificationObject!]!
   unreadNotificationCount: Int!
-  me: CurrentUser!
-  currentTenant: CurrentTenant!
-  bookCapability: BookCapability!
   viewer: ViewerObject!
   myServices(active: Boolean): [MyService!]!
   myService(id: ID!): MyService
@@ -430,29 +414,7 @@ type Query {
   managedBusinesses(query: String, limit: Int, offset: Int): [ManagedBusiness!]!
 }
 
-input RegisterBusinessAccountInput {
-  fullName: String!
-  email: String!
-  password: String!
-}
-
-input RegisterBusinessBusinessInput {
-  name: String!
-  category: String!
-  slug: String!
-}
-
-input RegisterBusinessInput {
-  account: RegisterBusinessAccountInput!
-  business: RegisterBusinessBusinessInput!
-}
-
-type RegisterBusinessResult {
-  tenantId: ID!
-}
-
 type Mutation {
-  registerBusiness(input: RegisterBusinessInput!): RegisterBusinessResult!
   createTenant(input: CreateTenantInput!): TenantObject!
   updateMyBusinessProfile(input: UpdateBusinessProfileInput!): TenantObject!
   createService(input: CreateServiceInput!): Service!
@@ -492,6 +454,7 @@ type Mutation {
   upsertPaymentMethod(input: UpsertPaymentMethodInput!): PaymentMethodObject!
   deletePaymentMethod(id: ID!): Boolean!
   overrideTenantSubscription(input: OverrideTenantSubscriptionInput!): ManagedBusiness!
+  registerBusiness(input: RegisterBusinessInput!): RegisterBusinessResult!
 }
 
 input CreateTenantInput {
@@ -715,4 +678,21 @@ input OverrideTenantSubscriptionInput {
   plan: SubscriptionPlan
   status: SubscriptionStatus
   expiresAt: String
+}
+
+input RegisterBusinessInput {
+  account: RegisterBusinessAccountInput!
+  business: RegisterBusinessBusinessInput!
+}
+
+input RegisterBusinessAccountInput {
+  fullName: String!
+  email: String!
+  password: String!
+}
+
+input RegisterBusinessBusinessInput {
+  name: String!
+  category: String!
+  slug: String!
 }

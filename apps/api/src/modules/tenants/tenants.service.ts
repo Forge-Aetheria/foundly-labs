@@ -4,6 +4,7 @@ import { TENANT_CATEGORIES, categoryFromSearchTerm } from './tenant-categories';
 import { GraphQLError } from 'graphql';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { sanitizeTag, sanitizeTags } from './tenant-tags';
+import { forbiddenError } from '../auth/auth.errors';
 import type { AuthUser } from '../auth/jwt.types';
 import {
   BusinessProfileObject,
@@ -152,6 +153,7 @@ export class TenantsService {
     if (!row) {
       throw notFoundError('Business not found');
     }
+    this.assertTenantOperable(row.status);
     return this.toTenantObject(row);
   }
 
@@ -311,11 +313,12 @@ export class TenantsService {
 
     const existing = await this.prismaService.client.tenant.findUnique({
       where: { id: tenantId },
-      select: { id: true, profile: { select: { id: true } } },
+      select: { id: true, status: true, profile: { select: { id: true } } },
     });
     if (!existing) {
       throw notFoundError('Business not found');
     }
+    this.assertTenantOperable(existing.status);
 
     try {
       if (Object.keys(tenantData).length > 0) {
@@ -382,6 +385,13 @@ export class TenantsService {
       });
     }
     return user.tenantId;
+  }
+
+  /** The workspace is only available for an existing, active business. */
+  private assertTenantOperable(status: string): void {
+    if (status !== 'active') {
+      throw forbiddenError('Tenant is not active');
+    }
   }
 
   /** Aggregate a business's availability into weekday opening ranges (earliest start, latest end). */

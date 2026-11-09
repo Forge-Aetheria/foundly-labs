@@ -93,7 +93,11 @@ function makeFakeClient(tenant: FakeTenant) {
       findMany: vi.fn(async (): Promise<FakeTenant[]> => [tenant]),
       findUnique: vi.fn(async (args: { include?: unknown; select?: unknown }): Promise<unknown> => {
         if (args.include) return tenant;
-        return { id: tenant.id, profile: tenant.profile ? { id: tenant.profile.id } : null };
+        return {
+          id: tenant.id,
+          status: tenant.status,
+          profile: tenant.profile ? { id: tenant.profile.id } : null,
+        };
       }),
       update: vi.fn(async (args: { data: Record<string, unknown> }): Promise<FakeTenant> => {
         Object.assign(tenant, args.data);
@@ -303,6 +307,34 @@ describe('TenantsService (unit, 003-db-first-graphql-core; 013 profile update)',
     // Other tenant/profile fields are preserved by the partial update.
     expect(updated.name).toBe('Estudio Ana');
     expect(updated.profile?.slug).toBe('estudio-ana');
+  });
+
+  it('resolves the authenticated owner business only when it is active', async () => {
+    const found = await service.findForOwner({ tenantId: 't1' });
+    expect(found.id).toBe('t1');
+
+    tenant.status = 'suspended';
+    await expect(service.findForOwner({ tenantId: 't1' })).rejects.toMatchObject({
+      extensions: { code: 'FORBIDDEN' },
+    });
+  });
+
+  it('rejects workspace access without a verified tenant and for an unknown business', async () => {
+    await expect(service.findForOwner({})).rejects.toMatchObject({
+      extensions: { code: 'UNAUTHENTICATED' },
+    });
+
+    vi.mocked(client.tenant.findUnique).mockResolvedValueOnce(null);
+    await expect(service.findForOwner({ tenantId: 'missing' })).rejects.toMatchObject({
+      extensions: { code: 'NOT_FOUND' },
+    });
+  });
+
+  it('rejects profile updates for a non-operable business', async () => {
+    tenant.status = 'draft';
+    await expect(service.updateProfile(scoped('t1'), { bio: 'x' })).rejects.toMatchObject({
+      extensions: { code: 'FORBIDDEN' },
+    });
   });
 
   it('exposes isPublic on the aggregate read', async () => {

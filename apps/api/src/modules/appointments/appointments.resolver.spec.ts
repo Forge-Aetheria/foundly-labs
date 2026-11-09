@@ -84,6 +84,9 @@ function seedAppointment(): FakeAppointment {
 let row: FakeAppointment = seedAppointment();
 
 const fakeClient = {
+  tenant: {
+    findUnique: vi.fn(async () => ({ status: 'active' })),
+  },
   businessProfile: {
     findUnique: vi.fn(
       async (args: { where: { slug: string } }): Promise<{ tenantId: string } | null> =>
