@@ -157,6 +157,26 @@ cuelgue la UI. Detalle: `specs/book/012-centralized-api-errors/` y `specs/api/01
 - **Regla de adelanto por servicio**: `/admin/services` permite marcar un servicio como "Requiere adelanto"
   (importe fijo o porcentaje) y muestra el adelanto en la tabla.
 
+## Despliegue en Vercel
+
+`apps/book/vercel.json` define el contrato de despliegue de la SPA:
+
+- **Root Directory**: `apps/book` (el proyecto de Vercel debe apuntar a esta carpeta, no a la raíz del monorepo).
+- **Framework**: Vite.
+- **Output Directory**: `dist`.
+- **Fallback SPA**: cualquier ruta se reescribe a `/index.html` para que React Router resuelva los deep links (`/login`, `/negocios`, `/admin/*`, etc.) al refrescar.
+
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
+
+El dominio `book.foundly-labs.lat` debe estar asignado al proyecto `foundly-book` en **Project → Settings → Domains**. Si Vercel responde `DEPLOYMENT_NOT_FOUND`, el alias del dominio apunta a un deployment eliminado o inexistente: vuelve a desplegar y reasigna el dominio al deployment de producción. No es un 404 de archivo estático.
+
 ## Dominio y datos
 
 - **Estructura modular**: `src/router.tsx` es la capa delgada de rutas React Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `components/dialogs/`, `hooks.ts`, `services.ts`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (`api/`, `auth/`, `tenancy/`, types, utils, componentes).
