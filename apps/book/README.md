@@ -177,6 +177,18 @@ cuelgue la UI. Detalle: `specs/book/012-centralized-api-errors/` y `specs/api/01
 
 El dominio `book.foundly-labs.lat` debe estar asignado al proyecto `foundly-book` en **Project → Settings → Domains**. Si Vercel responde `DEPLOYMENT_NOT_FOUND`, el alias del dominio apunta a un deployment eliminado o inexistente: vuelve a desplegar y reasigna el dominio al deployment de producción. No es un 404 de archivo estático.
 
+Variables obligatorias del proyecto `foundly-book` en Vercel (entorno **Production**):
+
+| Variable                   | Valor                                                                    |
+| -------------------------- | ------------------------------------------------------------------------ |
+| `VITE_SUPABASE_URL`        | URL pública del proyecto Supabase (`https://<project-ref>.supabase.co`)  |
+| `VITE_SUPABASE_ANON_KEY`   | Clave `anon public` de Supabase                                          |
+| `VITE_API_URL`             | URL base pública de la API (sin `/graphql`; el cliente lo añade)         |
+
+> Vite incrusta estas variables en el bundle **durante el build**. Después de crearlas o modificarlas hay que hacer un deployment nuevo. Los nombres `NEXT_PUBLIC_*` heredados de Next.js no se exponen en Vite.
+>
+> La API debe incluir `https://book.foundly-labs.lat` en `CORS_ORIGINS` (además de `https://book.foundlylabs.com` y `https://foundly-book.vercel.app`).
+
 ## Dominio y datos
 
 - **Estructura modular**: `src/router.tsx` es la capa delgada de rutas React Router (solo renderiza `<Modulo>View`); la lógica vive en `src/modules/<modulo>/` (`components/`, `components/dialogs/`, `hooks.ts`, `services.ts`, `utils/`, `tests/`, `<Modulo>View.tsx`) y lo reutilizable en `src/shared/` (`api/`, `auth/`, `tenancy/`, types, utils, componentes).

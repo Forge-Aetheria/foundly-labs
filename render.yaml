@@ -61,4 +61,4 @@ services:
       - key: BILLING_ALERT_WEBHOOK_URL
         sync: false
       - key: CORS_ORIGINS
-        value: https://book.foundlylabs.com,https://foundly-book.vercel.app
+        value: https://book.foundlylabs.com,https://foundly-book.vercel.app,https://book.foundly-labs.lat
