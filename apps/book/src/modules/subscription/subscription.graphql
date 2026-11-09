@@ -1,0 +1,91 @@
+# Subscription checkout operations — feature 025.
+
+query MySubscription {
+  mySubscription {
+    plan
+    effectivePlan
+    status
+    expiresAt
+    limits {
+      services {
+        used
+        limit
+        unlimited
+      }
+      team {
+        used
+        limit
+        unlimited
+      }
+    }
+  }
+}
+
+query BillingInstructions {
+  billingInstructions {
+    plan {
+      amount
+      currency
+      durationDays
+    }
+    manual {
+      bank
+      cedula
+      phone
+      rateVesPerUsd
+      note
+    }
+  }
+}
+
+query MyPaymentTransactions($limit: Int, $offset: Int) {
+  myPaymentTransactions(limit: $limit, offset: $offset) {
+    id
+    gateway
+    status
+    plan
+    amount
+    currency
+    gatewayOrderId
+    referenceNumber
+    expiresAt
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreatePaypalSubscriptionOrder {
+  createPaypalSubscriptionOrder {
+    transactionId
+    gateway
+    checkoutUrl
+    token
+    gatewayOrderId
+  }
+}
+
+mutation CreateBinancePaymentOrder {
+  createBinancePaymentOrder {
+    transactionId
+    gateway
+    checkoutUrl
+    token
+    gatewayOrderId
+  }
+}
+
+mutation SubmitManualPayment($input: SubmitManualPaymentInput!) {
+  submitManualPayment(input: $input) {
+    id
+    gateway
+    status
+    plan
+    amount
+    currency
+    gatewayOrderId
+    referenceNumber
+    expiresAt
+    createdAt
+    updatedAt
+  }
+}

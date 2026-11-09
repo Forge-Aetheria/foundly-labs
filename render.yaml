@@ -22,5 +22,43 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      - key: BILLING_PRO_AMOUNT_USD
+        sync: false
+      - key: BILLING_PRO_DURATION_DAYS
+        value: 30
+      - key: BILLING_CHECKOUT_RETURN_URL
+        sync: false
+      - key: BILLING_CHECKOUT_CANCEL_URL
+        sync: false
+      - key: BILLING_MANUAL_BANK
+        sync: false
+      - key: BILLING_MANUAL_CEDULA
+        sync: false
+      - key: BILLING_MANUAL_PHONE
+        sync: false
+      - key: BILLING_MANUAL_RATE_VES_PER_USD
+        sync: false
+      - key: BILLING_MANUAL_NOTE
+        sync: false
+      - key: PAYPAL_API_BASE
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_PLAN_ID
+        sync: false
+      - key: PAYPAL_WEBHOOK_ID
+        sync: false
+      - key: BINANCE_PAY_API_BASE
+        sync: false
+      - key: BINANCE_PAY_API_KEY
+        sync: false
+      - key: BINANCE_PAY_API_SECRET
+        sync: false
+      - key: BINANCE_PAY_WEBHOOK_SECRET
+        sync: false
+      - key: BILLING_ALERT_WEBHOOK_URL
+        sync: false
       - key: CORS_ORIGINS
         value: https://book.foundlylabs.com,https://foundly-book.vercel.app

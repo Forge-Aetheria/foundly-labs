@@ -16,7 +16,7 @@ function corsOrigins(): string[] {
 
 async function bootstrap(): Promise<void> {
   const logger = createLogger();
-  const app = await NestFactory.create(AppModule, { logger });
+  const app = await NestFactory.create(AppModule, { logger, rawBody: true });
   const port = Number(process.env.PORT ?? DEFAULT_PORT);
   app.enableCors({
     origin(

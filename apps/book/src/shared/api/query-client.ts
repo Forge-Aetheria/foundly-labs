@@ -39,6 +39,10 @@ export const queryKeys = {
     ['reviews', tenantId, state] as const,
   notifications: (tenantId: string | null, filter?: string | null) =>
     ['notifications', tenantId, filter] as const,
+  subscription: (tenantId: string | null) => ['subscription', tenantId] as const,
+  billingInstructions: () => ['billing-instructions'] as const,
+  paymentTransactions: (tenantId: string | null, limit: number) =>
+    ['payment-transactions', tenantId, limit] as const,
   directory: (query: string, category?: string | null) =>
     ['directory', query, category] as const,
   publicBusiness: (slug: string) => ['public-business', slug] as const,

@@ -55,6 +55,11 @@ export function mapErrorCode(code: string | undefined): ErrorCode | null {
     case 'NOT_FOUND':
     case 'CONFLICT':
     case 'VALIDATION_ERROR':
+    case 'PLAN_LIMIT_REACHED':
+    case 'PAYMENT_PROVIDER_ERROR':
+    case 'PAYMENT_NOT_PENDING':
+    case 'PAYMENT_DUPLICATE_REFERENCE':
+    case 'PAYMENT_AMOUNT_MISMATCH':
       return code;
     default:
       return null;

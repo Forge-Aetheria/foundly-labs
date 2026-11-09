@@ -18,6 +18,9 @@ export function errorSurface(code: ErrorCode): ErrorSurface {
       return 'session';
     case 'STATE_ERROR':
     case 'NOT_FOUND':
+    case 'PAYMENT_PROVIDER_ERROR':
+    case 'PAYMENT_NOT_PENDING':
+    case 'PAYMENT_AMOUNT_MISMATCH':
       return 'transient';
     default:
       return 'inline';
@@ -46,6 +49,16 @@ export function errorMessage(code: ErrorCode, fallback?: string): string {
       return 'Ese email ya está registrado.';
     case 'SLUG_TAKEN':
       return 'Ese enlace público ya está en uso.';
+    case 'PLAN_LIMIT_REACHED':
+      return 'Tu plan actual no permite esta acción. Ve a Configuración → Suscripción para mejorar tu plan.';
+    case 'PAYMENT_PROVIDER_ERROR':
+      return 'No pudimos iniciar el pago. Inténtalo de nuevo.';
+    case 'PAYMENT_NOT_PENDING':
+      return 'Este pago ya no está pendiente. Actualiza el estado de tu suscripción.';
+    case 'PAYMENT_DUPLICATE_REFERENCE':
+      return 'Esa referencia ya fue registrada.';
+    case 'PAYMENT_AMOUNT_MISMATCH':
+      return 'El pago está en revisión porque el importe no coincide.';
     default:
       return 'Ha ocurrido un error inesperado.';
   }

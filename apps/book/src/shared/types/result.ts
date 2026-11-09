@@ -6,7 +6,12 @@ export type ErrorCode =
   | 'STATE_ERROR'
   | 'NOT_FOUND'
   | 'EMAIL_TAKEN'
-  | 'SLUG_TAKEN';
+  | 'SLUG_TAKEN'
+  | 'PLAN_LIMIT_REACHED'
+  | 'PAYMENT_PROVIDER_ERROR'
+  | 'PAYMENT_NOT_PENDING'
+  | 'PAYMENT_DUPLICATE_REFERENCE'
+  | 'PAYMENT_AMOUNT_MISMATCH';
 
 export interface ActionError {
   code: ErrorCode;

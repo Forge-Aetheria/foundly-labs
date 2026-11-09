@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -11,9 +12,10 @@ import { Stack, Typography } from '@foundly/ui';
 import { ProfileView } from '../profile/ProfileView';
 import { SecurityView } from '../security/SecurityView';
 import { PaymentsView } from './PaymentsView';
+import { SubscriptionView } from '../subscription/SubscriptionView';
 import { GLASS_CARD_SX } from '../../shared/utils/landingCanon';
 
-export const CONFIG_TABS = ['perfil', 'pagos', 'seguridad'] as const;
+export const CONFIG_TABS = ['perfil', 'pagos', 'suscripcion', 'seguridad'] as const;
 
 export type ConfigurationTab = (typeof CONFIG_TABS)[number];
 
@@ -23,6 +25,7 @@ const TAB_META: Record<
 > = {
   perfil: { label: 'Perfil del Negocio', icon: StorefrontOutlinedIcon },
   pagos: { label: 'Métodos de Pago', icon: PaymentsOutlinedIcon },
+  suscripcion: { label: 'Suscripción', icon: WorkspacePremiumOutlinedIcon },
   seguridad: { label: 'Seguridad', icon: LockOutlinedIcon },
 };
 
@@ -61,7 +64,8 @@ export function ConfigurationView({ initialTab = 'perfil' }: { initialTab?: Conf
           Configuración
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Administra el perfil público de tu negocio, tus métodos de pago y tus credenciales.
+          Administra el perfil público de tu negocio, tus métodos de pago, tu suscripción y tus
+          credenciales.
         </Typography>
       </Stack>
 
@@ -118,6 +122,11 @@ export function ConfigurationView({ initialTab = 'perfil' }: { initialTab?: Conf
       {mounted.has('pagos') ? (
         <TabPanel value="pagos" current={tab}>
           <PaymentsView embedded />
+        </TabPanel>
+      ) : null}
+      {mounted.has('suscripcion') ? (
+        <TabPanel value="suscripcion" current={tab}>
+          <SubscriptionView embedded />
         </TabPanel>
       ) : null}
       {mounted.has('seguridad') ? (

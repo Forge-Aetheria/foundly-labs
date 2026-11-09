@@ -380,6 +380,62 @@ type RegisterBusinessResult {
   tenantId: ID!
 }
 
+type CheckoutSession {
+  transactionId: ID!
+  gateway: PaymentGateway!
+  checkoutUrl: String
+  token: String
+  gatewayOrderId: String
+}
+
+enum PaymentGateway {
+  PAYPAL
+  BINANCE
+  PAGO_MOVIL
+  TRANSFERENCIA
+}
+
+type PaymentTransaction {
+  id: ID!
+  gateway: PaymentGateway!
+  status: PaymentStatus!
+  plan: SubscriptionPlan!
+  amount: String!
+  currency: String!
+  gatewayOrderId: String
+  referenceNumber: String
+  expiresAt: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+enum PaymentStatus {
+  PENDING
+  PENDING_APPROVAL
+  COMPLETED
+  REJECTED
+  FAILED
+}
+
+type BillingPlanInstructions {
+  amount: String!
+  currency: String!
+  durationDays: Int!
+}
+
+type ManualPaymentInstructions {
+  bank: String!
+  cedula: String!
+  phone: String!
+  rateVesPerUsd: String!
+  note: String
+}
+
+type BillingInstructions {
+  plan: BillingPlanInstructions!
+  manual: ManualPaymentInstructions!
+}
+
 type Query {
   health: HealthPayload!
   tenants: [TenantObject!]!
@@ -412,6 +468,8 @@ type Query {
   myPaymentMethods: [PaymentMethodObject!]!
   platformMetrics: PlatformMetrics!
   managedBusinesses(query: String, limit: Int, offset: Int): [ManagedBusiness!]!
+  billingInstructions: BillingInstructions!
+  myPaymentTransactions(limit: Int, offset: Int): [PaymentTransaction!]!
 }
 
 type Mutation {
@@ -455,6 +513,10 @@ type Mutation {
   deletePaymentMethod(id: ID!): Boolean!
   overrideTenantSubscription(input: OverrideTenantSubscriptionInput!): ManagedBusiness!
   registerBusiness(input: RegisterBusinessInput!): RegisterBusinessResult!
+  createPaypalSubscriptionOrder: CheckoutSession!
+  createBinancePaymentOrder: CheckoutSession!
+  submitManualPayment(input: SubmitManualPaymentInput!): PaymentTransaction!
+  approveManualPayment(transactionId: ID!): PaymentTransaction!
 }
 
 input CreateTenantInput {
@@ -695,4 +757,13 @@ input RegisterBusinessBusinessInput {
   name: String!
   category: String!
   slug: String!
+}
+
+input SubmitManualPaymentInput {
+  gateway: PaymentGateway!
+  referenceNumber: String!
+  bank: String!
+  amount: String!
+  currency: String!
+  phone: String!
 }
