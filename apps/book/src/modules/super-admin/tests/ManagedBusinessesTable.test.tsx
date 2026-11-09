@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { ManagedBusinessesTable } from '../components/ManagedBusinessesTable';
 import type { ManagedBusinessView } from '../utils/types';
 
@@ -17,9 +20,9 @@ const rows: ManagedBusinessView[] = [
 describe('ManagedBusinessesTable (020)', () => {
   it('renders a row per business with plan, status and expiry', () => {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <ManagedBusinessesTable businesses={rows} />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
     expect(screen.getByText('Estudio Ana')).toBeInTheDocument();
     expect(screen.getByText('Rona')).toBeInTheDocument();
@@ -32,9 +35,9 @@ describe('ManagedBusinessesTable (020)', () => {
 
   it('shows the empty state with no businesses', () => {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <ManagedBusinessesTable businesses={[]} />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
     expect(screen.getByText('Sin negocios')).toBeInTheDocument();
   });

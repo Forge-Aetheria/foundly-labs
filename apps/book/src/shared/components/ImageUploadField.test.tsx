@@ -3,6 +3,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import type { ActionResult } from '../types/result';
 import { ImageUploadField } from './ImageUploadField';
 
@@ -19,7 +22,7 @@ function Harness({
 }) {
   const [value, setValue] = useState(initial);
   return (
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <ImageUploadField
         label="Logo"
         preview="circle"
@@ -27,21 +30,21 @@ function Harness({
         onChange={setValue}
         onUpload={onUpload}
       />
-    </FoundlyThemeProvider>
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>
   );
 }
 
 describe('ImageUploadField (feature 021)', () => {
   it('renders the upload control and the URL fallback', () => {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <ImageUploadField
           label="Logo"
           value=""
           onChange={vi.fn()}
           onUpload={vi.fn(async () => ({ ok: true as const, data: { url: 'x' } }))}
         />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     expect(screen.getByLabelText('Subir Logo')).toBeInTheDocument();
@@ -114,9 +117,9 @@ describe('ImageUploadField (feature 021)', () => {
   it('lets the operator paste a URL as the manual alternative', () => {
     const onChange = vi.fn();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <ImageUploadField label="Portada" urlLabel="URL de la portada" value="" onChange={onChange} onUpload={vi.fn()} />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     fireEvent.change(screen.getByLabelText('URL de la portada'), {

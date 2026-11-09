@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { SuperAdminView } from '../SuperAdminView';
 import type { ManagedBusinessView, PlatformMetricsView } from '../utils/types';
 
@@ -31,7 +34,7 @@ const business: ManagedBusinessView = {
 
 function renderView(props: Partial<Parameters<typeof SuperAdminView>[0]> = {}) {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <SuperAdminView
         query=""
         page={1}
@@ -41,7 +44,7 @@ function renderView(props: Partial<Parameters<typeof SuperAdminView>[0]> = {}) {
         error={false}
         {...props}
       />
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 

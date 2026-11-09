@@ -9,7 +9,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
   type NotificationFilter,
-} from './actions';
+} from './services';
 
 /**
  * Notifications client hooks (feature 020; constitution §5.VI).

@@ -1,31 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import Box from '@mui/material/Box';
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  Card,
-  Checkbox,
-  Modal,
-  Stack,
-  Switch,
-  TextField,
-  Typography,
-} from '@foundly/ui';
+import { Badge, Button, Card, Stack, Typography } from '@foundly/ui';
 import type { Resource, Service } from '../../../shared/types/appointments';
 import {
   GLASS_CARD_SX,
   PRIMARY_BUTTON_SX,
   SECONDARY_BUTTON_SX,
 } from '../../../shared/utils/landingCanon';
-import { useCreateStaff, useRemoveStaff, useSetStaffActive, useUpdateStaff, useUploadStaffAvatar } from '../hooks';
+import {
+  useCreateStaff,
+  useRemoveStaff,
+  useSetStaffActive,
+  useUpdateStaff,
+  useUploadStaffAvatar,
+} from '../hooks';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
-import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
+import { StaffDialog, type StaffDraft } from './dialogs/StaffDialog';
+import { DeleteStaffDialog } from './dialogs/DeleteStaffDialog';
 
 export interface StaffManagerProps {
   staff: Resource[];
@@ -37,16 +33,6 @@ export interface StaffManagerProps {
   error?: string | null;
 }
 
-interface StaffDraft {
-  id?: string;
-  name: string;
-  role: string;
-  bio: string;
-  avatar: string;
-  active: boolean;
-  serviceIds: string[];
-}
-
 const EMPTY_DRAFT: StaffDraft = {
   name: '',
   role: '',
@@ -55,8 +41,6 @@ const EMPTY_DRAFT: StaffDraft = {
   active: true,
   serviceIds: [],
 };
-
-const BIO_MAX = 250;
 
 function initials(name: string): string {
   return name
@@ -355,121 +339,30 @@ export function StaffManager({ staff, services, tenantId, error }: StaffManagerP
         </Card>
       )}
 
-      {draft.open ? (
-        <Modal
-          open
-          onClose={close}
-          title={draft.editing ? `Editar · ${draft.value.name}` : 'Añadir profesional'}
-        >
-          <Stack spacing={1.5} sx={{ pt: 1, minWidth: { xs: 0, sm: 460 } }}>
-            <TextField
-              label="Nombre completo"
-              value={draft.value.name}
-              onChange={(value) => patch({ name: value })}
-              error={Boolean(fieldErrors?.name)}
-              helperText={fieldErrors?.name}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Cargo / Título profesional"
-              placeholder="P. ej. Peluquera Senior"
-              value={draft.value.role}
-              onChange={(value) => patch({ role: value })}
-              error={Boolean(fieldErrors?.role)}
-              helperText={fieldErrors?.role}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Biografía corta"
-              value={draft.value.bio}
-              onChange={(value) => patch({ bio: value })}
-              multiline
-              rows={3}
-              maxLength={BIO_MAX}
-              helperText={`${draft.value.bio.length}/${BIO_MAX} caracteres`}
-              fullWidth
-            />
+      <StaffDialog
+        open={draft.open}
+        editing={draft.editing}
+        value={draft.value}
+        services={services}
+        fieldErrors={fieldErrors}
+        saving={saving}
+        onClose={close}
+        onPatch={patch}
+        onToggleService={toggleService}
+        onSave={save}
+        onUpload={uploadAvatar}
+      />
 
-            <ImageUploadField
-              label="Foto / Avatar"
-              preview="circle"
-              value={draft.value.avatar}
-              onChange={(value) => patch({ avatar: value })}
-              onUpload={uploadAvatar}
-              helperText="Recomendado: cuadrada (1:1)."
-            />
-
-            <Stack spacing={1}>
-              <Typography variant="h6" component="h3">
-                Servicios que presta
-              </Typography>
-              {services.length > 0 ? (
-                <Stack spacing={0.5}>
-                  {services.map((service) => (
-                    <Checkbox
-                      key={service.id}
-                      label={service.name}
-                      checked={draft.value.serviceIds.includes(service.id)}
-                      onChange={(checked) => toggleService(service.id, checked)}
-                    />
-                  ))}
-                </Stack>
-              ) : (
-                <Typography variant="caption" color="text.secondary">
-                  No hay servicios en el catálogo. Añádelos desde «Servicios».
-                </Typography>
-              )}
-              {draft.value.serviceIds.length === 0 ? (
-                <Typography variant="body2" sx={{ color: 'warning.main', fontWeight: 600 }}>
-                  Advertencia: este profesional no tiene ningún servicio asignado.
-                </Typography>
-              ) : null}
-            </Stack>
-
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Switch
-                checked={draft.value.active}
-                onChange={(checked) => patch({ active: checked })}
-                label="Activo (visible en la vista pública)"
-              />
-            </Stack>
-
-            <Stack direction="row" spacing={1} justifyContent="flex-end" sx={{ pt: 1 }}>
-              <Button variant="secondary" onClick={close} disabled={saving}>
-                Cancelar
-              </Button>
-              <Button
-                variant="primary"
-                sx={PRIMARY_BUTTON_SX}
-                onClick={save}
-                loading={saving}
-              >
-                Guardar profesional
-              </Button>
-            </Stack>
-            {fieldErrors?._ ? (
-              <Typography variant="body2" color="error">
-                {fieldErrors._}
-              </Typography>
-            ) : null}
-          </Stack>
-        </Modal>
-      ) : null}
-
-      {deleteTarget ? (
-        <AlertDialog
-          open
-          title="Eliminar profesional"
-          description={`¿Eliminar a ${deleteTarget.name} del equipo? Dejará de aparecer en la vista pública del negocio.`}
-          confirmLabel="Sí, eliminar"
-          cancelLabel="Cancelar"
-          tone="destructive"
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      ) : null}
+      <DeleteStaffDialog
+        open={Boolean(deleteTarget)}
+        description={
+          deleteTarget
+            ? `¿Eliminar a ${deleteTarget.name} del equipo? Dejará de aparecer en la vista pública del negocio.`
+            : ''
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Stack>
   );
 }

@@ -3,7 +3,7 @@ import { PublicHeader } from '../../shared/components/PublicHeader';
 import { PublicFooter } from '../../shared/components/PublicFooter';
 import { LoginForm } from './components/LoginForm';
 
-/** Sign-in view (feature 009 — US1; feature 012 session-expiry notice). Server shell around the client form. */
+/** Sign-in view (feature 009/024; feature 012 session-expiry notice). SPA shell around the client form. */
 export function LoginView({ sessionExpired = false }: { sessionExpired?: boolean }) {
   return (
     <Stack sx={{ minHeight: '100vh' }}>

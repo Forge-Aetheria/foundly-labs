@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import { Container, Stack, Typography } from '@foundly/ui';
 import { ErrorState } from './components/ErrorState';
 import { ManagedBusinessesTable } from './components/ManagedBusinessesTable';

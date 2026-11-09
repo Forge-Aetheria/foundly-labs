@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import CheckIcon from '@mui/icons-material/Check';
 import { Button, Card, Container, Stack, Typography } from '@foundly/ui';
 import type {

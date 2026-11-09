@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { MetricsCards } from '../components/MetricsCards';
 import { PlanDistribution } from '../components/PlanDistribution';
 import type { PlatformMetricsView } from '../utils/types';
@@ -22,9 +25,9 @@ function metrics(overrides: Partial<PlatformMetricsView> = {}): PlatformMetricsV
 describe('MetricsCards (020)', () => {
   it('renders the business, user and conversion figures', () => {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <MetricsCards metrics={metrics()} />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
     expect(screen.getByText('Total negocios')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
@@ -35,18 +38,18 @@ describe('MetricsCards (020)', () => {
 
   it('shows the unavailable state for users when the metric is unavailable', () => {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <MetricsCards metrics={metrics({ usersAvailable: false, usersTotal: null, usersActive: null })} />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
     expect(screen.getByText('No disponible')).toBeInTheDocument();
   });
 
   it('renders the FREE vs PRO distribution', () => {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <PlanDistribution metrics={metrics()} />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
     expect(screen.getByText('FREE 7')).toBeInTheDocument();
     expect(screen.getByText('PRO 5')).toBeInTheDocument();

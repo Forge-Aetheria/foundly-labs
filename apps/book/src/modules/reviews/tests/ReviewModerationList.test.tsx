@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { ToastProvider } from '../../../shared/components/Toaster';
 import type { Review } from '../../../shared/types/tenancy';
 import { ReviewModerationList } from '../components/ReviewModerationList';
@@ -23,11 +26,11 @@ const reviews: Review[] = [
 
 function renderList(items: Review[] = reviews) {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <ToastProvider>
         <ReviewModerationList reviews={items} />
       </ToastProvider>
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 
@@ -74,11 +77,11 @@ describe('ReviewModerationList (feature 015/016, US3)', () => {
       },
     ];
     rerender(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <ToastProvider>
           <ReviewModerationList reviews={next} />
         </ToastProvider>
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     expect(screen.getByText('Nueva')).toBeInTheDocument();

@@ -2,7 +2,7 @@
 
 import type { PaymentMethod } from '../../shared/types/payments';
 import type { ActionResult } from '../../shared/types/result';
-import { deletePaymentMethod, listPaymentMethods, upsertPaymentMethod } from './actions';
+import { deletePaymentMethod, listPaymentMethods, upsertPaymentMethod } from './services';
 
 /** Configuration client hooks (feature 017; constitution §5.VI). */
 export function useFetchPaymentMethods(): () => Promise<ActionResult<PaymentMethod[]>> {

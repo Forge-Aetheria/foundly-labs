@@ -2,6 +2,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { ToastProvider } from '../../../shared/components/Toaster';
 import type { PaymentMethod } from '../../../shared/types/payments';
 import { PaymentsConfig } from '../components/PaymentsConfig';
@@ -30,11 +33,11 @@ const method: PaymentMethod = {
 
 function renderConfig(methods: PaymentMethod[] = []) {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <ToastProvider>
         <PaymentsConfig methods={methods} />
       </ToastProvider>
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 

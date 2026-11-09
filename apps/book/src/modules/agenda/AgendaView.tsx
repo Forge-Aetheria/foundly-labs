@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { Agenda, type AgendaRow } from './components/Agenda';
-import { listAgenda } from './actions';
-import { listServices } from '../services/actions';
-import { listStaff } from '../staff/actions';
+import { listAgenda } from './services';
+import { listServices } from '../services/services';
+import { listStaff } from '../staff/services';
 import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
 import type { AdminResourceState } from '../../shared/hooks/useAdminResource';

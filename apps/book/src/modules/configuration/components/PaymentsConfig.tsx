@@ -1,43 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  Card,
-  Chip,
-  Modal,
-  Stack,
-  Switch,
-  TextField,
-  Typography,
-} from '@foundly/ui';
+import { useRouter } from '@/shared/compat/useAppRouter';
+import { Badge, Button, Card, Stack, Typography } from '@foundly/ui';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 import {
-  PAYMENT_DETAIL_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_METHOD_ORDER,
-  PAYMENT_TYPE_FIELDS,
   paymentDetailSummary,
   type PaymentMethod,
   type PaymentMethodDetails,
   type PaymentMethodType,
 } from '../../../shared/types/payments';
 import { useDeletePaymentMethod, useUpsertPaymentMethod } from '../hooks';
+import { PaymentMethodDialog, type PaymentMethodDraft } from './dialogs/PaymentMethodDialog';
+import { DeletePaymentMethodDialog } from './dialogs/DeletePaymentMethodDialog';
 
-interface Draft {
-  type: PaymentMethodType;
-  title: string;
-  details: PaymentMethodDetails;
-  instructions: string;
-  active: boolean;
-}
-
-const EMPTY_DRAFT = (type: PaymentMethodType): Draft => ({
+const EMPTY_DRAFT = (type: PaymentMethodType): PaymentMethodDraft => ({
   type,
   title: '',
   details: {},
@@ -45,7 +26,7 @@ const EMPTY_DRAFT = (type: PaymentMethodType): Draft => ({
   active: true,
 });
 
-function draftFrom(method: PaymentMethod): Draft {
+function draftFrom(method: PaymentMethod): PaymentMethodDraft {
   return {
     type: method.type,
     title: method.title ?? '',
@@ -77,7 +58,11 @@ export function PaymentsConfig({
   const { pending, run } = useAsyncAction();
 
   const [items, setItems] = useState<PaymentMethod[]>(methods);
-  const [draft, setDraft] = useState<{ open: boolean; editing: PaymentMethod | null; value: Draft }>({
+  const [draft, setDraft] = useState<{
+    open: boolean;
+    editing: PaymentMethod | null;
+    value: PaymentMethodDraft;
+  }>({
     open: false,
     editing: null,
     value: EMPTY_DRAFT('pago_movil'),
@@ -109,7 +94,7 @@ export function PaymentsConfig({
     setDraft((prev) => ({ ...prev, open: false }));
   }
 
-  function patch(value: Partial<Draft>) {
+  function patch(value: Partial<PaymentMethodDraft>) {
     setDraft((prev) => ({ ...prev, value: { ...prev.value, ...value } }));
   }
 
@@ -214,7 +199,12 @@ export function PaymentsConfig({
               sx={{ flex: { xs: '1 1 100%', md: '1 1 calc(50% - 8px)' }, p: 2 }}
             >
               <Stack spacing={1.5}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  spacing={1}
+                >
                   <Stack spacing={0.25} sx={{ minWidth: 0 }}>
                     <Typography variant="h6" component="h3" noWrap>
                       {method.title ?? PAYMENT_METHOD_LABELS[method.type]}
@@ -242,7 +232,11 @@ export function PaymentsConfig({
                   <Button variant="secondary" onClick={() => openEdit(method)}>
                     Editar
                   </Button>
-                  <Button variant="secondary" onClick={() => void toggleActive(method)} disabled={pending}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => void toggleActive(method)}
+                    disabled={pending}
+                  >
                     {method.active ? 'Desactivar' : 'Activar'}
                   </Button>
                   <Button variant="destructive" onClick={() => setDeleteTarget(method)}>
@@ -266,94 +260,31 @@ export function PaymentsConfig({
         </Card>
       )}
 
-      {draft.open ? (
-        <Modal
-          open
-          onClose={close}
-          title={draft.editing ? 'Editar método de pago' : 'Nuevo Método de Pago'}
-        >
-          <Stack spacing={2} sx={{ pt: 1, minWidth: { xs: 0, sm: 460 } }}>
-            <Stack spacing={1}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Tipo de pago
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                {availableTypes.map((type) => (
-                  <Chip
-                    key={type}
-                    label={PAYMENT_METHOD_LABELS[type]}
-                    selectable
-                    selected={draft.value.type === type}
-                    onClick={() => patch({ type, details: {} })}
-                  />
-                ))}
-              </Stack>
-            </Stack>
+      <PaymentMethodDialog
+        open={draft.open}
+        editing={Boolean(draft.editing)}
+        value={draft.value}
+        availableTypes={availableTypes}
+        fieldErrors={fieldErrors}
+        pending={pending}
+        onClose={close}
+        onPatch={patch}
+        onPatchDetail={patchDetail}
+        onSubmit={() => void submit()}
+      />
 
-            <TextField
-              label="Título"
-              placeholder="P. ej. Pago Móvil Banesco"
-              value={draft.value.title}
-              onChange={(value) => patch({ title: value })}
-              error={Boolean(fieldErrors?.title)}
-              helperText={fieldErrors?.title}
-              fullWidth
-            />
-
-            {PAYMENT_TYPE_FIELDS[draft.value.type].map((key) => (
-              <TextField
-                key={key}
-                label={PAYMENT_DETAIL_LABELS[key]}
-                value={draft.value.details[key] ?? ''}
-                onChange={(value) => patchDetail(key, value)}
-                error={Boolean(fieldErrors?.[`details.${key}`])}
-                helperText={fieldErrors?.[`details.${key}`]}
-                fullWidth
-              />
-            ))}
-
-            <TextField
-              label="Instrucciones (opcional)"
-              value={draft.value.instructions}
-              onChange={(value) => patch({ instructions: value })}
-              multiline
-              rows={2}
-              maxLength={2000}
-              fullWidth
-            />
-
-            <Switch
-              checked={draft.value.active}
-              onChange={(checked) => patch({ active: checked })}
-              label={draft.value.active ? 'Activo' : 'Inactivo'}
-            />
-
-            <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 1 }}>
-              <Button variant="secondary" onClick={close} disabled={pending}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={() => void submit()} loading={pending}>
-                Guardar método
-              </Button>
-            </Stack>
-          </Stack>
-        </Modal>
-      ) : null}
-
-      {deleteTarget ? (
-        <AlertDialog
-          open
-          title="Eliminar método de pago"
-          description={`¿Seguro que quieres eliminar «${
-            deleteTarget.title ?? PAYMENT_METHOD_LABELS[deleteTarget.type]
-          }»? Los clientes dejarán de verlo al pagar un adelanto.`}
-          confirmLabel="Sí, eliminar"
-          cancelLabel="Cancelar"
-          tone="destructive"
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      ) : null}
+      <DeletePaymentMethodDialog
+        open={Boolean(deleteTarget)}
+        description={
+          deleteTarget
+            ? `¿Seguro que quieres eliminar «${
+                deleteTarget.title ?? PAYMENT_METHOD_LABELS[deleteTarget.type]
+              }»? Los clientes dejarán de verlo al pagar un adelanto.`
+            : ''
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Stack>
   );
 }

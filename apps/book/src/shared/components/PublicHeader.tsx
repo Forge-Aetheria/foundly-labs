@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from '@/shared/compat/Image';
+import Link from '@/shared/compat/Link';
 import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';

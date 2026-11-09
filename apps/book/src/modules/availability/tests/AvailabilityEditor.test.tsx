@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import type { TimeBlock } from '../../../shared/types/appointments';
 import { AvailabilityEditor } from '../components/AvailabilityEditor';
 
@@ -46,9 +49,9 @@ const blocks: TimeBlock[] = [
 
 function renderEditor(initialBlocks: TimeBlock[] = blocks) {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <AvailabilityEditor rules={rules} blocks={initialBlocks} />
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 

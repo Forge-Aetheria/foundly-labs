@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { apiRequest, mapActionError, resolveApiUrl } from '../client';
+import { onUnauthenticated } from '../notify-unauthenticated';
 import { MyServicesDocument } from '../generated';
 import type { ActionResult, ErrorCode } from '../../types/result';
 
@@ -14,29 +15,27 @@ function asError(result: ActionResult<unknown>): { code: ErrorCode; message: str
   return result.ok ? null : result.error;
 }
 
-describe('apiClient (feature 008/011 — error contract)', () => {
-  const previousUrl = process.env.API_URL;
-
+describe('apiClient (feature 008/011/024 — browser transport)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
-    if (previousUrl === undefined) delete process.env.API_URL;
-    else process.env.API_URL = previousUrl;
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
-  it('resolves the API URL from the environment', () => {
-    process.env.API_URL = 'http://localhost:3002';
+  it('resolves the API URL from VITE_API_URL', () => {
+    vi.stubEnv('VITE_API_URL', 'http://localhost:3002');
     expect(resolveApiUrl()).toBe('http://localhost:3002');
   });
 
-  it('fails with STATE_ERROR when API_URL is missing', async () => {
-    delete process.env.API_URL;
+  it('fails with STATE_ERROR when VITE_API_URL is missing', async () => {
+    vi.stubEnv('VITE_API_URL', '');
     const result = await apiRequest(MyServicesDocument, { active: null });
     expect(result.ok).toBe(false);
     expect(asError(result)?.code).toBe('STATE_ERROR');
   });
 
   it('returns typed data on success', async () => {
-    process.env.API_URL = 'http://localhost:3002';
+    vi.stubEnv('VITE_API_URL', 'http://localhost:3002');
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(jsonResponse({ data: { myServices: [{ id: 's1', name: 'Corte' }] } })),
@@ -47,7 +46,7 @@ describe('apiClient (feature 008/011 — error contract)', () => {
   });
 
   it('maps the API error envelope codes to book ErrorCode', async () => {
-    process.env.API_URL = 'http://localhost:3002';
+    vi.stubEnv('VITE_API_URL', 'http://localhost:3002');
     const codes: ErrorCode[] = ['UNAUTHENTICATED', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'VALIDATION_ERROR'];
     for (const code of codes) {
       vi.stubGlobal(
@@ -65,8 +64,23 @@ describe('apiClient (feature 008/011 — error contract)', () => {
     }
   });
 
+  it('emits the global unauthenticated signal on UNAUTHENTICATED', async () => {
+    vi.stubEnv('VITE_API_URL', 'http://localhost:3002');
+    const listener = vi.fn();
+    const unsubscribe = onUnauthenticated(listener);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({ data: null, errors: [{ extensions: { code: 'UNAUTHENTICATED' } }] }),
+      ),
+    );
+    await apiRequest(MyServicesDocument, { active: null });
+    unsubscribe();
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
   it('maps network failures to STATE_ERROR (no silent success)', async () => {
-    process.env.API_URL = 'http://localhost:3002';
+    vi.stubEnv('VITE_API_URL', 'http://localhost:3002');
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('fetch failed')));
     const result = await apiRequest(MyServicesDocument, { active: null });
     expect(result.ok).toBe(false);

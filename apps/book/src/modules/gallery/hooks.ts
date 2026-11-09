@@ -3,7 +3,7 @@
 import type { GalleryPhoto } from '../../shared/types/tenancy';
 import type { ActionResult } from '../../shared/types/result';
 import { uploadImage } from '../../shared/utils/uploadImage';
-import { addGalleryItem, listGallery, removeGalleryItem } from './actions';
+import { addGalleryItem, listGallery, removeGalleryItem } from './services';
 
 /**
  * Gallery client hooks (feature 013; constitution §5.VI).

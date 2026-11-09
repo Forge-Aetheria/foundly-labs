@@ -1,8 +1,8 @@
 # Foundly Labs — Code & TypeScript Standards
 
-**Version:** 2.2.0 (Monorepo — Landing Web Domain + Next.js data access)
+**Version:** 3.0.0 (Monorepo — Landing Astro + SPA React data access)
 **Scope:** `apps/landing` (Astro 5 + TypeScript + Tailwind CSS v4). Sirve además como **base de los estándares de TypeScript** para los paquetes compartidos (`packages/ui`) y las apps (`apps/book`, `apps/store`).
-**Authority:** Inviolable — subordinado a `specs/business-model.md`, `constitution.md` (v5.1.0) y `specs/architecture.md`.
+**Authority:** Inviolable — subordinado a `specs/business-model.md`, `constitution.md` (v6.0.0) y `specs/architecture.md`.
 **Design source of truth:** `specs/system-design.md` v3.0.0 y `packages/ui/src/styles/tokens.css`.
 
 ## 1. Strict Typing Policy
@@ -51,7 +51,19 @@ Rutas relativas a `apps/landing/`, salvo los paquetes compartidos, que viven en 
 | Utilities & Constants      | camelCase (`.ts`)            | `src/shared/utils/`                  | `src/shared/utils/analytics.ts`                    |
 | Shared Packages            | PascalCase / kebab-case      | `packages/ui`, `packages/config`     | `packages/ui/src/index.ts`                         |
 
-> **Patrón de app (constitution §7)**: todas las apps comparten **rutas delgadas + `modules/` + `shared/`**. En las apps Next.js (`apps/book`, `apps/store`) las rutas viven en `src/app/`, la lógica de dominio en `src/modules/<modulo>/` y lo reutilizable en `src/shared/`.
+> **Patrón de app (constitution §7)**: todas las apps comparten **rutas delgadas + `modules/` + `shared/`**. En las SPA (`apps/book`, `apps/store`) las rutas viven en `src/router.tsx`/`src/App.tsx` (React Router), la lógica de dominio en `src/modules/<modulo>/` y lo reutilizable en `src/shared/`.
+
+| Element                   | Naming Standard         | Location (SPA)                             | Example                                              |
+| ------------------------- | ----------------------- | ------------------------------------------ | ---------------------------------------------------- |
+| Routes / Router           | kebab-case / PascalCase | `src/router.tsx`, `src/App.tsx`            | `src/router.tsx`, `src/App.tsx`                      |
+| Module Views              | PascalCase (`.tsx`)     | `src/modules/<modulo>/`                    | `src/modules/agenda/AgendaView.tsx`                  |
+| Data Services             | camelCase (`.ts`)       | `src/modules/<modulo>/services.ts`         | `services.ts`                                        |
+| Modals / Dialogs          | PascalCase (`.tsx`)     | `src/modules/<modulo>/components/dialogs/` | `CreateServiceDialog.tsx`, `DeleteServiceDialog.tsx` |
+| Client Hooks              | `use*` (`.ts`)          | `src/modules/<modulo>/hooks.ts`            | `hooks.ts`                                           |
+| GraphQL Operations        | kebab-case (`.graphql`) | `src/modules/<modulo>/`                    | `agenda.graphql`                                     |
+| Query Client / Cache Keys | kebab-case (`.ts`)      | `src/shared/api/query-client.ts`           | `query-client.ts`                                    |
+| Guards / Session          | kebab-case / PascalCase | `src/shared/auth/`                         | `session-context.tsx`, `guards.ts`                   |
+| Tests                     | `*.test.ts(x)`          | `src/**/tests/`                            | `src/modules/agenda/tests/`                          |
 
 ## 4. UI, Styling & Design System Rules
 
@@ -114,51 +126,16 @@ La estructura común de las vistas públicas (`Header`/`Navbar` y `Footer`) es *
 - **Feedback UI**: Success and error notifications must follow the visual identity (floating toast or clean lavender alert box with #6C5CE7 accents).
 - **No Page Reloads**: Form submissions must be handled asynchronously (fetch API) with clear visual pending states.
 
-## 8. Next.js Server/Client Boundary (RSC)
+## 8. SPA React (apps/book, apps/store)
 
-Aplica a `apps/book` y `apps/store` (App Router, React 19). Un archivo **sin** `'use client'` es un **Server Component** por defecto. React solo serializa datos simples a través de la frontera Server → Client (`string`, `number`, `boolean`, `null`, `undefined`, `Date`, arrays, objetos planos y `ReactNode`). Una **función** no es serializable y provoca el error:
+**No aplica RSC.** `apps/book` y `apps/store` son SPA de cliente puro (React 19 + Vite). No hay App Router, Server Components, Server Actions ni frontera servidor/cliente que serializar.
 
-```text
-Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server".
-Or maybe you meant to call this function rather than return it. <... sx={function sx} ...>
-```
+- Todo el árbol React se renderiza en el navegador; no existen directivas `'use client'`/`'use server'` con efecto.
+- `packages/ui` debe seguir siendo agnóstico de framework y reutilizable en Astro y en las SPA. `FoundlyThemeProvider` aplica el tema MUI en el navegador.
+- Los estilos pueden usar `sx` con token o callback libremente (no hay frontera RSC), respetando siempre los tokens del sistema (§4) y el tipado estricto (§1).
+- No se permite introducir dependencias de Next.js (`next`, `next/link`, `next/navigation`, `next/image`, `next/server`, `@supabase/ssr`) en `apps/book` ni `apps/store`.
 
-### 8.1 Rule: no functions from Server Components to Client Components
-
-Un Server Component **NUNCA** debe pasar a un Client Component (MUI, `@foundly/ui`, o cualquier componente `'use client'`):
-
-- `sx` como función: `sx={(theme) => ({ ... })}`, `sx={[(theme) => ({ ... })]}`.
-- Handlers: `onClick`, `onChange`, `onClose`, `onDelete`, `onRowClick`, etc.
-- Render props / callbacks: `render={(row) => ...}`, `component={(props) => ...}`.
-- En general, **cualquier prop cuyo valor sea una función**.
-
-Si se necesita interacción o un `sx` dinámico con callback, el componente que lo declara **DEBE** llevar `'use client'` y consumirse desde otro componente cliente.
-
-### 8.2 Design-system primitives stay server-safe
-
-- Los primitivos de `packages/ui` **NO** llevan `'use client'` a propósito: deben poder renderizarse desde Server Components. Solo `FoundlyThemeProvider` es cliente.
-- Por tanto, el JSX interno de `packages/ui` **no** puede contener funciones (`sx`-función, handlers internos incondicionales, etc.); solo props serializables.
-- Para estilos dependientes del tema en un Server Component, usa **rutas de token** que MUI resuelve contra `theme.palette` en tiempo de estilo, o valores directos resueltos desde el tema:
-
-```tsx
-// ❌ MAL — la función cruza la frontera RSC (Server Component)
-<Box component="span" sx={(theme) => ({ backgroundColor: theme.palette.surface.badgePill })} />
-
-// ✅ BIEN — ruta de token resuelta por el tema (serializable)
-<Box component="span" sx={{ backgroundColor: 'surface.badgePill' }} />
-
-// ✅ BIEN — valor directo para lo que no tiene ruta de paleta (p. ej. sombras)
-boxShadow: elevated ? foundlyTheme.palette.shadow.fab : foundlyTheme.palette.shadow.card,
-```
-
-- `'use client'` **no** exime del tipado estricto ni del uso de tokens (§1 y §4).
-
-### 8.3 Verification
-
-- Al renderizar cualquier ruta en `next dev`, la consola y la respuesta HTTP **NO** deben mostrar `Functions cannot be passed directly to Client Components`.
-- Todo cambio en un Server Component o en `packages/ui` debe probarse cargando las rutas afectadas, además de pasar `tsc`, ESLint y la suite de tests.
-
-## 9. Next.js Data Access & Module Hooks (apps/book, apps/store)
+## 9. SPA Data Access & Module Hooks (apps/book, apps/store)
 
 Norma obligatoria (constitución §5.VI). La lógica de datos vive **dentro del módulo**, nunca en la UI ni en `shared/infra`.
 
@@ -166,11 +143,11 @@ Norma obligatoria (constitución §5.VI). La lógica de datos vive **dentro del 
 
 ```text
 src/modules/<modulo>/
-├── actions.ts     # Funciones de servidor: lecturas (fetches) y Server Actions
-├── hooks.ts       # Hooks de cliente que envuelven las interacciones
+├── services.ts    # Validación Zod + mapeo DTO→dominio + llamada a la API
+├── hooks.ts       # Hooks de cliente (TanStack Query: useQuery/useMutation)
 ├── <modulo>.graphql  # Operaciones GraphQL del módulo (input de codegen)
 ├── components/    # Vistas y componentes de UI
-├── dialogs/       # (cuando aplique)
+│   └── dialogs/   # TODO Modal/AlertDialog del módulo
 ├── utils/         # Helpers puros, schemas, mappers
 ├── tests/
 └── <Modulo>View.tsx
@@ -178,16 +155,17 @@ src/modules/<modulo>/
 
 - **`<modulo>.graphql`** — las operaciones GraphQL (queries/mutations) del módulo viven **dentro del módulo**. El `codegen` las recolecta (`documents: ['src/modules/**/*.graphql', 'src/shared/**/*.graphql']`) y genera `shared/api/generated.ts`. Las operaciones transversales (p. ej. `tenancy`) viven en su carpeta `shared/<área>/`.
 
-- **`actions.ts`** — única puerta a la API para el módulo. Server-only: lecturas y `'use server'` actions. Consumido por Server Components (render inicial) y por `hooks.ts`.
-- **`hooks.ts`** — `'use client'`; único punto desde el que la UI interactiva dispara acciones. Envuelve las Server Actions de `actions.ts`.
+- **`services.ts`** — única puerta de datos del módulo. Contiene validación con Zod, mapeo DTO→dominio y la llamada al transporte GraphQL (`apiRequest`). Debe ser agnóstico de React; nunca importa componentes.
+- **`hooks.ts`** — hooks de cliente basados en TanStack Query (`useQuery`/`useMutation`); único punto desde el que la UI dispara lecturas y escrituras. Gestionan claves de caché e invalidación.
+- **`components/dialogs/`** — TODO `Modal`/`AlertDialog` del módulo vive aquí. Prohibido declarar modales inline en `components/` o en `<Modulo>View.tsx`, y prohibida la carpeta `dialogs/` suelta en la raíz del módulo.
 
 ### 9.2 Prohibiciones en la UI
 
-En `components/`, `dialogs/` y `<Modulo>View.tsx` queda **prohibido** llamar directamente a:
+En `components/`, `components/dialogs/` y `<Modulo>View.tsx` queda **prohibido** llamar directamente a:
 
 - `useQuery` / `useMutation` (TanStack Query u otra librería).
 - `apiRequest` o cualquier transporte GraphQL.
-- Server Actions importadas de `actions.ts`.
+- Funciones de `services.ts`.
 
 Toda interacción debe pasar por un hook de `hooks.ts`.
 
@@ -197,9 +175,18 @@ Patrón obligatorio `use<Acción><Entidad|Módulo>`:
 
 ```ts
 // ✅ BIEN
-export function useCreateService() { /* envuelve createService de actions.ts */ }
-export function useUpdateAvailability() { /* ... */ }
-export function useCancelAppointment() { /* ... */ }
+export function useProfile() {
+  /* envuelve fetchProfile de services.ts */
+}
+export function useCreateService() {
+  /* envuelve createService de services.ts */
+}
+export function useUpdateAvailability() {
+  /* ... */
+}
+export function useCancelAppointment() {
+  /* ... */
+}
 
 // ❌ MAL
 export function serviceCreator() {}
@@ -208,7 +195,7 @@ export function useThing() {}
 
 ### 9.4 Tipado por codegen
 
-`actions.ts`/`hooks.ts` DEBEN usar **exclusivamente** los documentos y tipos autogenerados por
+`services.ts`/`hooks.ts` DEBEN usar **exclusivamente** los documentos y tipos autogenerados por
 `graphql-codegen` (`generated.ts`). Se prohíbe declarar DTOs o tipos manuales del contrato GraphQL.
 
 ```ts
@@ -216,24 +203,34 @@ export function useThing() {}
 import { MyServicesDocument, type MyServicesQuery } from '../../shared/api/generated';
 
 // ❌ MAL — DTO manual
-interface MyServiceDto { id: string; name: string; /* ... */ }
+interface MyServiceDto {
+  id: string;
+  name: string; /* ... */
+}
 ```
 
-### 9.5 `shared/infra` deprecada
+### 9.5 Caché e invalidación
 
-`shared/infra/` no puede alojar lógica de dominio ni acciones de servidor y DEBE desaparecer. El
-contenido transversal se reubica en carpetas de propósito claro: `shared/api/` (transporte + codegen),
-`shared/types/` (resultados/contratos de dominio), `shared/auth/` (sesión). Plan de migración:
-`specs/book/011-module-data-layer/`.
+- El `QueryClient` y las claves canónicas viven en `src/shared/api/query-client.ts`.
+- Toda clave incluye el `tenantId` (o `slug` público) para evitar fugas entre negocios.
+- Toda mutación DEBE invalidar las consultas dependientes (listados, contadores, bandeja) en lugar de revalidar rutas de servidor.
+- `signOut` y sesión expirada DEBEN limpiar la caché (`queryClient.clear()`).
+
+### 9.6 `shared/infra` deprecada
+
+`shared/infra/` no puede alojar lógica de dominio ni servicios de datos y DEBE desaparecer. El
+contenido transversal se reubica en carpetas de propósito claro: `shared/api/` (transporte + codegen +
+query client), `shared/types/` (resultados/contratos de dominio), `shared/auth/` (sesión). Plan de
+migración: `specs/book/011-module-data-layer/`.
 
 ## 10. Test Location (monorepo)
 
 Todo test DEBE vivir dentro de una carpeta **`tests/`** de la carpeta a la que pertenece su dominio.
 Nunca se colocan como hermanos del código fuente.
 
-- **Módulos (Next)**: `src/modules/<modulo>/tests/*.test.ts(x)`.
-- **Código compartido (Next)**: `src/shared/<área>/tests/*.test.ts(x)` (p. ej. `shared/tenancy/tests/queries.test.ts`).
-- **Rutas (Next)**: `src/app/tests/*.test.tsx` y `src/app/<segmento>/tests/*.test.tsx`.
+- **Módulos (SPA)**: `src/modules/<modulo>/tests/*.test.ts(x)` (incluye `services.test.ts`).
+- **Código compartido (SPA)**: `src/shared/<área>/tests/*.test.ts(x)` (p. ej. `shared/tenancy/tests/queries.test.ts`).
+- **Rutas (SPA)**: `src/tests/*.test.tsx` (p. ej. `src/tests/router.test.tsx`).
 - **Paquetes**: `packages/<pkg>/src/<componente>/tests/*.test.tsx`.
 
 Reglas:

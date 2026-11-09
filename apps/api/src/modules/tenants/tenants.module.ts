@@ -6,5 +6,6 @@ import { TenantsService } from './tenants.service';
 @Module({
   imports: [SharedPrismaModule],
   providers: [TenantsService, TenantsResolver],
+  exports: [TenantsService],
 })
 export class TenantsModule {}

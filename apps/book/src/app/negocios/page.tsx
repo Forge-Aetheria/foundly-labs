@@ -1,32 +1,37 @@
-import type { Metadata } from 'next';
+import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from '@/shared/compat/useAppRouter';
+import { getDirectoryBusinesses } from '../../modules/directory/services';
 import { DirectoryView } from '../../modules/directory/DirectoryView';
-import { getDirectoryBusinesses } from '../../modules/directory/actions';
+import { queryKeys } from '../../shared/api/query-client';
+import { PageMeta } from '../../shared/components/PageMeta';
 
-export const metadata: Metadata = {
-  title: 'Negocios — Foundly Book',
-  description: 'Descubre negocios y reserva tu cita en segundos.',
-};
+/** Public business directory (`/negocios`). Loads the catalog once; filters client-side. */
+export default function NegociosPage() {
+  const params = useSearchParams();
+  const query = params.get('q') ?? '';
 
-export const dynamic = 'force-dynamic';
+  const catalog = useQuery({
+    queryKey: queryKeys.directory('', null),
+    queryFn: async () => {
+      const result = await getDirectoryBusinesses('');
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
+  });
 
-interface NegociosPageProps {
-  searchParams: Promise<{ q?: string | string[] }>;
-}
-
-/** Public business directory (019): thin route that resolves `q` and renders the view. */
-export default async function NegociosPage({ searchParams }: NegociosPageProps) {
-  const params = await searchParams;
-  const raw = params.q;
-  const query = typeof raw === 'string' ? raw : Array.isArray(raw) ? (raw[0] ?? '') : '';
-
-  // Load the full catalog once; the client view filters instantly by term/category.
-  const result = await getDirectoryBusinesses('');
+  if (catalog.isLoading) {
+    return (
+      <>
+        <PageMeta title="Negocios" description="Descubre negocios y reserva tu cita." />
+        <DirectoryView query={query} businesses={[]} error={false} loading />
+      </>
+    );
+  }
 
   return (
-    <DirectoryView
-      query={query}
-      businesses={result.ok ? result.data : []}
-      error={!result.ok}
-    />
+    <>
+      <PageMeta title="Negocios" description="Descubre negocios y reserva tu cita." />
+      <DirectoryView query={query} businesses={catalog.data ?? []} error={catalog.isError} />
+    </>
   );
 }

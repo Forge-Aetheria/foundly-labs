@@ -18,5 +18,9 @@ services:
         sync: false
       - key: SUPABASE_AUTH_URL
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
       - key: CORS_ORIGINS
         value: https://book.foundlylabs.com,https://foundly-book.vercel.app

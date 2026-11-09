@@ -4,7 +4,9 @@ import { getCurrentTenant } from '../queries';
 
 const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));
 
-vi.mock('../../api/client', () => ({ apiRequest: (...args: unknown[]) => apiMock(...args) }));
+vi.mock('../../api/authed-request', () => ({
+  apiRequestAuthed: (...args: unknown[]) => apiMock(...args),
+}));
 
 function makeTenant(id: string, slug: string) {
   return {

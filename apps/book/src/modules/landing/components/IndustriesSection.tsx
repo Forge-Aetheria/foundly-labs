@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
 import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';

@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { AlertDialog, Badge, Button, Card, Chip, Stack, Typography } from '@foundly/ui';
+import { useRouter } from '@/shared/compat/useAppRouter';
+import { Badge, Button, Card, Chip, Stack, Typography } from '@foundly/ui';
 import type { BadgeStatus } from '@foundly/ui';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { DeleteReviewDialog } from './dialogs/DeleteReviewDialog';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
@@ -172,18 +173,11 @@ export function ReviewModerationList({ reviews, error }: ReviewModerationListPro
         </Stack>
       )}
 
-      {deleteTarget ? (
-        <AlertDialog
-          open
-          title="Eliminar reseña"
-          description="¿Seguro que quieres eliminar esta reseña? No se puede deshacer."
-          confirmLabel="Sí, eliminar"
-          cancelLabel="Cancelar"
-          tone="destructive"
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      ) : null}
+      <DeleteReviewDialog
+        open={Boolean(deleteTarget)}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Stack>
   );
 }

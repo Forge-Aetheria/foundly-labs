@@ -1,17 +1,13 @@
-import type { Metadata } from 'next';
 import { Card, Container, Stack, Typography } from '@foundly/ui';
+import { PageMeta } from '../../shared/components/PageMeta';
 import { PublicFooter } from '../../shared/components/PublicFooter';
 import { PublicHeader } from '../../shared/components/PublicHeader';
-
-export const metadata: Metadata = {
-  title: 'Términos de Servicio — Foundly Book',
-  description: 'Condiciones de uso de Foundly Book.',
-};
 
 /** Public terms page linked from the onboarding footer. */
 export default function TermsPage() {
   return (
     <Stack sx={{ minHeight: '100vh' }}>
+      <PageMeta title="Términos de Servicio" description="Condiciones de uso de Foundly Book." />
       <PublicHeader />
       <Container maxWidth="md" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
         <Card

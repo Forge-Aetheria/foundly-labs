@@ -1,7 +1,7 @@
 'use client';
 
 import { ServiceCatalog } from './components/ServiceCatalog';
-import { listServices } from './actions';
+import { listServices } from './services';
 import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
 import { useAdminResource } from '../../shared/hooks/useAdminResource';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import BoltIcon from '@mui/icons-material/Bolt';
 import CreditCardOffIcon from '@mui/icons-material/CreditCardOff';

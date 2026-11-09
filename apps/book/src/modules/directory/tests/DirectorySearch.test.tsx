@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { DirectorySearch } from '../components/DirectorySearch';
 
 const { replaceMock, refreshMock } = vi.hoisted(() => ({
@@ -8,16 +11,16 @@ const { replaceMock, refreshMock } = vi.hoisted(() => ({
   refreshMock: vi.fn(),
 }));
 
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/compat/useAppRouter', () => ({
   useRouter: () => ({ replace: replaceMock, refresh: refreshMock }),
   usePathname: () => '/negocios',
 }));
 
 function renderSearch(value = '') {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <DirectorySearch value={value} />
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 

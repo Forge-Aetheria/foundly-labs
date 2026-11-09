@@ -1,21 +1,14 @@
-'use client';
-
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../shared/api/query-client';
+import { useSession } from '../../shared/auth/session-context';
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
-import {
-  useDeleteNotification,
-  useFetchNotifications,
-  useMarkAllNotificationsRead,
-  useMarkNotificationRead,
-  useUnreadNotificationCount,
-} from './hooks';
+  deleteNotification,
+  getUnreadNotificationCount,
+  listNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from './services';
 import type { Notification } from './utils/types';
 
 /** Max items loaded into the shared inbox state (the API caps at 100). */
@@ -26,7 +19,6 @@ export interface NotificationsContextValue {
   unreadCount: number;
   loading: boolean;
   error: string | null;
-  /** Reload items + unread count from the API. */
   refresh: () => Promise<void>;
   markRead: (id: string) => Promise<void>;
   markAllRead: () => Promise<void>;
@@ -37,88 +29,131 @@ const NotificationsContext = createContext<NotificationsContextValue | null>(nul
 
 /**
  * Shares the tenant inbox between the admin header bell and the
- * `/admin/notificaciones` page so read/delete changes stay in sync immediately.
+ * `/admin/notificaciones` page through the TanStack cache (feature 024).
  */
 export function NotificationsProvider({ children }: { children: ReactNode }) {
-  const fetchNotifications = useFetchNotifications();
-  const fetchUnreadCount = useUnreadNotificationCount();
-  const markReadAction = useMarkNotificationRead();
-  const markAllReadAction = useMarkAllNotificationsRead();
-  const deleteAction = useDeleteNotification();
+  const { tenantId } = useSession();
+  const queryClient = useQueryClient();
+  const listKey = queryKeys.notifications(tenantId, 'inbox');
+  const countKey = queryKeys.notifications(tenantId, 'unread-count');
 
-  const [items, setItems] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const mounted = useRef(true);
+  const listQuery = useQuery({
+    queryKey: listKey,
+    enabled: Boolean(tenantId),
+    queryFn: async () => {
+      const result = await listNotifications({ limit: INBOX_LIMIT });
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
+  });
+
+  const countQuery = useQuery({
+    queryKey: countKey,
+    enabled: Boolean(tenantId),
+    queryFn: async () => {
+      const result = await getUnreadNotificationCount();
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
+  });
+
+  const invalidate = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['notifications', tenantId] });
+  }, [queryClient, tenantId]);
+
+  const markReadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const result = await markNotificationRead(id);
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
+    onMutate: (id: string) => {
+      const items = queryClient.getQueryData<Notification[]>(listKey) ?? [];
+      const target = items.find((item) => item.id === id);
+      if (target && !target.read) {
+        queryClient.setQueryData<Notification[]>(listKey, (current) =>
+          (current ?? []).map((item) => (item.id === id ? { ...item, read: true } : item)),
+        );
+        queryClient.setQueryData<number>(countKey, (count) => Math.max(0, (count ?? 0) - 1));
+      }
+    },
+    onError: () => { void invalidate(); },
+  });
+
+  const markAllMutation = useMutation({
+    mutationFn: async () => {
+      const result = await markAllNotificationsRead();
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
+    onMutate: () => {
+      queryClient.setQueryData<Notification[]>(listKey, (current) =>
+        (current ?? []).map((item) => ({ ...item, read: true })),
+      );
+      queryClient.setQueryData<number>(countKey, 0);
+    },
+    onError: () => { void invalidate(); },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const result = await deleteNotification(id);
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
+    onMutate: (id: string) => {
+      const items = queryClient.getQueryData<Notification[]>(listKey) ?? [];
+      const target = items.find((item) => item.id === id);
+      queryClient.setQueryData<Notification[]>(listKey, (current) =>
+        (current ?? []).filter((item) => item.id !== id),
+      );
+      if (target && !target.read) {
+        queryClient.setQueryData<number>(countKey, (count) => Math.max(0, (count ?? 0) - 1));
+      }
+    },
+    onError: () => { void invalidate(); },
+  });
 
   const refresh = useCallback(async () => {
-    const [listResult, countResult] = await Promise.all([
-      fetchNotifications({ limit: INBOX_LIMIT }),
-      fetchUnreadCount(),
-    ]);
-    if (!mounted.current) return;
-    if (!listResult.ok) {
-      setError(listResult.error.message);
-      setLoading(false);
-      return;
-    }
-    setItems(listResult.data);
-    if (countResult.ok) {
-      setUnreadCount(countResult.data);
-    }
-    setError(null);
-    setLoading(false);
-  }, [fetchNotifications, fetchUnreadCount]);
-
-  useEffect(() => {
-    mounted.current = true;
-    void refresh();
-    return () => {
-      mounted.current = false;
-    };
-  }, [refresh]);
+    await Promise.all([listQuery.refetch(), countQuery.refetch()]);
+  }, [listQuery, countQuery]);
 
   const markRead = useCallback(
     async (id: string) => {
-      const target = items.find((item) => item.id === id);
-      if (!target || target.read) return;
-      setItems((current) => current.map((item) => (item.id === id ? { ...item, read: true } : item)));
-      setUnreadCount((count) => Math.max(0, count - 1));
-      const result = await markReadAction(id);
-      if (!result.ok) await refresh();
+      await markReadMutation.mutateAsync(id);
     },
-    [items, markReadAction, refresh],
+    [markReadMutation],
   );
 
   const markAllRead = useCallback(async () => {
-    setItems((current) => current.map((item) => ({ ...item, read: true })));
-    setUnreadCount(0);
-    const result = await markAllReadAction();
-    if (!result.ok) await refresh();
-  }, [markAllReadAction, refresh]);
+    await markAllMutation.mutateAsync();
+  }, [markAllMutation]);
 
   const remove = useCallback(
     async (id: string) => {
-      const target = items.find((item) => item.id === id);
-      setItems((current) => current.filter((item) => item.id !== id));
-      if (target && !target.read) setUnreadCount((count) => Math.max(0, count - 1));
-      const result = await deleteAction(id);
-      if (!result.ok) await refresh();
+      await deleteMutation.mutateAsync(id);
     },
-    [items, deleteAction, refresh],
+    [deleteMutation],
   );
 
-  return (
-    <NotificationsContext.Provider
-      value={{ items, unreadCount, loading, error, refresh, markRead, markAllRead, remove }}
-    >
-      {children}
-    </NotificationsContext.Provider>
+  const value = useMemo<NotificationsContextValue>(
+    () => ({
+      items: listQuery.data ?? [],
+      unreadCount: countQuery.data ?? 0,
+      loading: listQuery.isLoading || countQuery.isLoading,
+      error: listQuery.isError ? listQuery.error.message : null,
+      refresh,
+      markRead,
+      markAllRead,
+      remove,
+    }),
+    [countQuery.data, countQuery.isLoading, listQuery.data, listQuery.error, listQuery.isError, listQuery.isLoading, markAllRead, markRead, refresh, remove],
   );
+
+  return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }
 
-/** Access the shared notifications state; must be used within the provider. */
+/** Access the shared notifications state; must be used within a provider. */
 export function useNotifications(): NotificationsContextValue {
   const context = useContext(NotificationsContext);
   if (!context) {

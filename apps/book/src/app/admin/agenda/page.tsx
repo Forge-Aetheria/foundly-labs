@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from '@/shared/compat/useAppRouter';
 import { ModuleSkeleton } from '../../../shared/components/ModuleSkeleton';
 import { AgendaView } from '../../../modules/agenda/AgendaView';
 

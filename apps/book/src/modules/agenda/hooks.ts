@@ -7,7 +7,7 @@ import {
   changeAppointmentStatus,
   createAppointment,
   rescheduleAppointment,
-} from './actions';
+} from './services';
 
 /** Agenda client hooks (feature 011; constitution §5.VI). */
 export function useCreateAppointment(): (input: unknown) => Promise<ActionResult<Appointment>> {

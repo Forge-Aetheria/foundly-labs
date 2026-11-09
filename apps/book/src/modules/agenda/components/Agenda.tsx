@@ -1,29 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import {
   Badge,
   Button,
   Card,
-  Chip,
   DataTable,
-  Modal,
   Stack,
   TextField,
   Typography,
-  type BadgeStatus,
   type DataTableColumn,
 } from '@foundly/ui';
-import type {
-  Appointment,
-  AppointmentNotification,
-  Resource,
-  Service,
-} from '../../../shared/types/appointments';
-import type { AdvancePayment } from '../../../shared/types/payments';
-import { PAYMENT_METHOD_LABELS } from '../../../shared/types/payments';
-import { formatPrice } from '../../../shared/utils/format';
+import type { Appointment, Resource, Service } from '../../../shared/types/appointments';
 import {
   useCancelAppointment,
   useChangeAppointmentStatus,
@@ -33,21 +22,14 @@ import {
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
+import { STATUS_BADGE, STATUS_LABEL, dayKey, formatTime } from '../utils/status';
+import type { AgendaRow } from '../utils/types';
+import { CreateAppointmentDialog } from './dialogs/CreateAppointmentDialog';
+import { AppointmentDetailDialog } from './dialogs/AppointmentDetailDialog';
+import { RejectAppointmentDialog } from './dialogs/RejectAppointmentDialog';
+import { RescheduleAppointmentDialog } from './dialogs/RescheduleAppointmentDialog';
 
-export interface AgendaRow {
-  id: string;
-  startAt: string;
-  endAt: string;
-  clientName: string;
-  clientContact: string | null;
-  serviceName: string;
-  durationMinutes: number;
-  resourceName: string;
-  status: string;
-  currency: string;
-  payment: AdvancePayment | null;
-  notifications: AppointmentNotification[];
-}
+export type { AgendaRow } from '../utils/types';
 
 export interface AgendaProps {
   appointments: AgendaRow[];
@@ -61,24 +43,6 @@ export interface AgendaProps {
   error?: string | null;
 }
 
-const STATUS_BADGE: Record<string, BadgeStatus> = {
-  pending: 'warning',
-  confirmed: 'positive',
-  'checked-in': 'info',
-  completed: 'info',
-  cancelled: 'neutral',
-  'no-show': 'neutral',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: 'Pendiente',
-  confirmed: 'Confirmada',
-  'checked-in': 'En curso',
-  completed: 'Completada',
-  cancelled: 'Cancelada',
-  'no-show': 'No asistió',
-};
-
 const STATUS_FILTERS = [
   { key: 'all', label: 'Todas', match: () => true },
   { key: 'pending', label: 'Pendientes', match: (status: string) => status === 'pending' },
@@ -86,34 +50,6 @@ const STATUS_FILTERS = [
   { key: 'completed', label: 'Completadas', match: (status: string) => status === 'completed' },
   { key: 'cancelled', label: 'Canceladas', match: (status: string) => status === 'cancelled' },
 ] as const;
-
-function formatTime(iso: string): string {
-  return iso.slice(11, 16);
-}
-
-function dayKey(iso: string): string {
-  return iso.slice(0, 10);
-}
-
-function ProofPreview({ url }: { url: string }) {
-  const [broken, setBroken] = useState(false);
-  return (
-    <Stack spacing={0.5}>
-      <Typography variant="body2">Comprobante:</Typography>
-      {broken ? null : (
-        <img
-          src={url}
-          alt="Comprobante del adelanto"
-          style={{ maxWidth: 220, borderRadius: 8, display: 'block' }}
-          onError={() => setBroken(true)}
-        />
-      )}
-      <a href={url} target="_blank" rel="noreferrer">
-        Abrir comprobante
-      </a>
-    </Stack>
-  );
-}
 
 type ModalState =
   | { kind: 'create' }
@@ -180,9 +116,7 @@ export function Agenda({ appointments, range, services = [], resources = [], err
 
   async function accept(row: AgendaRow) {
     setActionError(null);
-    const result = await run(() =>
-      changeStatus({ appointmentId: row.id, status: 'confirmed' }),
-    );
+    const result = await run(() => changeStatus({ appointmentId: row.id, status: 'confirmed' }));
     if (!result) return;
     if (!result.ok) {
       setActionError(result.error.message);
@@ -415,233 +349,66 @@ export function Agenda({ appointments, range, services = [], resources = [], err
       />
 
       {modal?.kind === 'create' ? (
-        <Modal open onClose={() => setModal(null)} title="Nueva cita">
-          <Stack spacing={2}>
-            <TextField
-              label="Cliente"
-              value={form.clientName}
-              onChange={(value) => setForm((prev) => ({ ...prev, clientName: value }))}
-            />
-            <TextField
-              label="Email"
-              type="email"
-              value={form.clientEmail}
-              onChange={(value) => setForm((prev) => ({ ...prev, clientEmail: value }))}
-            />
-            <TextField
-              label="Teléfono"
-              value={form.clientPhone}
-              onChange={(value) => setForm((prev) => ({ ...prev, clientPhone: value }))}
-            />
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              Servicio
-            </Typography>
-            {services.length > 0 ? (
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                {services.map((service) => (
-                  <Chip
-                    key={service.id}
-                    label={service.name}
-                    selectable
-                    selected={form.serviceId === service.id}
-                    onClick={() => setForm((prev) => ({ ...prev, serviceId: service.id }))}
-                  />
-                ))}
-              </Stack>
-            ) : (
-              <Typography variant="caption" color="text.secondary">
-                No hay servicios disponibles.
-              </Typography>
-            )}
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              Profesional
-            </Typography>
-            {resources.length > 0 ? (
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                {resources.map((resource) => (
-                  <Chip
-                    key={resource.id}
-                    label={resource.name}
-                    selectable
-                    selected={form.specialistId === resource.id}
-                    onClick={() => setForm((prev) => ({ ...prev, specialistId: resource.id }))}
-                  />
-                ))}
-              </Stack>
-            ) : (
-              <Typography variant="caption" color="text.secondary">
-                No hay profesionales disponibles.
-              </Typography>
-            )}
-            <TextField
-              label="Fecha"
-              type="date"
-              value={form.date}
-              onChange={(value) => setForm((prev) => ({ ...prev, date: value }))}
-            />
-            <TextField
-              label="Hora"
-              type="time"
-              value={form.time}
-              onChange={(value) => setForm((prev) => ({ ...prev, time: value }))}
-            />
-            {createError ? (
-              <Typography variant="body2" color="error" role="alert">
-                {createError}
-              </Typography>
-            ) : null}
-            <Stack direction="row" justifyContent="flex-end" spacing={1}>
-              <Button variant="secondary" onClick={() => setModal(null)} disabled={saving}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={saveCreate} loading={saving}>
-                Guardar
-              </Button>
-            </Stack>
-          </Stack>
-        </Modal>
+        <CreateAppointmentDialog
+          open
+          form={form}
+          services={services}
+          resources={resources}
+          error={createError}
+          saving={saving}
+          onClose={() => setModal(null)}
+          onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+          onSave={saveCreate}
+        />
       ) : null}
 
       {modal?.kind === 'detail' ? (
-        <Modal open onClose={() => setModal(null)} title={`Detalle · ${modal.row.clientName}`}>
-          <Stack spacing={1}>
-            <Typography variant="body2">
-              Cliente: <strong>{modal.row.clientName}</strong>
-            </Typography>
-            {modal.row.clientContact ? (
-              <Typography variant="body2" color="text.secondary">
-                Contacto: {modal.row.clientContact}
-              </Typography>
-            ) : null}
-            <Typography variant="body2">
-              Fecha y hora: {dayKey(modal.row.startAt)} · {formatTime(modal.row.startAt)}
-            </Typography>
-            <Typography variant="body2">Servicio: {modal.row.serviceName}</Typography>
-            <Typography variant="body2">Profesional: {modal.row.resourceName}</Typography>
-            <Badge pill status={STATUS_BADGE[modal.row.status] ?? 'neutral'}>
-              {STATUS_LABEL[modal.row.status] ?? modal.row.status}
-            </Badge>
-
-            {modal.row.payment ? (
-              <Card sx={{ p: 2 }}>
-                <Stack spacing={0.5}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    Adelanto
-                  </Typography>
-                  <Typography variant="body2">
-                    Método: {PAYMENT_METHOD_LABELS[modal.row.payment.methodType]}
-                  </Typography>
-                  <Typography variant="body2">
-                    Monto: {formatPrice(modal.row.payment.amountCents, modal.row.currency)}
-                  </Typography>
-                  <Typography variant="body2">
-                    Referencia: {modal.row.payment.reference}
-                  </Typography>
-                  <ProofPreview url={modal.row.payment.proofUrl} />
-                </Stack>
-              </Card>
-            ) : null}
-
-            <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ flexWrap: 'wrap' }}>
-              {modal.row.status === 'pending' ? (
-                <Button variant="secondary" onClick={() => void accept(modal.row)} disabled={saving}>
-                  Aceptar
-                </Button>
-              ) : null}
-              {modal.row.status === 'pending' || modal.row.status === 'confirmed' ? (
-                <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setActionError(null);
-                      setRejectReason('No disponible');
-                      setModal({ kind: 'reject', row: modal.row });
-                    }}
-                    disabled={saving}
-                  >
-                    Rechazar
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setActionError(null);
-                      setRescheduleForm({
-                        date: dayKey(modal.row.startAt),
-                        time: formatTime(modal.row.startAt),
-                      });
-                      setModal({ kind: 'reschedule', row: modal.row });
-                    }}
-                    disabled={saving}
-                  >
-                    Reagendar
-                  </Button>
-                </>
-              ) : null}
-              <Button variant="primary" onClick={() => setModal(null)}>
-                Cerrar
-              </Button>
-            </Stack>
-          </Stack>
-        </Modal>
+        <AppointmentDetailDialog
+          row={modal.row}
+          saving={saving}
+          onClose={() => setModal(null)}
+          onAccept={() => void accept(modal.row)}
+          onReject={() => {
+            setActionError(null);
+            setRejectReason('No disponible');
+            setModal({ kind: 'reject', row: modal.row });
+          }}
+          onReschedule={() => {
+            setActionError(null);
+            setRescheduleForm({
+              date: dayKey(modal.row.startAt),
+              time: formatTime(modal.row.startAt),
+            });
+            setModal({ kind: 'reschedule', row: modal.row });
+          }}
+        />
       ) : null}
 
       {modal?.kind === 'reject' ? (
-        <Modal open onClose={() => setModal(null)} title="Rechazar cita">
-          <Stack spacing={2}>
-            <Typography variant="body2">
-              ¿Rechazar la cita de {modal.row.clientName}? El cliente recibirá una notificación.
-            </Typography>
-            <TextField label="Motivo" value={rejectReason} onChange={setRejectReason} fullWidth />
-            {actionError ? (
-              <Typography variant="body2" color="error" role="alert">
-                {actionError}
-              </Typography>
-            ) : null}
-            <Stack direction="row" justifyContent="flex-end" spacing={1}>
-              <Button variant="secondary" onClick={() => setModal(null)} disabled={saving}>
-                Cancelar
-              </Button>
-              <Button variant="destructive" onClick={() => void confirmReject(modal.row)} loading={saving}>
-                Rechazar
-              </Button>
-            </Stack>
-          </Stack>
-        </Modal>
+        <RejectAppointmentDialog
+          open
+          clientName={modal.row.clientName}
+          reason={rejectReason}
+          error={actionError}
+          saving={saving}
+          onReasonChange={setRejectReason}
+          onConfirm={() => void confirmReject(modal.row)}
+          onCancel={() => setModal(null)}
+        />
       ) : null}
 
       {modal?.kind === 'reschedule' ? (
-        <Modal open onClose={() => setModal(null)} title="Reagendar cita">
-          <Stack spacing={2}>
-            <Typography variant="body2">
-              Nueva fecha y hora para {modal.row.clientName}.
-            </Typography>
-            <TextField
-              label="Fecha"
-              type="date"
-              value={rescheduleForm.date}
-              onChange={(value) => setRescheduleForm((prev) => ({ ...prev, date: value }))}
-            />
-            <TextField
-              label="Hora"
-              type="time"
-              value={rescheduleForm.time}
-              onChange={(value) => setRescheduleForm((prev) => ({ ...prev, time: value }))}
-            />
-            {actionError ? (
-              <Typography variant="body2" color="error" role="alert">
-                {actionError}
-              </Typography>
-            ) : null}
-            <Stack direction="row" justifyContent="flex-end" spacing={1}>
-              <Button variant="secondary" onClick={() => setModal(null)} disabled={saving}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={() => void confirmReschedule(modal.row)} loading={saving}>
-                Reagendar
-              </Button>
-            </Stack>
-          </Stack>
-        </Modal>
+        <RescheduleAppointmentDialog
+          open
+          clientName={modal.row.clientName}
+          date={rescheduleForm.date}
+          time={rescheduleForm.time}
+          error={actionError}
+          saving={saving}
+          onChange={(patch) => setRescheduleForm((prev) => ({ ...prev, ...patch }))}
+          onConfirm={() => void confirmReschedule(modal.row)}
+          onCancel={() => setModal(null)}
+        />
       ) : null}
     </Card>
   );

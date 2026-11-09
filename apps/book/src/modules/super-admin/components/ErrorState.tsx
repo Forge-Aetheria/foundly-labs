@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import { Button, Card, Stack, Typography } from '@foundly/ui';
 
 /** Friendly error state with a retry that re-runs the server read. */

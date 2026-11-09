@@ -1,7 +1,7 @@
 'use client';
 
 import type { ActionResult } from '../../shared/types/result';
-import { getManagedBusinesses, getPlatformMetrics, overrideSubscription } from './actions';
+import { getManagedBusinesses, getPlatformMetrics, overrideSubscription } from './services';
 import type { ManagedBusinessView, PlatformMetricsView } from './utils/types';
 
 /** Super Admin client hooks (feature 020; constitution §5.VI). */

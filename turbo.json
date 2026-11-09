@@ -1,32 +1,50 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
-    "NODE_ENV",
     "API_URL",
+    "EXPO_PUBLIC_*",
     "NEXT_PUBLIC_API_URL",
-    "NEXT_PUBLIC_SUPABASE_URL",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NODE_ENV",
     "SUPABASE_AUTH_URL",
-    "EXPO_PUBLIC_*"
+    "SUPABASE_URL",
+    "VITE_API_REQUEST_TIMEOUT_MS",
+    "VITE_API_URL",
+    "VITE_SUPABASE_ANON_KEY",
+    "VITE_SUPABASE_URL"
   ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**", ".expo/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**",
+        "build/**",
+        ".expo/**"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": [
+        "^typecheck"
+      ]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     }
   }
 }

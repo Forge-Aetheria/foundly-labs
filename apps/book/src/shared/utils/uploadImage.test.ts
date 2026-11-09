@@ -9,7 +9,7 @@ import {
 
 const { createClientMock } = vi.hoisted(() => ({ createClientMock: vi.fn() }));
 
-vi.mock('../auth/supabase/client', () => ({
+vi.mock('../auth/supabase', () => ({
   createBrowserSupabaseClient: createClientMock,
 }));
 

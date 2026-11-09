@@ -1,17 +1,13 @@
-import type { Metadata } from 'next';
 import { Card, Container, Stack, Typography } from '@foundly/ui';
+import { PageMeta } from '../../shared/components/PageMeta';
 import { PublicFooter } from '../../shared/components/PublicFooter';
 import { PublicHeader } from '../../shared/components/PublicHeader';
-
-export const metadata: Metadata = {
-  title: 'Política de Privacidad — Foundly Book',
-  description: 'Cómo trata Foundly Book los datos de tu negocio y de tus clientes.',
-};
 
 /** Public privacy page linked from the onboarding footer. */
 export default function PrivacyPage() {
   return (
     <Stack sx={{ minHeight: '100vh' }}>
+      <PageMeta title="Política de Privacidad" description="Cómo trata Foundly Book los datos de tu negocio y de tus clientes." />
       <PublicHeader />
       <Container maxWidth="md" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
         <Card

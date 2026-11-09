@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { listMyReviews } from './actions';
+import { listMyReviews } from './services';
 import { ReviewModerationList } from './components/ReviewModerationList';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
 import type { AdminResourceState } from '../../shared/hooks/useAdminResource';

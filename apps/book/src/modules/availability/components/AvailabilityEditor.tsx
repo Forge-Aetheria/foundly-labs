@@ -4,9 +4,10 @@ import { useState, type ChangeEvent, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { alpha, type Theme } from '@mui/material/styles';
 import type { SystemStyleObject } from '@mui/system';
-import { AlertDialog, Badge, Button, Card, Chip, Stack, Switch, Typography } from '@foundly/ui';
+import { Badge, Button, Card, Chip, Stack, Switch, Typography } from '@foundly/ui';
 import type { AvailabilityRule, TimeBlock } from '../../../shared/types/appointments';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
+import { DeleteTimeBlockDialog } from './dialogs/DeleteTimeBlockDialog';
 import { useAddTimeBlock, useRemoveTimeBlock, useSaveAvailability } from '../hooks';
 
 /** Sunday-first weekday labels (index = weekday). */
@@ -265,7 +266,10 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
             const day = days.find((item) => item.weekday === weekday) ?? EMPTY_DAY(weekday);
             const label = WEEKDAY_LABELS[weekday];
             return (
-              <Box key={weekday} sx={[CARD_ROW_SX, { p: 1.5, '&:hover': { borderColor: 'border.lavender' } }]}>
+              <Box
+                key={weekday}
+                sx={[CARD_ROW_SX, { p: 1.5, '&:hover': { borderColor: 'border.lavender' } }]}
+              >
                 <Stack
                   direction={{ xs: 'column', sm: 'row' }}
                   spacing={1.5}
@@ -367,7 +371,11 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
                 </Box>
               </Field>
 
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ flexWrap: 'wrap' }}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1.5}
+                sx={{ flexWrap: 'wrap' }}
+              >
                 <Field label="Fecha">
                   <CompactInput
                     type="date"
@@ -440,7 +448,12 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
                     alignItems={{ xs: 'stretch', sm: 'center' }}
                     justifyContent="space-between"
                   >
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      sx={{ flexWrap: 'wrap' }}
+                    >
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>
                         {formatBlock(block)}
                       </Typography>
@@ -470,18 +483,16 @@ export function AvailabilityEditor({ rules, blocks, error }: AvailabilityEditorP
         </Stack>
       </Card>
 
-      {deleteTarget ? (
-        <AlertDialog
-          open
-          title="Desbloquear franja"
-          description={`¿Quitar el bloqueo ${formatBlock(deleteTarget)}? La franja volverá a estar disponible.`}
-          confirmLabel="Sí, desbloquear"
-          cancelLabel="Cancelar"
-          tone="destructive"
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      ) : null}
+      <DeleteTimeBlockDialog
+        open={Boolean(deleteTarget)}
+        description={
+          deleteTarget
+            ? `¿Quitar el bloqueo ${formatBlock(deleteTarget)}? La franja volverá a estar disponible.`
+            : ''
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Stack>
   );
 }

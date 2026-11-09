@@ -2,7 +2,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
-import { OverrideSubscriptionDialog } from '../dialogs/OverrideSubscriptionDialog';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
+import { OverrideSubscriptionDialog } from '../components/dialogs/OverrideSubscriptionDialog';
 import type { ManagedBusinessView } from '../utils/types';
 
 const { overrideMock } = vi.hoisted(() => ({ overrideMock: vi.fn() }));
@@ -21,9 +24,9 @@ function renderDialog() {
   const onSaved = vi.fn();
   const onClose = vi.fn();
   render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <OverrideSubscriptionDialog open business={business} onClose={onClose} onSaved={onSaved} />
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
   return { onSaved, onClose };
 }

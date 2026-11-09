@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { TagsInput } from '../components/TagsInput';
 
 function Harness() {
@@ -14,9 +17,9 @@ describe('TagsInput', () => {
   it('adds Title Case chips with Enter and comma and removes them', async () => {
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <Harness />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     const input = screen.getByLabelText('Etiquetas');
@@ -33,9 +36,9 @@ describe('TagsInput', () => {
   it('ignores duplicate tags case-insensitively', async () => {
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <Harness />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
     const input = screen.getByLabelText('Etiquetas');
     await user.type(input, 'Color{Enter}');

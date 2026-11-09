@@ -6,7 +6,7 @@ import {
   SpecialistsDocument,
   TenantBySlugDocument,
 } from '../../../shared/api/generated';
-import { getPublicBusinessRemote } from '../actions';
+import { getPublicBusinessRemote } from '../services';
 import { deriveWeeklyHours } from '../utils/availability';
 
 const { apiMock } = vi.hoisted(() => ({ apiMock: vi.fn() }));

@@ -2,7 +2,7 @@
 
 import type { ActionResult } from '../../shared/types/result';
 import type { Review, ReviewState } from '../../shared/types/tenancy';
-import { deleteReview, listMyReviews, setReviewState, submitPublicReview } from './actions';
+import { deleteReview, listMyReviews, setReviewState, submitPublicReview } from './services';
 
 /**
  * Reviews client hooks (014 submission; 015/016 moderation; constitution §5.VI).

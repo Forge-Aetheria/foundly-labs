@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AvailabilityEditor } from './components/AvailabilityEditor';
-import { listAvailabilityRules, listTimeBlocks } from './actions';
+import { listAvailabilityRules, listTimeBlocks } from './services';
 import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
 import type { AdminResourceState } from '../../shared/hooks/useAdminResource';

@@ -1,6 +1,6 @@
 # Foundly Labs — Modelo de Negocio & Visión Estratégica
 
-**Versión:** 1.0.0
+**Versión:** 1.1.0
 **Estado:** Binding
 **Ámbito:** Ecosistema Foundly Labs (visión, módulos, licenciamiento y bundles)
 **Autoridad:** Máxima. Según la jerarquía de `constitution.md`, este documento es la fuente de verdad superior del ecosistema; ningún principio, spec o regla de código puede contradecirlo.
@@ -37,12 +37,12 @@
 
 El ecosistema se compone de módulos SaaS. Cada módulo es una aplicación desplegable con specs locales propias (`apps/[app]/specs`), subordinadas a esta visión y a `constitution.md`.
 
-| Módulo              | Dominio                       | Arquitectura técnica                  | Estado        |
-| ------------------- | ----------------------------- | ------------------------------------- | ------------- |
-| **Foundly Finance** | Contabilidad / finanzas base  | Mobile (Expo) — local-first           | En desarrollo |
-| **Foundly POS**     | Punto de venta                | Local-first — Drizzle + SQLite        | Beta activa   |
-| **Foundly Book**    | Agendas, servicios y citas    | Next.js / React 19 — SaaS interactivo | En desarrollo |
-| **Foundly Store**   | E-commerce e inventario cloud | Next.js / React 19 — SaaS interactivo | En desarrollo |
+| Módulo              | Dominio                       | Arquitectura técnica              | Estado        |
+| ------------------- | ----------------------------- | --------------------------------- | ------------- |
+| **Foundly Finance** | Contabilidad / finanzas base  | Mobile (Expo) — local-first       | En desarrollo |
+| **Foundly POS**     | Punto de venta                | Local-first — Drizzle + SQLite    | Beta activa   |
+| **Foundly Book**    | Agendas, servicios y citas    | React 19 + Vite — SPA interactiva | En desarrollo |
+| **Foundly Store**   | E-commerce e inventario cloud | React 19 + Vite — SPA interactiva | En desarrollo |
 
 ### 2.1 Foundly Finance
 
@@ -83,7 +83,7 @@ El ecosistema se compone de módulos SaaS. Cada módulo es una aplicación despl
   - Gestión de profesionales y disponibilidad.
   - Ciclo de vida de la cita (reserva, confirmación, recordatorio, historial).
   - Cobros y vínculo con la operación (POS/Store).
-- **Arquitectura**: Next.js / React 19 (módulo SaaS interactivo).
+- **Arquitectura**: React 19 + Vite como SPA de cliente puro (módulo SaaS interactivo); consume la API GraphQL directamente desde el navegador.
 - **Interconexiones**: sincroniza ingresos con Finance; puede cobrar servicios vía POS/Store.
 
 ### 2.4 Foundly Store
@@ -97,7 +97,7 @@ El ecosistema se compone de módulos SaaS. Cada módulo es una aplicación despl
   - Inventario y stock sincronizado.
   - Pedidos y flujo de compra.
   - Delivery y seguimiento de entregas.
-- **Arquitectura**: Next.js / React 19 (SaaS interactivo, cloud-first). Almacenamiento no definido (pendiente de ratificar).
+- **Arquitectura**: React 19 + Vite como SPA de cliente puro (misma arquitectura que Book); consume la API GraphQL desde el navegador. Almacenamiento no definido (pendiente de ratificar).
 - **Interconexiones**: comparte inventario con POS y consolida ingresos en Finance.
 
 ### 2.5 Módulos complementarios del ecosistema
@@ -210,4 +210,8 @@ Este documento determina y condiciona:
 
 Foundly Labs Business Model — "Local-First, Agile Commerce, Zero Compromise."
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08
+**Version**: 1.1.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-11-08
+
+_Enmienda 2026-11-08 (MINOR 1.0.0 → 1.1.0): actualización de la arquitectura ratificada de Foundly Book
+y Foundly Store de Next.js / React 19 a SPA React 19 + Vite (cliente puro). No cambian visión, módulos,
+pricing ni licenciamiento. Plan de migración: `specs/book/024-react-spa-migration/`._

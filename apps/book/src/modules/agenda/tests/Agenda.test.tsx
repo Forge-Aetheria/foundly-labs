@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { ToastProvider } from '../../../shared/components/Toaster';
 import type { Resource, Service } from '../../../shared/types/appointments';
 import { Agenda, type AgendaProps, type AgendaRow } from '../components/Agenda';
@@ -72,11 +75,11 @@ describe('Agenda (admin appointments)', () => {
 
   function renderAgenda(props: Omit<AgendaProps, 'range'> & { range?: AgendaProps['range'] }) {
     return render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <ToastProvider>
           <Agenda range={{ from: TODAY, to: TODAY }} {...props} />
         </ToastProvider>
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
   }
 

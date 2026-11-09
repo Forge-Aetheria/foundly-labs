@@ -1,7 +1,7 @@
 'use client';
 
 import { GalleryManager } from './components/GalleryManager';
-import { listGallery } from './actions';
+import { listGallery } from './services';
 import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
 import { useAdminResource } from '../../shared/hooks/useAdminResource';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';

@@ -1,22 +1,19 @@
-'use client';
-
-import { useState, useTransition, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, type FormEvent } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Stack, TextField, Typography } from '@foundly/ui';
 import { useSignIn } from '../hooks';
 import { PasswordField } from '../../../shared/components/PasswordField';
 
-/** Sign-in form (feature 009 — US1; feature 012 session-expiry notice). Interacts through `useSignIn`. */
+/** Sign-in form (feature 009/024): interacts through `useSignIn`. */
 export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean }) {
-  const router = useRouter();
+  const navigate = useNavigate();
+  const location = useLocation();
   const signIn = useSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fields, setFields] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [navigating, startNavigation] = useTransition();
-  const busy = submitting || navigating;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,12 +29,9 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
         setSubmitting(false);
         return;
       }
-      // Keep the loading state until the App Router lands on the admin workspace
-      // (the form unmounts on success); only an error clears it.
-      startNavigation(() => {
-        router.push(result.data.redirectTo);
-        router.refresh();
-      });
+      const from = (location.state as { from?: string } | null)?.from;
+      const target = from && from.startsWith('/') && !from.startsWith('/login') ? from : result.data.redirectTo;
+      navigate(target, { replace: true });
     } catch {
       setFormError('No se pudo iniciar sesión. Inténtalo de nuevo.');
       setSubmitting(false);
@@ -79,7 +73,7 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
           </Typography>
         ) : null}
         <Stack direction="row" justifyContent="flex-end">
-          <Button type="submit" variant="primary" loading={busy} disabled={busy}>
+          <Button type="submit" variant="primary" loading={submitting} disabled={submitting}>
             Entrar
           </Button>
         </Stack>

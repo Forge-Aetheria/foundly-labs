@@ -17,7 +17,7 @@
     "build:landing": "pnpm --filter @foundly/landing build",
     "preview:landing": "pnpm --filter @foundly/landing preview",
     "check:landing": "pnpm --filter @foundly/landing check",
-    "dev:book": "pnpm --filter @foundly/book dev --turbopack",
+    "dev:book": "pnpm --filter @foundly/book dev",
     "build:book": "pnpm --filter @foundly/book build",
     "start:book": "pnpm --filter @foundly/book start",
     "typecheck:book": "pnpm --filter @foundly/book typecheck",

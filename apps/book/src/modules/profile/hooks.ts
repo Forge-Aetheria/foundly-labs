@@ -3,7 +3,7 @@
 import type { ActionResult } from '../../shared/types/result';
 import type { Tenant } from '../../shared/types/tenancy';
 import { uploadImage } from '../../shared/utils/uploadImage';
-import { getProfile, updateProfile } from './actions';
+import { getProfile, updateProfile } from './services';
 
 /**
  * Profile client hooks (feature 014; constitution §5.VI).

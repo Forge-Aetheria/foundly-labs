@@ -1,7 +1,7 @@
 'use client';
 
 import type { ActionResult } from '../../shared/types/result';
-import { createBusiness, validateSlug, type CreateBusinessResult, type SlugAvailability } from './actions';
+import { createBusiness, validateSlug, type CreateBusinessResult, type SlugAvailability } from './services';
 
 /** Onboarding client hooks (feature 011; constitution §5.VI). */
 export function useCreateBusiness(): (input: unknown) => Promise<ActionResult<CreateBusinessResult>> {

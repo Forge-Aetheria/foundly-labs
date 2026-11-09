@@ -2,6 +2,9 @@ import type { ReactNode } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/admin/agenda' }));
 vi.mock('../../../modules/auth/hooks', () => ({ useSignOut: () => vi.fn() }));
@@ -19,11 +22,11 @@ function renderShell(
   } = {},
 ) {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <AdminShell tenantName="Estudio Ana" {...props}>
         <p>Contenido</p>
       </AdminShell>
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 

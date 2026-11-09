@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from '@/shared/compat/Image';
+import Link from '@/shared/compat/Link';
 import MuiLink from '@mui/material/Link';
 import { Container, Stack, Typography } from '@foundly/ui';
 

@@ -30,8 +30,8 @@ The repository is a pnpm workspace with Turborepo. Additional applications:
 | Workspace           | Path                | Description                    |
 | ------------------- | ------------------- | ------------------------------ |
 | `@foundly/landing`  | `apps/landing`      | Astro landing (root scripts)   |
-| `@foundly/book`     | `apps/book`         | Next.js tenant admin           |
-| `@foundly/store`    | `apps/store`        | Next.js commerce               |
+| `@foundly/book`     | `apps/book`         | React SPA tenant admin         |
+| `@foundly/store`    | `apps/store`        | React SPA commerce             |
 | `@foundly/api`      | `apps/api`          | NestJS GraphQL API             |
 | `@foundly/mobile`   | `apps/mobile`       | Expo / React Native tenant app |
 | `@foundly/database` | `packages/database` | Prisma schema and client       |
@@ -108,8 +108,8 @@ The repo is a **npm workspaces monorepo** (`apps/*`, `packages/*`):
 | App/package         | Stack                  | Rol                                         | Specs               |
 | ------------------- | ---------------------- | ------------------------------------------- | ------------------- |
 | `apps/landing`      | Astro 5 (SSG)          | Vitrina pública (raíz `/`)                  | `/specs/landing/`   |
-| `apps/book`         | Next.js / React 19     | Módulo SaaS interactivo (`/book`)           | `/specs/book/`      |
-| `apps/store`        | Next.js / React 19     | Comercio/licencias (`/store`)               | `/specs/store/`     |
+| `apps/book`         | React 19 + Vite (SPA)  | Módulo SaaS interactivo (`/book`)           | `/specs/book/`      |
+| `apps/store`        | React 19 + Vite (SPA)  | Comercio/licencias (`/store`)               | `/specs/store/`     |
 | `apps/api`          | NestJS (Node.js)       | Backend / API del ecosistema                | `/specs/api/`       |
 | `packages/ui`       | MUI v6 (design system) | `@foundly/ui`                               | `/specs/shared-ui/` |
 | `packages/database` | Prisma + PostgreSQL    | `@foundly/database` (persistencia DB-First) | `/specs/api/`       |

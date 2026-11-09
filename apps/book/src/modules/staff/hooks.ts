@@ -3,7 +3,7 @@
 import type { Resource } from '../../shared/types/appointments';
 import type { ActionResult } from '../../shared/types/result';
 import { uploadImage } from '../../shared/utils/uploadImage';
-import { createStaff, removeStaff, setStaffActive, updateStaff } from './actions';
+import { createStaff, removeStaff, setStaffActive, updateStaff } from './services';
 
 /**
  * Staff client hooks (feature 011; constitution §5.VI).

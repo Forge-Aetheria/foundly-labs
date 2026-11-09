@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 
 const { pushMock, createBusinessMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
@@ -12,7 +15,7 @@ const { pushMock, createBusinessMock } = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock('next/navigation', () => ({
+vi.mock('@/shared/compat/useAppRouter', () => ({
   useRouter: () => ({ push: pushMock }),
 }));
 
@@ -33,9 +36,9 @@ describe('WizardShell (US1, contracts/onboarding.contract.md)', () => {
   it('walks the three steps and provisions the business', async () => {
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <WizardShell />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     // Step 1 — account
@@ -70,9 +73,9 @@ describe('WizardShell (US1, contracts/onboarding.contract.md)', () => {
 
   it('is accessible on the first step', async () => {
     const { container } = render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <WizardShell />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     const loginLinks = screen.getAllByRole('link', { name: 'Iniciar sesión' });
@@ -91,9 +94,9 @@ describe('WizardShell (US1, contracts/onboarding.contract.md)', () => {
 
   it('pre-fills the email captured in the landing hero', () => {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <WizardShell initialEmail="ana@negocio.dev" />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     expect(screen.getByLabelText(/Email/)).toHaveValue('ana@negocio.dev');

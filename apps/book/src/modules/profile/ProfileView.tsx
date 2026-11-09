@@ -1,7 +1,7 @@
 'use client';
 
 import { ProfileEditor } from './components/ProfileEditor';
-import { getProfile } from './actions';
+import { getProfile } from './services';
 import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
 import { useAdminResource } from '../../shared/hooks/useAdminResource';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';

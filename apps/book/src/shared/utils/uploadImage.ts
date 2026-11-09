@@ -1,6 +1,6 @@
 'use client';
 
-import { createBrowserSupabaseClient } from '../auth/supabase/client';
+import { createBrowserSupabaseClient } from '../auth/supabase';
 import { fail, ok, type ActionResult } from '../types/result';
 
 /** Supabase Storage bucket that holds tenant-owned media (feature 021). */

@@ -3,7 +3,7 @@
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import { Button, Card, Stack, Typography } from '@foundly/ui';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 
 /** Loading skeleton grid shown while the directory data resolves. */
 export function DirectorySkeleton() {

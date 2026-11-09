@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import { Button } from '@foundly/ui';
-import { OverrideSubscriptionDialog } from '../dialogs/OverrideSubscriptionDialog';
+import { OverrideSubscriptionDialog } from './dialogs/OverrideSubscriptionDialog';
 import type { ManagedBusinessView } from '../utils/types';
 
 export interface OverrideSubscriptionButtonProps {

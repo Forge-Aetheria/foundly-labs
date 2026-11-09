@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import { Card, Stack, Typography } from '@foundly/ui';
 
 /** Non-admin state: clear denial with a path back, and no platform data. */

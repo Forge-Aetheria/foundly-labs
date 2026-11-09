@@ -1,12 +1,10 @@
-import { redirect } from 'next/navigation';
+import { Navigate } from 'react-router-dom';
+import { useSearchParams } from '@/shared/compat/useAppRouter';
 
 /** Alias for the registration entry point: `/register` → `/onboarding`. */
-export default async function RegisterPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ email?: string | string[] }>;
-}) {
-  const params = await searchParams;
-  const email = typeof params.email === 'string' ? params.email : undefined;
-  redirect(email ? `/onboarding?email=${encodeURIComponent(email)}` : '/onboarding');
+export default function RegisterPage() {
+  const params = useSearchParams();
+  const email = params.get('email');
+  const to = email ? `/onboarding?email=${encodeURIComponent(email)}` : '/onboarding';
+  return <Navigate to={to} replace />;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import Box from '@mui/material/Box';
 import { alpha } from '@mui/material/styles';
 import { Card, Container, Stack, Typography } from '@foundly/ui';

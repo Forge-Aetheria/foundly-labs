@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import { Button, Chip, Stack, TextField, Typography } from '@foundly/ui';
 import { useToast } from '../../../shared/components/Toaster';
 import { useSubmitReview } from '../hooks';

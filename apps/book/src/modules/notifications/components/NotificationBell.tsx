@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type MouseEvent } from 'react';
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';

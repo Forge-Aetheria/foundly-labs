@@ -1,17 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import {
-  AlertDialog,
   Badge,
   Button,
   Card,
-  Chip,
   DataTable,
-  Modal,
   Stack,
-  Switch,
   TextField,
   Typography,
   type DataTableColumn,
@@ -22,6 +18,8 @@ import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 import type { Rate, Service } from '../../../shared/types/appointments';
 import { useCreateService, useDeleteService, useUpdateService } from '../hooks';
+import { ServiceDialog, type ServiceDraft } from './dialogs/ServiceDialog';
+import { DeleteServiceDialog } from './dialogs/DeleteServiceDialog';
 
 export interface ServiceCatalogProps {
   services: Service[];
@@ -32,18 +30,7 @@ export interface ServiceCatalogProps {
 
 type Feedback = { kind: 'create' } | { kind: 'edit'; service: Service } | null;
 
-interface Draft {
-  name: string;
-  duration: string;
-  price: string;
-  category: string;
-  description: string;
-  requiresAdvance: boolean;
-  advanceKind: 'fixed' | 'percent' | '';
-  advanceValue: string;
-}
-
-const EMPTY_DRAFT: Draft = {
+const EMPTY_DRAFT: ServiceDraft = {
   name: '',
   duration: '',
   price: '',
@@ -54,7 +41,7 @@ const EMPTY_DRAFT: Draft = {
   advanceValue: '',
 };
 
-function draftFrom(service: Service, rate?: Rate): Draft {
+function draftFrom(service: Service, rate?: Rate): ServiceDraft {
   return {
     name: service.name,
     duration: String(service.durationMinutes),
@@ -82,7 +69,7 @@ export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) 
   const { pending: saving, run } = useAsyncAction();
   const [query, setQuery] = useState('');
   const [feedback, setFeedback] = useState<Feedback>(null);
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  const [draft, setDraft] = useState<ServiceDraft>(EMPTY_DRAFT);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Service | null>(null);
@@ -104,11 +91,16 @@ export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) 
   function openEdit(service: Service) {
     setFieldErrors(null);
     setActionNotice(null);
-    setDraft(draftFrom(service, rates.find((item) => item.serviceId === service.id)));
+    setDraft(
+      draftFrom(
+        service,
+        rates.find((item) => item.serviceId === service.id),
+      ),
+    );
     setFeedback({ kind: 'edit', service });
   }
 
-  function patch(value: Partial<Draft>) {
+  function patch(value: Partial<ServiceDraft>) {
     setDraft((prev) => ({ ...prev, ...value }));
   }
 
@@ -286,128 +278,27 @@ export function ServiceCatalog({ services, rates, error }: ServiceCatalogProps) 
         getRowKey={(service) => service.id}
       />
 
-      {feedback ? (
-        <Modal
-          open
-          onClose={() => setFeedback(null)}
-          title={feedback.kind === 'create' ? 'Crear servicio' : `Editar · ${feedback.service.name}`}
-        >
-          <Stack spacing={2} sx={{ pt: 1, minWidth: { xs: 0, sm: 460 } }}>
-            <TextField
-              label="Nombre"
-              value={draft.name}
-              onChange={(value) => patch({ name: value })}
-              error={Boolean(fieldErrors?.name)}
-              helperText={fieldErrors?.name}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Duración (min)"
-              type="number"
-              value={draft.duration}
-              onChange={(value) => patch({ duration: value })}
-              error={Boolean(fieldErrors?.durationMinutes)}
-              helperText={fieldErrors?.durationMinutes}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Precio (€)"
-              type="number"
-              value={draft.price}
-              onChange={(value) => patch({ price: value })}
-              error={Boolean(fieldErrors?.priceCents)}
-              helperText={fieldErrors?.priceCents}
-              required
-              fullWidth
-            />
-            <TextField
-              label="Categoría (opcional)"
-              value={draft.category}
-              onChange={(value) => patch({ category: value })}
-              error={Boolean(fieldErrors?.category)}
-              helperText={fieldErrors?.category}
-              maxLength={60}
-              fullWidth
-            />
-            <TextField
-              label="Descripción (opcional)"
-              value={draft.description}
-              onChange={(value) => patch({ description: value })}
-              error={Boolean(fieldErrors?.description)}
-              helperText={fieldErrors?.description}
-              multiline
-              rows={3}
-              maxLength={2000}
-              fullWidth
-            />
-            <Switch
-              checked={draft.requiresAdvance}
-              onChange={(checked) =>
-                patch({
-                  requiresAdvance: checked,
-                  ...(checked ? {} : { advanceKind: '', advanceValue: '' }),
-                })
-              }
-              label="Requiere adelanto"
-            />
-            {draft.requiresAdvance ? (
-              <Stack spacing={1.5}>
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ flexWrap: 'wrap' }}
-                  aria-label="Tipo de adelanto"
-                >
-                  <Chip
-                    label="Importe fijo"
-                    selectable
-                    selected={draft.advanceKind === 'fixed'}
-                    onClick={() => patch({ advanceKind: 'fixed' })}
-                  />
-                  <Chip
-                    label="Porcentaje"
-                    selectable
-                    selected={draft.advanceKind === 'percent'}
-                    onClick={() => patch({ advanceKind: 'percent' })}
-                  />
-                </Stack>
-                <TextField
-                  label={draft.advanceKind === 'percent' ? 'Porcentaje (%)' : 'Importe (€)'}
-                  type="number"
-                  value={draft.advanceValue}
-                  onChange={(value) => patch({ advanceValue: value })}
-                  error={Boolean(fieldErrors?.advanceKind ?? fieldErrors?.advanceValue)}
-                  helperText={fieldErrors?.advanceKind ?? fieldErrors?.advanceValue}
-                  fullWidth
-                />
-              </Stack>
-            ) : null}
-            <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 1 }}>
-              <Button variant="secondary" onClick={() => setFeedback(null)} disabled={saving}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={save} loading={saving}>
-                Guardar
-              </Button>
-            </Stack>
-          </Stack>
-        </Modal>
-      ) : null}
+      <ServiceDialog
+        open={Boolean(feedback)}
+        title={feedback?.kind === 'edit' ? `Editar · ${feedback.service.name}` : 'Crear servicio'}
+        value={draft}
+        fieldErrors={fieldErrors}
+        saving={saving}
+        onClose={() => setFeedback(null)}
+        onPatch={patch}
+        onSave={save}
+      />
 
-      {deleteTarget ? (
-        <AlertDialog
-          open
-          title="Eliminar servicio"
-          description={`¿Eliminar "${deleteTarget.name}"? Dejará de ofrecerse en la reserva pública.`}
-          confirmLabel="Sí, eliminar"
-          cancelLabel="Cancelar"
-          tone="destructive"
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      ) : null}
+      <DeleteServiceDialog
+        open={Boolean(deleteTarget)}
+        description={
+          deleteTarget
+            ? `¿Eliminar "${deleteTarget.name}"? Dejará de ofrecerse en la reserva pública.`
+            : ''
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Card>
   );
 }

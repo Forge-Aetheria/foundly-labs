@@ -5,7 +5,7 @@ import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import Box from '@mui/material/Box';
 import MuiButton from '@mui/material/Button';
 import { alpha } from '@mui/material/styles';
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import { Badge, Card, Chip, Stack, Typography } from '@foundly/ui';
 import { BusinessDescription } from './BusinessDescription';
 import { formatDirectoryHours } from '../utils/hours';

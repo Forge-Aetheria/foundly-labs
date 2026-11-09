@@ -2,8 +2,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import type { PublicService, PublicSpecialist } from '../utils/types';
-import { BookingFlow } from '../dialogs/BookingFlow';
+import { BookingFlow } from '../components/dialogs/BookingFlow';
 
 type BookResult =
   { ok: true; data: { id: string } } | { ok: false; error: { code: string; message: string } };
@@ -93,14 +96,14 @@ describe('BookingFlow (FR-009…FR-015 + advance 017)', () => {
   it('walks specialist → slot → client data → confirmation', async () => {
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <BookingFlow
           service={service}
           tenantSlug="estudio-ana"
           specialists={specialists}
           onClose={() => {}}
         />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Ana' }));
@@ -134,14 +137,14 @@ describe('BookingFlow (FR-009…FR-015 + advance 017)', () => {
   it('inserts the mandatory advance step only when the service requires it', async () => {
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <BookingFlow
           service={advanceService}
           tenantSlug="estudio-ana"
           specialists={specialists}
           onClose={() => {}}
         />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Ana' }));
@@ -178,14 +181,14 @@ describe('BookingFlow (FR-009…FR-015 + advance 017)', () => {
   it('skips the specialist step when there is a single specialist', async () => {
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <BookingFlow
           service={service}
           tenantSlug="estudio-ana"
           specialists={[specialists[0]!]}
           onClose={() => {}}
         />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     expect(screen.queryByRole('button', { name: 'Luis' })).not.toBeInTheDocument();
@@ -196,14 +199,14 @@ describe('BookingFlow (FR-009…FR-015 + advance 017)', () => {
   it('keeps the entered client data when going back', async () => {
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <BookingFlow
           service={service}
           tenantSlug="estudio-ana"
           specialists={specialists}
           onClose={() => {}}
         />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Ana' }));
@@ -228,14 +231,14 @@ describe('BookingFlow (FR-009…FR-015 + advance 017)', () => {
     });
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <BookingFlow
           service={service}
           tenantSlug="estudio-ana"
           specialists={specialists}
           onClose={() => {}}
         />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Ana' }));

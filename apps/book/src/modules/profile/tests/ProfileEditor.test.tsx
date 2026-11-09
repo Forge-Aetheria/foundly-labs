@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import type { Tenant } from '../../../shared/types/tenancy';
 import { ToastProvider } from '../../../shared/components/Toaster';
 import { ProfileEditor } from '../components/ProfileEditor';
@@ -57,11 +60,11 @@ function makeTenant(): Tenant {
 
 function renderEditor(profile: Tenant | null = makeTenant(), error: string | null = null) {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <ToastProvider>
         <ProfileEditor profile={profile} error={error} />
       </ToastProvider>
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 

@@ -26,7 +26,8 @@
     "jose": "^6.2.12",
     "pino": "^10.4.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "@supabase/supabase-js": "^2.49.4"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

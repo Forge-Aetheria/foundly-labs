@@ -2,36 +2,39 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 
-const { pushMock, refreshMock, signInMock } = vi.hoisted(() => ({
-  pushMock: vi.fn(),
-  refreshMock: vi.fn(),
-  signInMock: vi.fn(),
-}));
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: pushMock, refresh: refreshMock }),
-}));
+const { signInMock } = vi.hoisted(() => ({ signInMock: vi.fn() }));
 
 vi.mock('../hooks', () => ({ useSignIn: () => signInMock }));
 
 import { LoginForm } from '../components/LoginForm';
 
-describe('LoginForm (009 — US1)', () => {
+function LocationProbe() {
+  const location = useLocation();
+  return <div data-testid="location">{location.pathname}</div>;
+}
+
+function renderForm(sessionExpired = false) {
+  return render(
+    <FoundlyThemeProvider>
+      <MemoryRouter initialEntries={['/login']}>
+        <LoginForm sessionExpired={sessionExpired} />
+        <LocationProbe />
+      </MemoryRouter>
+    </FoundlyThemeProvider>,
+  );
+}
+
+describe('LoginForm (024 — SPA)', () => {
   beforeEach(() => {
-    pushMock.mockClear();
-    refreshMock.mockClear();
     signInMock.mockReset();
   });
 
-  it('submits credentials and redirects on success', async () => {
+  it('submits credentials and navigates on success', async () => {
     signInMock.mockResolvedValue({ ok: true, data: { redirectTo: '/admin/agenda' } });
     const user = userEvent.setup();
-    render(
-      <FoundlyThemeProvider>
-        <LoginForm />
-      </FoundlyThemeProvider>,
-    );
+    renderForm();
 
     await user.type(screen.getByLabelText(/Email/), 'ana@foundly.dev');
     await user.type(screen.getByLabelText(/Contraseña/), 'mock-credential');
@@ -42,9 +45,9 @@ describe('LoginForm (009 — US1)', () => {
       email: 'ana@foundly.dev',
       password: 'mock-credential',
     });
-    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/admin/agenda'));
-    // Loading persists until the App Router lands on the admin workspace.
-    expect(screen.getByRole('button', { name: 'Entrar' })).toBeDisabled();
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin/agenda'),
+    );
   });
 
   it('shows an inline error for invalid credentials', async () => {
@@ -53,27 +56,18 @@ describe('LoginForm (009 — US1)', () => {
       error: { code: 'UNAUTHENTICATED', message: 'Email o contraseña incorrectos.' },
     });
     const user = userEvent.setup();
-    render(
-      <FoundlyThemeProvider>
-        <LoginForm />
-      </FoundlyThemeProvider>,
-    );
+    renderForm();
 
     await user.type(screen.getByLabelText(/Email/), 'ana@foundly.dev');
     await user.type(screen.getByLabelText(/Contraseña/), 'wrong');
     await user.click(screen.getByRole('button', { name: 'Entrar' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Email o contraseña incorrectos.');
-    expect(pushMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId('location')).toHaveTextContent('/login');
   });
 
   it('explains the bounce when the session expired (feature 012)', () => {
-    render(
-      <FoundlyThemeProvider>
-        <LoginForm sessionExpired />
-      </FoundlyThemeProvider>,
-    );
-
+    renderForm(true);
     expect(screen.getByRole('status')).toHaveTextContent(/sesión ha caducado/i);
   });
 });

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { TextField } from '@foundly/ui';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/shared/compat/useAppRouter';
 
 const DEBOUNCE_MS = 300;
 

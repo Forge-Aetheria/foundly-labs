@@ -8,7 +8,7 @@ import {
   listServices,
   updateService,
   type ServiceCatalogResult,
-} from './actions';
+} from './services';
 
 /**
  * Services client hooks (feature 016, US5; constitution §5.VI).

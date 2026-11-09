@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { StaffManager } from './components/StaffManager';
-import { listStaff } from './actions';
-import { listServices } from '../services/actions';
+import { listStaff } from './services';
+import { listServices } from '../services/services';
 import { useAdminWorkspace } from '../../shared/admin/AdminWorkspaceContext';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
 import type { AdminResourceState } from '../../shared/hooks/useAdminResource';

@@ -21,6 +21,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { OnboardingModule } from './modules/onboarding/onboarding.module';
 import { SharedPrismaModule } from './shared/prisma/prisma.module';
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -51,6 +52,7 @@ const isProduction = process.env.NODE_ENV === 'production';
     SubscriptionModule,
     PlatformModule,
     NotificationsModule,
+    OnboardingModule,
   ],
   controllers: [AppController],
   providers: [HealthResolver],

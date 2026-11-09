@@ -1,31 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/shared/compat/useAppRouter';
 import Box from '@mui/material/Box';
-import {
-  AlertDialog,
-  Badge,
-  Button,
-  Card,
-  Chip,
-  Modal,
-  Stack,
-  TextField,
-  Typography,
-} from '@foundly/ui';
-import {
-  GALLERY_CATEGORIES,
-  GALLERY_CATEGORY_LABELS,
-  type GalleryCategory,
-  type GalleryPhoto,
-} from '../../../shared/types/tenancy';
+import { Badge, Button, Card, Stack, Typography } from '@foundly/ui';
+import { GALLERY_CATEGORY_LABELS, type GalleryPhoto } from '../../../shared/types/tenancy';
 import { GLASS_CARD_SX } from '../../../shared/utils/landingCanon';
 import { ApiErrorDialog } from '../../../shared/components/ApiErrorDialog';
-import { ImageUploadField } from '../../../shared/components/ImageUploadField';
 import { useToast } from '../../../shared/components/Toaster';
 import { useAsyncAction } from '../../../shared/hooks/useAsyncAction';
 import { useAddGalleryItem, useRemoveGalleryItem, useUploadGalleryPhoto } from '../hooks';
+import { AddGalleryDialog, type GalleryDraft } from './dialogs/AddGalleryDialog';
+import { GalleryPreviewDialog } from './dialogs/GalleryPreviewDialog';
+import { DeleteGalleryItemDialog } from './dialogs/DeleteGalleryItemDialog';
 
 export interface GalleryManagerProps {
   /** Gallery photos read from the backend (feature 013). */
@@ -36,19 +23,12 @@ export interface GalleryManagerProps {
   error?: string | null;
 }
 
-interface Draft {
-  url: string;
-  title: string;
-  description: string;
-  category: GalleryCategory | '';
-}
-
-const EMPTY_DRAFT: Draft = { url: '', title: '', description: '', category: '' };
+const EMPTY_DRAFT: GalleryDraft = { url: '', title: '', description: '', category: '' };
 
 /** Galería (feature 013): real grid + add modal + lightbox + delete confirmation. */
 export function GalleryManager({ photos, tenantId, error }: GalleryManagerProps) {
   const [items, setItems] = useState<GalleryPhoto[]>(photos);
-  const [draft, setDraft] = useState<{ open: boolean; value: Draft }>({
+  const [draft, setDraft] = useState<{ open: boolean; value: GalleryDraft }>({
     open: false,
     value: EMPTY_DRAFT,
   });
@@ -73,7 +53,7 @@ export function GalleryManager({ photos, tenantId, error }: GalleryManagerProps)
     setDraft((prev) => ({ ...prev, open: false }));
   }
 
-  function patch(value: Partial<Draft>) {
+  function patch(value: Partial<GalleryDraft>) {
     setDraft((prev) => ({ ...prev, value: { ...prev.value, ...value } }));
   }
 
@@ -152,7 +132,13 @@ export function GalleryManager({ photos, tenantId, error }: GalleryManagerProps)
               key={photo.id}
               sx={[
                 GLASS_CARD_SX,
-                { flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 12px)' } },
+                {
+                  flex: {
+                    xs: '1 1 100%',
+                    sm: '1 1 calc(50% - 8px)',
+                    md: '1 1 calc(33.333% - 12px)',
+                  },
+                },
               ]}
             >
               <Stack spacing={1.5}>
@@ -231,96 +217,29 @@ export function GalleryManager({ photos, tenantId, error }: GalleryManagerProps)
         </Card>
       )}
 
-      {draft.open ? (
-        <Modal open onClose={closeAdd} title="Añadir imagen">
-          <Stack spacing={2} sx={{ pt: 1, minWidth: { xs: 0, sm: 460 } }}>
-            <ImageUploadField
-              label="Foto"
-              preview="square"
-              urlLabel="URL de la imagen"
-              value={draft.value.url}
-              onChange={(value) => patch({ url: value })}
-              onUpload={uploadPhoto}
-              error={Boolean(fieldErrors?.url)}
-              helperText={fieldErrors?.url}
-            />
-            <TextField
-              label="Título (opcional)"
-              value={draft.value.title}
-              onChange={(value) => patch({ title: value })}
-              error={Boolean(fieldErrors?.title)}
-              helperText={fieldErrors?.title}
-              maxLength={200}
-              fullWidth
-            />
-            <TextField
-              label="Descripción (opcional)"
-              value={draft.value.description}
-              onChange={(value) => patch({ description: value })}
-              error={Boolean(fieldErrors?.description)}
-              helperText={fieldErrors?.description}
-              multiline
-              rows={3}
-              maxLength={2000}
-              fullWidth
-            />
-            <Stack spacing={1}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Categoría (opcional)
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-                <Chip
-                  label="Sin categoría"
-                  selectable
-                  selected={draft.value.category === ''}
-                  onClick={() => patch({ category: '' })}
-                />
-                {GALLERY_CATEGORIES.map((category) => (
-                  <Chip
-                    key={category}
-                    label={GALLERY_CATEGORY_LABELS[category]}
-                    selectable
-                    selected={draft.value.category === category}
-                    onClick={() => patch({ category })}
-                  />
-                ))}
-              </Stack>
-            </Stack>
-            <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ pt: 1 }}>
-              <Button variant="secondary" onClick={closeAdd} disabled={saving}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={save} loading={saving}>
-                Guardar foto
-              </Button>
-            </Stack>
-          </Stack>
-        </Modal>
-      ) : null}
+      <AddGalleryDialog
+        open={draft.open}
+        value={draft.value}
+        fieldErrors={fieldErrors}
+        saving={saving}
+        onClose={closeAdd}
+        onPatch={patch}
+        onSave={save}
+        onUpload={uploadPhoto}
+      />
 
-      {preview ? (
-        <Modal open onClose={() => setPreview(null)} title={preview.title ?? 'Vista previa'}>
-          <Box
-            component="img"
-            src={preview.url}
-            alt={preview.title ?? 'Foto de la galería'}
-            sx={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 2 }}
-          />
-        </Modal>
-      ) : null}
+      <GalleryPreviewDialog
+        open={Boolean(preview)}
+        title={preview?.title}
+        url={preview?.url ?? ''}
+        onClose={() => setPreview(null)}
+      />
 
-      {deleteTarget ? (
-        <AlertDialog
-          open
-          title="Quitar foto"
-          description="¿Seguro que quieres quitar esta foto de la galería? Dejará de aparecer en la vista pública."
-          confirmLabel="Sí, quitar"
-          cancelLabel="Cancelar"
-          tone="destructive"
-          onConfirm={confirmDelete}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      ) : null}
+      <DeleteGalleryItemDialog
+        open={Boolean(deleteTarget)}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Stack>
   );
 }

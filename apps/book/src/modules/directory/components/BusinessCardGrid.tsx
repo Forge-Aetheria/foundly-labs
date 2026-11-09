@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/shared/compat/Link';
 import Box from '@mui/material/Box';
 import MuiLink from '@mui/material/Link';
 import { Card, Stack, Typography } from '@foundly/ui';

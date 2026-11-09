@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { listPaymentMethods } from './actions';
+import { listPaymentMethods } from './services';
 import { PaymentsConfig } from './components/PaymentsConfig';
 import { ModuleSkeleton } from '../../shared/components/ModuleSkeleton';
 import type { AdminResourceState } from '../../shared/hooks/useAdminResource';

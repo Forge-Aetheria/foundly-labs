@@ -3,6 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { axe } from 'vitest-axe';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 import { NotificationType } from '../utils/types';
 
 const { listMock, countMock, markMock, markAllMock, deleteMock } = vi.hoisted(() => ({
@@ -13,12 +16,23 @@ const { listMock, countMock, markMock, markAllMock, deleteMock } = vi.hoisted(()
   deleteMock: vi.fn(),
 }));
 
-vi.mock('../hooks', () => ({
-  useFetchNotifications: () => listMock,
-  useUnreadNotificationCount: () => countMock,
-  useMarkNotificationRead: () => markMock,
-  useMarkAllNotificationsRead: () => markAllMock,
-  useDeleteNotification: () => deleteMock,
+vi.mock('../services', () => ({
+  listNotifications: (...args: unknown[]) => listMock(...args),
+  getUnreadNotificationCount: (...args: unknown[]) => countMock(...args),
+  markNotificationRead: (...args: unknown[]) => markMock(...args),
+  markAllNotificationsRead: (...args: unknown[]) => markAllMock(...args),
+  deleteNotification: (...args: unknown[]) => deleteMock(...args),
+}));
+
+vi.mock('../../../shared/auth/session-context', () => ({
+  useSession: () => ({
+    status: 'authenticated',
+    session: null,
+    userId: 'user-test',
+    tenantId: 'ten-test',
+    refresh: vi.fn(),
+    signOut: vi.fn(),
+  }),
 }));
 
 import { NotificationsProvider } from '../NotificationsProvider';
@@ -47,11 +61,11 @@ function makeItems() {
 
 function renderBell() {
   return render(
-    <FoundlyThemeProvider>
+    <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
       <NotificationsProvider>
         <NotificationBell />
       </NotificationsProvider>
-    </FoundlyThemeProvider>,
+    </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
   );
 }
 

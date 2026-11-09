@@ -2,6 +2,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
 
 const { changePasswordMock } = vi.hoisted(() => ({ changePasswordMock: vi.fn() }));
 
@@ -18,9 +21,9 @@ describe('PasswordForm (009 — US5)', () => {
     changePasswordMock.mockResolvedValue({ ok: true, data: { updated: true } });
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <PasswordForm />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     await user.type(screen.getByLabelText(/Contraseña actual/), 'mock-credential');
@@ -39,9 +42,9 @@ describe('PasswordForm (009 — US5)', () => {
     });
     const user = userEvent.setup();
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <PasswordForm />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
 
     await user.type(screen.getByLabelText(/Contraseña actual/), 'wrong');

@@ -2,7 +2,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FoundlyThemeProvider } from '@foundly/ui';
-import { CalendarStep } from '../dialogs/CalendarStep';
+import { MemoryRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createTestQueryClient } from '@/test-utils/testQueryClient';
+import { CalendarStep } from '../components/dialogs/CalendarStep';
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 
@@ -29,7 +32,7 @@ describe('CalendarStep (feature 017, US2)', () => {
 
   function renderCalendar(onSelect = vi.fn()) {
     render(
-      <FoundlyThemeProvider>
+      <QueryClientProvider client={createTestQueryClient()}><FoundlyThemeProvider><MemoryRouter>
         <CalendarStep
           tenantSlug="estudio-ana"
           serviceId="svc-corte"
@@ -38,7 +41,7 @@ describe('CalendarStep (feature 017, US2)', () => {
           onContinue={vi.fn()}
           onBack={vi.fn()}
         />
-      </FoundlyThemeProvider>,
+      </MemoryRouter></FoundlyThemeProvider></QueryClientProvider>,
     );
     return { onSelect };
   }

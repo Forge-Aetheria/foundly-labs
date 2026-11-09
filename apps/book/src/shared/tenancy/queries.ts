@@ -1,15 +1,12 @@
-import { redirect } from 'next/navigation';
 import { apiRequest } from '../api/client';
+import { apiRequestAuthed } from '../api/authed-request';
 import { TenantBySlugDocument, TenantsDocument, type TenantsQuery } from '../api/generated';
-import { requireTenant } from '../auth/auth';
-import { getEffectiveSession } from '../auth/authServer';
-import { LOGIN_ROUTE, REGISTRATION_ROUTE } from '../auth/authConstants';
-import { fail, ok, type ActionResult } from '../types/result';
 import type { Session } from '../auth/auth';
+import { fail, ok, type ActionResult } from '../types/result';
 import type { PortalPolicy, Tenant, TenantStatus } from '../types/tenancy';
 
 /**
- * Tenancy reads (feature 011; constitution §5.VI). Codegen documents/types only;
+ * Tenancy reads (feature 011; feature 024 — SPA). Codegen documents/types only;
  * `shared/tenancy` is the cross-cutting owner of tenant resolution.
  */
 
@@ -61,36 +58,21 @@ export function mapTenant(dto: ApiTenant): Tenant {
   };
 }
 
-/** Resolve a tenant by its public URL slug. SERVER-ONLY via `tenant(slug)`. */
+/** Resolve a tenant by its public URL slug (credential-free). */
 export async function getTenantBySlug(slug: string): Promise<ActionResult<Tenant | null>> {
   const result = await apiRequest(TenantBySlugDocument, { slug });
   if (!result.ok) return result;
   return ok(result.data.tenant ? mapTenant(result.data.tenant) : null);
 }
 
-/** Resolve the tenant bound to the session. SERVER-ONLY; the session is the scope. */
+/** Resolve the tenant bound to the session (session is the only scope). */
 export async function getCurrentTenant(session: Session | null): Promise<ActionResult<Tenant>> {
   if (!session?.tenantId) {
     return fail('UNAUTHENTICATED', 'Se requiere una sesión de negocio.');
   }
-  const result = await apiRequest(TenantsDocument, {});
+  const result = await apiRequestAuthed(TenantsDocument, {});
   if (!result.ok) return result;
   const tenant = result.data.tenants.find((item) => item.id === session.tenantId);
   if (!tenant) return fail('NOT_FOUND', 'Negocio no encontrado.');
   return ok(mapTenant(tenant));
-}
-
-/**
- * Tenant id for admin pages, sourced from the session (never the URL).
- * Unauthenticated → `/login`; authenticated but unbound → onboarding.
- */
-export async function getAdminTenantId(): Promise<string> {
-  const auth = requireTenant(await getEffectiveSession());
-  if (!auth.ok) {
-    redirect(auth.error.code === 'FORBIDDEN' ? REGISTRATION_ROUTE : LOGIN_ROUTE);
-  }
-  if (!auth.data.tenantId) {
-    redirect(REGISTRATION_ROUTE);
-  }
-  return auth.data.tenantId;
 }

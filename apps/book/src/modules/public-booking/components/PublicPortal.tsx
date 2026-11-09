@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Container, Stack } from '@foundly/ui';
 import type { PublicBusinessProfile, PublicService } from '../utils/types';
-import { BookingFlow } from '../dialogs/BookingFlow';
+import { BookingFlow } from './dialogs/BookingFlow';
 import { CoverBanner } from './CoverBanner';
 import { ProviderNav } from './ProviderNav';
 import { ProviderSections } from './ProviderSections';
